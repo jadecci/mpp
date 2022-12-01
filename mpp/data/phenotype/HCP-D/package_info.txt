@@ -1,0 +1,20 @@
+
+
+Concept filter has been applied:
+Time applied:02/03/2021 16:47:19
+Number of distinct subjects in single filter:652
+Age from:0
+Age to:  1260
+Sex:  not specified
+Concept(s):
+/Featured Datasets/Human Connectome Projects (HCP)/HCP Aging and Development/HCP-Development Release 2.0 Available Datasets/Unprocessed Image Data
+/Featured Datasets/Human Connectome Projects (HCP)/HCP Aging and Development/HCP-Development Release 2.0 Available Datasets/Preprocessed Image Data
+
+Concept filter has been applied:
+Time applied:02/03/2021 16:50:33
+Number of distinct subjects in single filter:652
+Age from:0
+Age to:  1260
+Sex:  not specified
+Concept(s):
+/Featured Datasets/Human Connectome Projects (HCP)/HCP Aging and Development/HCP-Development Release 2.0 Available Datasets/Behavioral Data
