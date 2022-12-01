@@ -12,7 +12,13 @@ from mpp.interfaces.features import RSFC, DFC, NetworkStats, MyelinEstimate, Mor
 
 base_dir = path.join(path.dirname(path.realpath(__file__)), '..', '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)
-config.update_config({'execution': {'stop_on_first_crash': 'true'}})
+config.update_config({'execution': {'stop_on_first_crash': 'true',
+                                    'keep_inputs': 'false',
+                                    'remove_unnecessary_outputs': 'true',
+                                    'local_hash_check': 'true',
+                                    'remove_node_directories': 'true',
+                                    'crashfile_format': 'txt'},
+                      'resource moniter': {'enabled': 'true'}})
 
 def main():
     parser = argparse.ArgumentParser(description='Multimodal psychometric prediction',
@@ -25,10 +31,11 @@ def main():
     parser.add_argument('--wrapper', type=str, dest='wrapper', default='', help='wrapper script')
     args = parser.parse_args()
 
-    dataset_sublist = {'HCP-YA': path.join(base_dir, ''),
-                       'HCP-A': path.join(base_dir, ''),
-                       'HCP-D': path.join(base_dir, ''),
-                       'ABCD': path.join(base_dir, '')}
+    sublist_dir = path.join(base_dir, 'data', 'sublist')
+    dataset_sublist = {'HCP-YA': path.join(sublist_dir, ''),
+                       'HCP-A': path.join(sublist_dir, ''),
+                       'HCP-D': path.join(sublist_dir, ''),
+                       'ABCD': path.join(sublist_dir, '')}
 
     ## Overall workflow
     mmf_wf = pe.Workflow('mpp_wf', base_dir=args.work_dir)
