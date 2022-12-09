@@ -1,56 +1,47 @@
-import nipype.pipeline as pe
-from nipype.interfaces import utility as niu
-from nipype import config
 import pandas as pd
 from os import getcwd, path
 import argparse
 import logging
 
+import nipype.pipeline as pe
+from nipype.interfaces import utility as niu
+
 from mpp.interfaces.data import InitData, InitSubData, InitRSData, InitAnatData, RSSave, AnatSave, DropSubData
-from mpp.interfaces.processing import NuisanceReg, ParcellateTimeseries
-from mpp.interfaces.features import RSFC, DFC, NetworkStats, MyelinEstimate, Morphometry
+from mpp.interfaces.features import RSFC, NetworkStats, MyelinEstimate, Morphometry
 
 base_dir = path.join(path.dirname(path.realpath(__file__)), '..', '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)
-config.update_config({'execution': {'stop_on_first_crash': 'true',
-                                    'keep_inputs': 'false',
-                                    'remove_unnecessary_outputs': 'true',
-                                    'local_hash_check': 'true',
-                                    'remove_node_directories': 'true',
-                                    'crashfile_format': 'txt'},
-                      'resource moniter': {'enabled': 'true'}})
 
 def main():
     parser = argparse.ArgumentParser(description='Multimodal psychometric prediction',
                 formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog, width=100))
     parser.add_argument('dataset', type=str, help='Dataset (HCP-YA, HCP-A, HCP-D, ABCD)')
-    parser.add_argument('--sublist', type=str, dest='sublist', default=None, 
-                        help='Absolute path to the subject list (.csv). Default uses all subjects.')
+    parser.add_argument('sublist', type=str, help='Absolute path to the subject list (.csv).')
     parser.add_argument('--workdir', type=str, dest='work_dir', default=getcwd(), help='Work directory')
     parser.add_argument('--overwrite', dest='overwrite', action="store_true", help='overwrite existing results')
     parser.add_argument('--wrapper', type=str, dest='wrapper', default='', help='wrapper script')
     args = parser.parse_args()
 
-    sublist_dir = path.join(base_dir, 'data', 'sublist')
-    dataset_sublist = {'HCP-YA': path.join(sublist_dir, ''),
-                       'HCP-A': path.join(sublist_dir, ''),
-                       'HCP-D': path.join(sublist_dir, ''),
-                       'ABCD': path.join(sublist_dir, '')}
-
     ## Overall workflow
-    mmf_wf = pe.Workflow('mpp_wf', base_dir=args.work_dir)
+    mf_wf = pe.Workflow('mf_wf', base_dir=args.work_dir)
     init_data = pe.Node(InitData(dataset=args.dataset, work_dir=args.work_dir), name='init_data')
+
+    ## config
+    mf_wf.config['execution']['try_hard_link_datasink'] = 'false'
+    mf_wf.config['execution']['crashfile_format'] = 'txt'
+    mf_wf.config['execution']['stop_on_first_crash'] = 'true'
+    mf_wf.config['monitoring']['enabled'] = 'true'
 
     ## Individual subject's workflow
     sublist = pd.read_csv(args.sublist, header=None, squeeze=True)
     for subject in sublist:
         subject_wf = init_subject_wf(args.dataset, subject, args.work_dir, args.overwrite)
-        mmf_wf.connect(init_data, 'dataset_dir', subject_wf, 'inputnode.dataset_dir')
+        mf_wf.connect(init_data, 'dataset_dir', subject_wf, 'inputnode.dataset_dir')
 
-    mmf_wf.write_graph()
-    mmf_wf.run(plugin='CondorDAGMan', plugin_args={'dagman_args': f'-outfile_dir {args.work_dir}',
-                                                   'wrapper_cmd': args.wrapper})
-
+    mf_wf.write_graph()
+    mf_wf.run(plugin='CondorDAGMan', plugin_args={'dagman_args': f'-outfile_dir {args.work_dir}',
+                                                  'wrapper_cmd': args.wrapper})
+                                                  
 def init_subject_wf(dataset, subject, work_dir, overwrite):
     wf_name = 'subject_%s_wf' % subject
     wf_dir = path.join(work_dir, subject)
@@ -87,10 +78,7 @@ def init_rs_wf(dataset, subject, work_dir, overwrite):
 
     inputnode = pe.Node(niu.IdentityInterface(fields=['rs_dir', 'rs_files', 'rs_skip']), name='inputnode')
     init_data = pe.Node(InitRSData(dataset=dataset), name='init_data')
-    nuisance_reg = pe.Node(NuisanceReg(dataset=dataset), name='nuisance_reg')
-    parcellate = pe.Node(ParcellateTimeseries(), name='parcellate')
-    rsfc = pe.Node(RSFC(), name='rsfc')
-    dfc = pe.Node(DFC(), name='dfc')
+    rsfc = pe.Node(RSFC(dataset=dataset), name='rsfc')
     network_stats = pe.Node(NetworkStats(), name='network_stats')
     save_features = pe.Node(RSSave(output_dir=work_dir, dataset=dataset, subject=subject, overwrite=overwrite), 
                             name='save_features')
@@ -99,20 +87,14 @@ def init_rs_wf(dataset, subject, work_dir, overwrite):
     rs_wf.connect([(inputnode, init_data, [('rs_dir', 'rs_dir'),
                                            ('rs_files', 'rs_files'),
                                            ('rs_skip', 'rs_skip')]),
-                    (inputnode, nuisance_reg, [('rs_skip', 'rs_skip'),
-                                               ('rs_dir', 'rs_dir')]),
-                    (inputnode, parcellate, [('rs_skip', 'rs_skip')]),
-                    (inputnode, rsfc, [('rs_skip', 'rs_skip')]),
+                    (inputnode, rsfc, [('rs_skip', 'rs_skip'),
+                                       ('rs_dir', 'rs_dir')]),
                     (inputnode, network_stats, [('rs_skip', 'rs_skip')]),
                     (inputnode, save_features, [('rs_skip', 'rs_skip')]),
-                    (init_data, nuisance_reg, [('rs_files', 'rs_files')]),
-                    (nuisance_reg, parcellate, [('t_surf_resid', 't_surf_resid'),
-                                                ('t_vol_resid', 't_vol_resid')]),
-                    (parcellate, rsfc, [('tavg', 'tavg')]),
-                    (parcellate, dfc, [('tavg', 'tavg')]),
+                    (init_data, rsfc, [('rs_files', 'rs_files')]),
                     (rsfc, network_stats, [('rsfc', 'rsfc')]),
-                    (rsfc, save_features, [('rsfc', 'rsfc')]),
-                    (dfc, save_features, [('dfc', 'dfc')]),
+                    (rsfc, save_features, [('rsfc', 'rsfc'),
+                                           ('dfc', 'dfc')]),
                     (network_stats, save_features, [('rs_stats', 'rs_stats')]),
                     (save_features, outputnode, [('rs_done', 'rs_done')])])
 

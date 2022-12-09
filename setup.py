@@ -15,6 +15,7 @@ setup(
         'pandas==1.3.5',
         'scipy==1.7.3',
         'bctpy==0.5.2',
+        'psutil>=5.0',
     ],
     entry_points={
         'console_scripts': [

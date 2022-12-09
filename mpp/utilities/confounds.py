@@ -7,8 +7,6 @@ import logging
 
 from scipy.ndimage import binary_erosion
 
-from mpp import logger
-
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
 def nuisance_conf_HCP(dataset, rs_dir, rs_file, atlas_file, motion_file):

@@ -1,8 +1,6 @@
 import h5py
 import logging
 
-from mpp import logger
-
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
 def write_h5(h5_file, dataset, data, overwrite):
@@ -15,6 +13,4 @@ def write_h5(h5_file, dataset, data, overwrite):
                             ds = f[dataset]
                             ds.resize(data.shape)
                             ds.write_direct(data)
-                        else:
-                            logger.warning(f'No rs feature for {dataset} saved as results already exist.')
                             

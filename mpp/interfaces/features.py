@@ -6,91 +6,111 @@ import subprocess
 from os import path, environ
 import logging
 
+from scipy.stats import zscore
 from nipype.interfaces import fsl, freesurfer
 import bct
 
-from mpp import logger
+from mpp.utilities.confounds import nuisance_conf_HCP
 
 base_dir = path.join(path.dirname(path.realpath(__file__)), '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
-### RSFC: compute Pearson's correlation between timeseries
+### RSFC: compute static and dynamic functional connectivity for resting-state
 
 class _RSFCInputSpec(BaseInterfaceInputSpec):
-    tavg = traits.Dict(dtype=float, desc='parcellated timeseries')
+    dataset = traits.Str(desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
+    rs_dir = traits.Str(desc='absolute path to installed subject MNINonLinear directory')
+    rs_files = traits.Dict(desc='filenames of resting-state data')
     rs_skip = traits.Bool(desc='whether resting-state workflow should be skipped or not')
 
 class _RSFCOutputSpec(TraitedSpec):
     rsfc = traits.Dict(dtype=float, desc='resting-state functional connectivity')
+    dfc = traits.Dict(dtype=float, desc='dynamic functional connectivity')
 
 class RSFC(SimpleInterface):
     input_spec = _RSFCInputSpec
     output_spec = _RSFCOutputSpec
 
     def _run_interface(self, runtime):
-        if self.inputs.rs_skip:
-            logger.warning('Resting-state workflow is skipped.')
-        else:
-            n_parcels = {1: 116, 2: 232, 3: 350, 4: 454}
+        if not self.inputs.rs_skip:
+            eps = 7./3 - 4./3 - 1 # for checking non-brain voxels
             self._results['rsfc'] = {'level1': np.array([]), 'level2': np.array([]),
                                      'level3': np.array([]), 'level4': np.array([])}
+            self._results['dfc'] = {'level1': np.array([]), 'level2': np.array([]),
+                                    'level3': np.array([]), 'level4': np.array([])}
+            runs = np.array([])
 
-            for level in range(4):
-                rsfc_level = np.zeros((n_parcels[level+1], n_parcels[level+1], 4))
-                runs = np.array([])
+            for run in range(4):
+                key_surf = 'run' + str(run+1) + '_surf'
+                key_vol = 'run' + str(run+1) + '_vol'
+                if self.inputs.rs_files[key_surf] and self.inputs.rs_files[key_vol]:
+                    runs = np.concatenate([runs, [run]], axis=0)
+                    t_surf = nib.load(self.inputs.rs_files[key_surf]).get_fdata()
+                    t_vol = nib.load(self.inputs.rs_files[key_vol]).get_fdata()
 
-                for run in range(4):
-                    key = 'run' + str(run+1) + '_level' + str(level+1)
-                    if self.inputs.tavg[key].size:
-                        rsfc = np.corrcoef(self.inputs.tavg[key])
+                    if 'HCP' in self.inputs.dataset:
+                        conf = nuisance_conf_HCP(self.inputs.dataset, self.inputs.rs_dir, self.inputs.rs_files[key_vol],
+                                                 self.inputs.rs_files['wm_mask'], 
+                                                 self.inputs.rs_files[('run' + str(run+1) + '_movement')])                  
+                    regressors = np.concatenate([zscore(conf), np.ones((conf.shape[0], 1)), 
+                                                np.linspace(-1, 1, num=conf.shape[0]).reshape((conf.shape[0], 1))],
+                                                axis=1)
+                    t_surf_resid = t_surf - np.dot(regressors, np.linalg.lstsq(regressors, t_surf, rcond=-1)[0])
+
+                    for level in range(4):
+                        parc_Sch_file = path.join(base_dir, 'data', 'atlas', ('Schaefer2018_' + str(level+1) + 
+                                                                              '00Parcels_17Networks_order.dlabel.nii'))
+                        parc_Sch = nib.load(parc_Sch_file).get_fdata()
+                        parc_Mel_file = path.join(base_dir, 'data', 'atlas', 
+                                                 ('Tian_Subcortex_S' + str(level+1) + '_3T.nii.gz'))
+                        parc_Mel = nib.load(parc_Mel_file).get_fdata()
+                        key = 'level' + str(level+1)
+                        
+                        mask = parc_Mel.nonzero()
+                        t_vol_subcort = np.array([t_vol[mask[0][i], mask[1][i], mask[2][i], :] 
+                                                  for i in range(mask[0].shape[0])])
+                        t_vol_resid = t_vol_subcort.T - np.dot(regressors, 
+                                                        np.linalg.lstsq(regressors, t_vol_subcort.T, rcond=-1)[0])
+
+                        t_surf = t_surf_resid[:, range(parc_Sch.shape[1])]
+                        parc_surf = np.zeros(((level+1)*100, t_surf.shape[0]))
+                        for parcel in range((level+1)*100):
+                            selected = t_surf[:, np.where(parc_Sch==(parcel+1))[1]]
+                            selected = selected[:, ~np.isnan(selected[0, :])]
+                            parc_surf[parcel, :] = selected.mean(axis=1)
+
+                        parcels = np.unique(parc_Mel[mask]).astype(int)
+                        parc_vol = np.zeros((parcels.shape[0], t_vol_resid.shape[0]))
+                        for parcel in parcels:
+                            selected = t_vol_resid[:, np.where(parc_Mel[mask]==(parcel))[0]]
+                            selected = selected[:, ~np.isnan(selected[0, :])]
+                            selected = selected[:, np.where(np.abs(selected.mean(axis=0))>=eps)[0]]
+                            parc_vol[parcel-1, :] = selected.mean(axis=1)
+
+                        tavg = np.concatenate([parc_surf, parc_vol], axis=0)
+                        rsfc = np.corrcoef(tavg)
                         rsfc = (0.5 * (np.log(1 + rsfc, where=~np.eye(rsfc.shape[0], dtype=bool)) 
                                 - np.log(1 - rsfc, where=~np.eye(rsfc.shape[0], dtype=bool)))) # Fisher's z
                         for i in range(rsfc.shape[0]):
                             rsfc[i, i] = 0
-                        rsfc_level[:, :, run] = rsfc
-                        runs = np.concatenate([runs, [run]], axis=0)
+                        if self._results['rsfc'][key].size:
+                            self._results['rsfc'][key] = self._results['rsfc'][key] + rsfc
+                        else:
+                            self._results['rsfc'][key] = rsfc
 
-                self._results['rsfc'][('level' + str(level+1))] = rsfc_level[:, :, runs.astype(int)].mean(axis=2)
-                    
-        return runtime
-
-### DFC: compute autocorrelation-based dynamic connectivity
-
-class _DFCInputSpec(BaseInterfaceInputSpec):
-    tavg = traits.Dict(dtype=float, desc='parcellated timeseries')
-    rs_skip = traits.Bool(desc='whether resting-state workflow should be skipped or not')
-
-class _DFCOutputSpec(TraitedSpec):
-    dfc = traits.Dict(dtype=float, desc='dynamic functional connectivity')
-
-class DFC(SimpleInterface):
-    input_spec = _DFCInputSpec
-    output_spec = _DFCOutputSpec
-
-    def _run_interface(self, runtime):
-        if self.inputs.rs_skip:
-            logger.warning('Resting-state workflow is skipped.')
-        else:
-            n_parcels = {1: 116, 2: 232, 3: 350, 4: 454}
-            self._results['dfc'] = {'level1': np.array([]), 'level2': np.array([]),
-                                    'level3': np.array([]), 'level4': np.array([])}
+                        y = tavg[:, range(1, tavg.shape[1])]
+                        z = np.ones((tavg.shape[0]+1, tavg.shape[1]-1))
+                        z[1:(tavg.shape[0]+1), :] = tavg[:, range(tavg.shape[1]-1)]
+                        b = np.linalg.lstsq((z @ z.T).T, (y @ z.T).T, rcond=None)[0].T
+                        if self._results['dfc'][key].size:
+                            self._results['dfc'][key] = self._results['dfc'][key] + b[:, range(1, b.shape[1])]
+                        else:
+                            self._results['dfc'][key] = b[:, range(1, b.shape[1])]
 
             for level in range(4):
-                dfc_level = np.zeros((n_parcels[level+1], n_parcels[level+1], 4))
-                runs = np.array([])
-
-                for run in range(4):
-                    key = 'run' + str(run+1) + '_level' + str(level+1)
-                    t_avg = self.inputs.tavg[key]
-                    if t_avg.size:
-                        y = t_avg[:, range(1, t_avg.shape[1])]
-                        z = np.ones((t_avg.shape[0]+1, t_avg.shape[1]-1))
-                        z[1:(t_avg.shape[0]+1), :] = t_avg[:, range(t_avg.shape[1]-1)]
-                        b = np.linalg.lstsq((z @ z.T).T, (y @ z.T).T, rcond=None)[0].T
-                        dfc_level[:, :, run] = b[:, range(1, b.shape[1])]
-                        runs = np.concatenate([runs, [run]], axis=0)
-
-                self._results['dfc'][('level' + str(level+1))] = dfc_level[:, :, runs.astype(int)].mean(axis=2)
+                key = 'level' + str(level+1)
+                self._results['rsfc'][key] = np.divide(self._results['rsfc'][key], len(runs))
+                self._results['dfc'][key] = np.divide(self._results['dfc'][key], len(runs))
                     
         return runtime
 
@@ -108,9 +128,7 @@ class NetworkStats(SimpleInterface):
     output_spec = _NetworkStatsOutputSpec
 
     def _run_interface(self, runtime):
-        if self.inputs.rs_skip:
-            logger.warning('Resting-state workflow is skipped.')
-        else:
+        if not self.inputs.rs_skip:
             self._results['rs_stats'] = {'level1_strength': np.array([]), 'level1_betweenness': np.array([]),
                                          'level1_participation': np.array([]), 'level1_efficiency': np.array([]),
                                          'level2_strength': np.array([]), 'level2_betweenness': np.array([]),
@@ -148,9 +166,7 @@ class MyelinEstimate(SimpleInterface):
     output_spec = _MyelineEstimateOutputSpec
 
     def _run_interface(self, runtime):
-        if self.inputs.myelin_skip:
-            logger.warning('Myelin features are skipped.')
-        else:
+        if not self.inputs.myelin_skip:
             self._results['myelin'] = {'level1': np.array([]), 'level2': np.array([]),
                                        'level3': np.array([]), 'level4': np.array([])}
 
@@ -204,9 +220,7 @@ class Morphometry(SimpleInterface):
     output_spec = _MorphometryOutputSpec
 
     def _run_interface(self, runtime):
-        if self.inputs.t1_skip:
-            logger.warning('Morphometry featurs are skipped.')
-        else:
+        if not self.inputs.t1_skip:
             self._results['morph'] = {'level1_GMV': np.array([]), 'level1_CS': np.array([]), 'level1_CT': np.array([]),
                                       'level2_GMV': np.array([]), 'level2_CS': np.array([]), 'level2_CT': np.array([]),
                                       'level3_GMV': np.array([]), 'level3_CS': np.array([]), 'level3_CT': np.array([]),
