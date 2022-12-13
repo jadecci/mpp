@@ -2,4 +2,4 @@
 **/.git* annex.largefiles=nothing
 **/.py annex.largefiles=nothing
 
-* annex.largefiles=(largerthan=20kb)
+* annex.largefiles=(largerthan=50kb)
