@@ -19,11 +19,13 @@ hcpya_data['Subject'].to_csv(hcpya_out_file, header=False, index=False)
 ### HCP-A
 hcpa_pheno_file = path.join(data_dir, 'phenotype', 'HCP-A', 'ndar_subject01.txt')
 hcpa_data = pd.read_table(hcpa_pheno_file, sep='\t', header=0, skiprows=[1], usecols=['src_subject_id'])
+hcpa_data['src_subject_id'] = hcpa_data['src_subject_id'].str.cat(['_V1_MR']*len(hcpa_data))
 hcpa_out_file = path.join(data_dir, 'sublist', 'HCP-A_allRun.csv')
 hcpa_data.to_csv(hcpa_out_file, header=False, index=False)
 
 ### HCP-D
 hcpd_pheno_file = path.join(data_dir, 'phenotype', 'HCP-D', 'ndar_subject01.txt')
 hcpd_data = pd.read_table(hcpd_pheno_file, sep='\t', header=0, skiprows=[1], usecols=['src_subject_id'])
+hcpd_data['src_subject_id'] = hcpd_data['src_subject_id'].str.cat(['_V1_MR']*len(hcpd_data))
 hcpd_out_file = path.join(data_dir, 'sublist', 'HCP-D_allRun.csv')
 hcpd_data.to_csv(hcpd_out_file, header=False, index=False)
