@@ -6,14 +6,14 @@ import logging
 import nipype.pipeline as pe
 from nipype.interfaces import utility as niu
 
-from mpp.interfaces.data import InitData, InitSubData, InitfMRIData, InitAnatData, SaveFeatures, DropSubData
+from mpp.interfaces.data import InitData, InitSubData, SaveFeatures, DropSubData
 from mpp.interfaces.features import RSFC, NetworkStats, TFC, MyelinEstimate, Morphometry
 
 base_dir = path.join(path.dirname(path.realpath(__file__)), '..', '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
 def main():
-    parser = argparse.ArgumentParser(description='Multimodal psychometric prediction',
+    parser = argparse.ArgumentParser(description='Multimodal psychometric prediction feature extraction',
                 formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog, width=100))
     parser.add_argument('dataset', type=str, help='Dataset (HCP-YA, HCP-A, HCP-D, ABCD)')
     parser.add_argument('sublist', type=str, help='Absolute path to the subject list (.csv).')
@@ -57,15 +57,14 @@ def init_subject_wf(dataset, subject, output_dir, overwrite):
     drop_data = pe.Node(DropSubData(), name='drop_data')
 
     rs_wf = init_rs_wf(dataset, subject)
-    anat_wf = init_anat_wf(dataset, subject)
+    anat_wf = init_anat_wf(subject)
 
     subject_wf.connect([(inputnode, init_data, [('dataset_dir', 'dataset_dir')]),
                          (init_data, rs_wf, [('rs_dir', 'inputnode.rs_dir'),
                                              ('rs_runs', 'inputnode.rs_runs'),
                                              ('rs_files', 'inputnode.rs_files'),
                                              ('hcpd_b_runs', 'inputnode.hcpd_b_runs')]),
-                         (init_data, anat_wf, [('rs_dir', 'inputnode.rs_dir'),
-                                               ('anat_dir', 'inputnode.anat_dir'),
+                         (init_data, anat_wf, [('anat_dir', 'inputnode.anat_dir'),
                                                ('anat_files', 'inputnode.anat_files')]),
                          (init_data, drop_data, [('rs_dir', 'rs_dir'),
                                                  ('rs_files', 'rs_files'),
@@ -94,17 +93,14 @@ def init_rs_wf(dataset, subject):
 
     inputnode = pe.Node(niu.IdentityInterface(fields=['rs_dir', 'rs_runs', 'rs_files', 'hcpd_b_runs']), 
                                               name='inputnode')
-    init_data = pe.Node(InitfMRIData(dataset=dataset), name='init_data')
     rsfc = pe.Node(RSFC(dataset=dataset), name='rsfc')
     network_stats = pe.Node(NetworkStats(), name='network_stats')
     outputnode = pe.Node(niu.IdentityInterface(fields=['rsfc', 'dfc', 'rs_stats']), name='outputnode')
 
-    rs_wf.connect([(inputnode, init_data, [('rs_dir', 'func_dir'),
-                                           ('rs_files', 'func_files')]),
-                    (inputnode, rsfc, [('rs_dir', 'rs_dir'),
+    rs_wf.connect([(inputnode, rsfc, [('rs_dir', 'rs_dir'),
                                        ('rs_runs', 'rs_runs'),
+                                       ('rs_files', 'rs_files'),
                                        ('hcpd_b_runs', 'hcpd_b_runs')]),
-                    (init_data, rsfc, [('func_files', 'rs_files')]),
                     (rsfc, network_stats, [('rsfc', 'rsfc')]),
                     (rsfc, outputnode, [('rsfc', 'rsfc'),
                                         ('dfc', 'dfc')]),
@@ -116,36 +112,29 @@ def init_t_wf(dataset, subject):
     t_wf = pe.Workflow(f'subject_{subject}_t_wf')
 
     inputnode = pe.Node(niu.IdentityInterface(fields=['t_dir', 't_runs', 't_files']), name='inputnode')
-    init_data = pe.Node(InitfMRIData(dataset=dataset), name='init_data')
     tfc = pe.Node(TFC(dataset=dataset), name='tfc')
     outputnode = pe.Node(niu.IdentityInterface(fields=['tfc']), name='outputnode')
 
-    t_wf.connect([(inputnode, init_data, [('t_dir', 'func_dir'),
-                                          ('t_files', 'func_files')]),
-                  (inputnode, tfc, [('t_dir', 't_dir'),
-                                    ('t_runs', 't_runs')]),
-                  (init_data, tfc, [('func_files', 't_files')]),
+    t_wf.connect([(inputnode, tfc, [('t_dir', 't_dir'),
+                                    ('t_runs', 't_runs'),
+                                    ('t_files', 't_files')]),
                   (tfc, outputnode, [('tfc', 'tfc')])])
 
     return t_wf
 
-def init_anat_wf(dataset, subject):
+def init_anat_wf(subject):
     anat_wf = pe.Workflow(f'subject_{subject}_anat_wf')
 
-    inputnode = pe.Node(niu.IdentityInterface(fields=['rs_dir', 'anat_dir', 'anat_files']), name='inputnode')
-    init_data = pe.Node(InitAnatData(dataset=dataset), name='init_data')
+    inputnode = pe.Node(niu.IdentityInterface(fields=['anat_dir', 'anat_files']), name='inputnode')
     myelin = pe.Node(MyelinEstimate(), name='myelin')
     morphometry = pe.Node(Morphometry(subject=subject), name='morphometry')
     outputnode = pe.Node(niu.IdentityInterface(fields=['myelin', 'morph']), name='outputnode')
 
-    anat_wf.connect([(inputnode, init_data, [('rs_dir', 'rs_dir'),
-                                             ('anat_dir', 'anat_dir'),
-                                             ('anat_files', 'anat_files')]),
-                      (inputnode, morphometry, [('anat_dir', 'anat_dir')]),
-                      (init_data, myelin, [('anat_files', 'anat_files')]),
-                      (init_data, morphometry, [('anat_files', 'anat_files')]),
-                      (myelin, outputnode, [('myelin', 'myelin')]),
-                      (morphometry, outputnode, [('morph', 'morph')])])
+    anat_wf.connect([(inputnode, morphometry, [('anat_dir', 'anat_dir'),
+                                               ('anat_files', 'anat_files')]),
+                     (inputnode, myelin, [('anat_files', 'anat_files')]),
+                     (myelin, outputnode, [('myelin', 'myelin')]),
+                     (morphometry, outputnode, [('morph', 'morph')])])
 
     return anat_wf
 

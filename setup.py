@@ -19,7 +19,8 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'mpp=mpp.workflows.mpp_features:main'
+            'mfeatures=mpp.workflows.mpp_features:main',
+            'mpredict=mpp.workflows.mpp_predict:main'
         ]
     }
 )

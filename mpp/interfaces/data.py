@@ -45,7 +45,7 @@ class InitData(SimpleInterface):
 
         return runtime
 
-### InitSubData: install and get subject-specific subdataset
+### InitSubData: install and get subject-specific data
 
 class _InitSubDataInputSpec(BaseInterfaceInputSpec):
     dataset = traits.Str(desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
@@ -77,7 +77,7 @@ class InitSubData(SimpleInterface):
 
         if 'HCP' in self.inputs.dataset:
             move_file = {'HCP-YA': 'Movement_Regressors.txt', 'HCP-A': 'Movement_Regressors_hp0_clean.txt',
-                             'HCP-D': 'Movement_Regressors_hp0_clean.txt'}
+                         'HCP-D': 'Movement_Regressors_hp0_clean.txt'}
 
             self._results['rs_dir'] = path.join(subject_dir, 'MNINonLinear')
             dl.get(path=self._results['rs_dir'], dataset=self.inputs.dataset_dir, get_data=False, source=source, 
@@ -120,35 +120,37 @@ class InitSubData(SimpleInterface):
                     else:
                         self._results['rs_files'][key] = ''
 
-            # check task data
-            if 'HCP' in self.inputs.dataset:
-                runs = {'HCP-YA': ['tfMRI_EMOTION_LR', 'tfMRI_EMOTION_RL', 'tfMRI_GAMBLING_LR', 'tfMRI_GAMBLING_RL',
-                                   'tfMRI_LANGUAGE_LR', 'tfMRI_LANGUAGE_RL', 'tfMRI_MOTOR_LR', 'tfMRI_MOTOR_RL',
-                                   'tfMRI_RELATIONAL_LR', 'tfMRI_RELATIONAL_RL', 'tfMRI_SOCIAL_LR', 'tfMRI_SOCIAL_RL',
-                                   'tfMRI_WM_LR', 'tfMRI_WM_RL'],
-                        'HCP-A': ['tfMRI_CARIT_PA', 'tfMRI_FACENAME_PA', 'tfMRI_VISMOTOR_PA'],
-                        'HCP-D': ['tfMRI_CARIT_AP', 'tfMRI_CARIT_PA', 'tfMRI_EMOTION_PA', 'tfMRI_GUESSING_AP',
-                                  'tfMRI_GUESSING_PA']}
-                self._results['t_runs'] = runs[self.inputs.dataset]
-                self._results['t_files'] = {'wm_mask': path.join(subject_dir, 'MNINonLinear', 'ROIs', 
-                                                                'Atlas_wmparc.2.nii.gz')}
+            # check and get task data
+            runs = {'HCP-YA': ['tfMRI_EMOTION_LR', 'tfMRI_EMOTION_RL', 'tfMRI_GAMBLING_LR', 'tfMRI_GAMBLING_RL',
+                                'tfMRI_LANGUAGE_LR', 'tfMRI_LANGUAGE_RL', 'tfMRI_MOTOR_LR', 'tfMRI_MOTOR_RL',
+                                'tfMRI_RELATIONAL_LR', 'tfMRI_RELATIONAL_RL', 'tfMRI_SOCIAL_LR', 'tfMRI_SOCIAL_RL',
+                                'tfMRI_WM_LR', 'tfMRI_WM_RL'],
+                    'HCP-A': ['tfMRI_CARIT_PA', 'tfMRI_FACENAME_PA', 'tfMRI_VISMOTOR_PA'],
+                    'HCP-D': ['tfMRI_CARIT_AP', 'tfMRI_CARIT_PA', 'tfMRI_EMOTION_PA', 'tfMRI_GUESSING_AP',
+                                'tfMRI_GUESSING_PA']}
+            self._results['t_runs'] = runs[self.inputs.dataset]
+            self._results['t_files'] = {'wm_mask': path.join(subject_dir, 'MNINonLinear', 'ROIs', 
+                                                            'Atlas_wmparc.2.nii.gz')}
 
-                for run in runs[self.inputs.dataset]:
-                    run_dir = path.join(subject_dir, 'MNINonLinear', 'Results', run)
-                    if self.inputs.dataset == 'HCP-YA':
-                        self._results['t_files'][f'{run}_surf'] = path.join(run_dir, f'{run}_Atlas_MSMAll.dtseries.nii')
-                        self._results['t_files'][f'{run}_vol'] = path.join(run_dir, f'{run}.nii.gz')
-                    elif self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
-                        self._results['t_files'][f'{run}_surf'] = path.join(run_dir, 
-                                                                  f'{run}_Atlas_MSMAlll_hp0_clean.dtseries.nii')
-                        self._results['t_files'][f'{run}_vol'] = path.join(run_dir, f'{run}_hp0_clean.nii.gz')
-                    self._results['t_files'][f'{run}_movement'] = path.join(run_dir,  move_file[self.inputs.dataset])
+            for run in runs[self.inputs.dataset]:
+                run_dir = path.join(subject_dir, 'MNINonLinear', 'Results', run)
+                if self.inputs.dataset == 'HCP-YA':
+                    self._results['t_files'][f'{run}_surf'] = path.join(run_dir, f'{run}_Atlas_MSMAll.dtseries.nii')
+                    self._results['t_files'][f'{run}_vol'] = path.join(run_dir, f'{run}.nii.gz')
+                elif self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
+                    self._results['t_files'][f'{run}_surf'] = path.join(run_dir, 
+                                                                f'{run}_Atlas_MSMAlll_hp0_clean.dtseries.nii')
+                    self._results['t_files'][f'{run}_vol'] = path.join(run_dir, f'{run}_hp0_clean.nii.gz')
+                self._results['t_files'][f'{run}_movement'] = path.join(run_dir,  move_file[self.inputs.dataset])
 
-                for key in self._results['t_files']:
-                    if not path.islink(self._results['t_files'][key]):
-                        self._results['t_files'][key] = ''
+            for key in self._results['t_files']:
+                if path.islink(self._results['t_files'][key]):
+                    dl.get(path=self._results['t_files'][key], dataset=self._results['rs_dir'], source=source, 
+                           on_failure='stop')
+                else:
+                    self._results['t_files'][key] = ''
 
-            # check sMRI data
+            # check and get sMRI data
             anat_dir = path.join(subject_dir, 'T1w', self.inputs.subject)
             self._results['anat_dir'] = path.join(subject_dir, 'T1w')
             self._results['anat_files'] = {'t1_vol': path.join(subject_dir, 'MNINonLinear', 'T1w.nii.gz'),
@@ -167,69 +169,39 @@ class InitSubData(SimpleInterface):
                                            'label_r': path.join(anat_dir, 'label', 'rh.cortex.label'),
                                            'myelin_vol': path.join(subject_dir, 'T1w', 'T1wDividedByT2w.nii.gz')}
             for key in self._results['anat_files']:
-                if not path.islink(self._results['anat_files'][key]):
+                if path.islink(self._results['anat_files'][key]):
+                    if key == 't1_vol' or key == 'myelin_l' or key == 'myelin_r':
+                        dl.get(path=self._results['anat_files'][key], dataset=self._results['rs_dir'], source=source, 
+                               on_failure='stop')
+                    else:
+                        dl.get(path=self._results['anat_files'][key], dataset=self._results['anat_dir'], source=source, 
+                               on_failure='stop')
+                else:
                     self._results['anat_files'][key] = ''
 
-        return runtime
-
-### InitfMRIData: download fMRI data
-
-class _InitfMRIDataInputSpec(BaseInterfaceInputSpec):
-    func_dir = traits.Str(desc='absolute path to installed subject MNINonLinear directory')
-    func_files = traits.Dict(dtype=str, desc='filenames of resting-state data')
-    dataset = traits.Str(desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
-
-class _InitfMRIDataOutputSpec(TraitedSpec):
-    func_files = traits.Dict(dtype=str, desc='filenames of resting-state data')
-
-class InitfMRIData(SimpleInterface):
-    input_spec = _InitfMRIDataInputSpec
-    output_spec = _InitfMRIDataOutputSpec
-
-    def _run_interface(self, runtime):
-        for key in self.inputs.func_files:
-            if self.inputs.func_files[key] != '':
-                if self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
-                    source = 'inm7-storage'
-                else:
-                    source = None
-                dl.get(path=self.inputs.func_files[key], dataset=self.inputs.func_dir, source=source, on_failure='stop')
-        
-        self._results['func_files'] = self.inputs.func_files
+        # get rfMRI data
+        for key in self._results['rs_files']:
+            if self._results['rs_files'][key] != '':
+                dl.get(path=self._results['rs_files'][key], dataset=self._results['rs_dir'], source=source, 
+                       on_failure='stop')
 
         return runtime
 
-### InitAnatData: download anatomical data
+### InitFeatures: download extracted features if necessory
 
-class _InitAnatDataInputSpec(BaseInterfaceInputSpec):
-    rs_dir = traits.Str(desc='absolute path to installed subject MNINonLinear directory')
-    anat_dir = traits.Str(desc='absolute path to installed subject T1w directory')
-    anat_files = traits.Dict(dtype=str, desc='filenames of anatomical data')
-    dataset = traits.Str(desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
+class _InitFeaturesInputSpec(BaseInterfaceInputSpec):
+    features_dir = traits.Dict(dtype=str, desc='absolute path to extracted features for each dataset')
 
-class _InitAnatDataOutputSpec(TraitedSpec):
-    anat_files = traits.Dict(dtype=str, desc='filenames of anatomical data')
+class _InitFeaturesOutputSpec(TraitedSpec):
+    sublists = traits.Dict(dtype=list, desc='list of subjects available in each dataset')
 
-class InitAnatData(SimpleInterface):
-    input_spec = _InitAnatDataInputSpec
-    output_spec = _InitAnatDataOutputSpec
+class InitFeatures(SimpleInterface):
+    input_spec = _InitFeaturesInputSpec
+    output_spec = _InitFeaturesOutputSpec
 
     def _run_interface(self, runtime):
-        for key in self.inputs.anat_files:
-            if self.inputs.anat_files[key] != '':
-                if self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
-                    source = 'inm7-storage'
-                else:
-                    source = None
-
-                if key == 't1_vol' or key == 'myelin_l' or key == 'myelin_r':
-                    dl.get(path=self.inputs.anat_files[key], dataset=self.inputs.rs_dir, source=source, 
-                            on_failure='stop')
-                else:
-                    dl.get(path=self.inputs.anat_files[key], dataset=self.inputs.anat_dir, source=source, 
-                            on_failure='stop')
-
-        self._results['anat_files'] = self.inputs.anat_files
+        for dataset in self.inputs.features_dir:
+            feature_dir = self.inputs.features_dir[dataset]
 
         return runtime
 
