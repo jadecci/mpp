@@ -6,7 +6,7 @@ import logging
 import nipype.pipeline as pe
 from nipype.interfaces import utility as niu
 
-from mpp.interfaces.data import InitData, InitSubData, SaveFeatures, DropSubData
+from mpp.interfaces.data import InitData, SaveFeatures, DropSubData
 from mpp.interfaces.features import RSFC, NetworkStats, TFC, MyelinEstimate, Morphometry
 
 base_dir = path.join(path.dirname(path.realpath(__file__)), '..', '..')
@@ -24,34 +24,25 @@ def main():
     parser.add_argument('--wrapper', type=str, dest='wrapper', default='', help='wrapper script for HTCondor')
     args = parser.parse_args()
 
-    ## Overall workflow
-    mf_wf = pe.Workflow('mf_wf', base_dir=args.work_dir)
-    init_data = pe.Node(InitData(dataset=args.dataset, work_dir=args.work_dir), name='init_data')
-
-    ## config
-    mf_wf.config['execution']['try_hard_link_datasink'] = 'false'
-    mf_wf.config['execution']['crashfile_format'] = 'txt'
-    mf_wf.config['execution']['stop_on_first_crash'] = 'true'
-    mf_wf.config['monitoring']['enabled'] = 'true'
-
-    ## Individual subject's workflow
     sublist = pd.read_csv(args.sublist, header=None, squeeze=True)
     for subject in sublist:
-        subject_wf = init_subject_wf(args.dataset, subject, args.output_dir, args.overwrite)
-        mf_wf.connect(init_data, 'dataset_dir', subject_wf, 'inputnode.dataset_dir')
+        subject_wf = init_subject_wf(args.dataset, subject, args.work_dir, args.output_dir, args.overwrite)
+        subject_wf.config['execution']['try_hard_link_datasink'] = 'false'
+        subject_wf.config['execution']['crashfile_format'] = 'txt'
+        subject_wf.config['execution']['stop_on_first_crash'] = 'true'
+        subject_wf.config['monitoring']['enabled'] = 'true'
 
-    mf_wf.write_graph()
-    if args.condordag:
-        mf_wf.run(plugin='CondorDAGMan', plugin_args={'dagman_args': f'-outfile_dir {args.work_dir}',
-                                                      'wrapper_cmd': args.wrapper})
-    else:
-        mf_wf.run()
+        subject_wf.write_graph()
+        if args.condordag:
+            subject_wf.run(plugin='CondorDAGMan', plugin_args={'dagman_args': f'-outfile_dir {args.work_dir}',
+                                                               'wrapper_cmd': args.wrapper})
+        else:
+            subject_wf.run()
                                                   
-def init_subject_wf(dataset, subject, output_dir, overwrite):
-    subject_wf = pe.Workflow(f'subject_{subject}_wf')
+def init_subject_wf(dataset, subject, work_dir, output_dir, overwrite):
+    subject_wf = pe.Workflow(f'subject_{subject}_wf', base_dir=work_dir)
 
-    inputnode = pe.Node(niu.IdentityInterface(fields=['dataset_dir']), name='inputnode')
-    init_data = pe.Node(InitSubData(dataset=dataset, subject=subject), name='init_data')
+    init_data = pe.Node(InitData(dataset=dataset, work_dir=work_dir, subject=subject), name='init_data')
     save_features = pe.Node(SaveFeatures(output_dir=output_dir, dataset=dataset, subject=subject, overwrite=overwrite),
                             name='save_features')
     drop_data = pe.Node(DropSubData(), name='drop_data')
@@ -59,18 +50,13 @@ def init_subject_wf(dataset, subject, output_dir, overwrite):
     rs_wf = init_rs_wf(dataset, subject)
     anat_wf = init_anat_wf(subject)
 
-    subject_wf.connect([(inputnode, init_data, [('dataset_dir', 'dataset_dir')]),
-                         (init_data, rs_wf, [('rs_dir', 'inputnode.rs_dir'),
+    subject_wf.connect([(init_data, rs_wf, [('rs_dir', 'inputnode.rs_dir'),
                                              ('rs_runs', 'inputnode.rs_runs'),
                                              ('rs_files', 'inputnode.rs_files'),
                                              ('hcpd_b_runs', 'inputnode.hcpd_b_runs')]),
                          (init_data, anat_wf, [('anat_dir', 'inputnode.anat_dir'),
                                                ('anat_files', 'inputnode.anat_files')]),
-                         (init_data, drop_data, [('rs_dir', 'rs_dir'),
-                                                 ('rs_files', 'rs_files'),
-                                                 ('t_files', 't_files'),
-                                                 ('anat_dir', 'anat_dir'),
-                                                 ('anat_files', 'anat_files')]),
+                         (init_data, drop_data, [('dataset_dir', 'dataset_dir')]),
                          (rs_wf, save_features, [('outputnode.rsfc', 'rsfc'),
                                                  ('outputnode.dfc', 'dfc'),
                                                  ('outputnode.rs_stats', 'rs_stats')]),

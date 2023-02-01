@@ -1,6 +1,6 @@
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, File, traits
 import datalad.api as dl
-from os import path
+from os import path, listdir
 from pathlib import Path
 import logging
 
@@ -9,50 +9,14 @@ from mpp.utilities.data import write_h5
 base_dir = path.join(path.dirname(path.realpath(__file__)), '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
-### InitData: install and get dataset
+### InitSubData: install and get subject-specific data
 
 class _InitDataInputSpec(BaseInterfaceInputSpec):
     dataset = traits.Str(desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
     work_dir = traits.Str(desc='absolute path to work directory')
-
-class _InitDataOutputSpec(TraitedSpec):
-    dataset_dir = traits.Str(desc='absolute path to installed dataset directory')
-
-class InitData(SimpleInterface):
-    input_spec = _InitDataInputSpec
-    output_spec = _InitDataOutputSpec
-
-    def _run_interface(self, runtime):
-        base_dataset_dir = path.join(self.inputs.work_dir, self.inputs.dataset)
-        dataset_url = {'HCP-YA': 'git@github.com:datalad-datasets/human-connectome-project-openaccess.git',
-                       'HCP-A': 'git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git',
-                       'HCP-D': 'git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git',
-                       'ABCD': 'git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git'}
-        dataset_dir = {'HCP-YA': path.join(base_dataset_dir, 'HCP1200'),
-                       'HCP-A': path.join(base_dataset_dir, 'original', 'hcp', 'hcp_aging'),
-                       'HCP-D': path.join(base_dataset_dir, 'original', 'hcp', 'hcp_development'),
-                       'ABCD': path.join(base_dataset_dir, 'original', 'abcd', 'abcd-hcp-pipeline')}
-        if self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
-            source = 'inm7-storage'
-        else:
-            source = None
-        
-        dl.install(path=base_dataset_dir, source=dataset_url[self.inputs.dataset], on_failure='stop')
-        dl.get(path=dataset_dir[self.inputs.dataset], dataset=base_dataset_dir, get_data=False, source=source,
-               on_failure='stop')  
-
-        self._results['dataset_dir'] = dataset_dir[self.inputs.dataset]
-
-        return runtime
-
-### InitSubData: install and get subject-specific data
-
-class _InitSubDataInputSpec(BaseInterfaceInputSpec):
-    dataset = traits.Str(desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
-    dataset_dir = traits.Str(desc='absolute path to installed dataset directory')
     subject = traits.Str(desc='subject ID')
 
-class _InitSubDataOutputSpec(TraitedSpec):
+class _InitDataOutputSpec(TraitedSpec):
     rs_dir = traits.Str(desc='absolute path to installed subject MNINonLinear directory')
     anat_dir = traits.Str(desc='absolute path to installed subject T1w directory')
     rs_runs = traits.List(desc='resting-state run names')
@@ -61,29 +25,43 @@ class _InitSubDataOutputSpec(TraitedSpec):
     t_files = traits.Dict({}, dtype=str, usedefault=True, desc='filenames of task fMRI data')
     anat_files = traits.Dict(dtype=str, desc='filenames of anatomical data')
     hcpd_b_runs = traits.Int(desc='number of HCP-D b runs')
+    dataset_dir = traits.Str(desc='absolute path to installed root dataset')
 
-class InitSubData(SimpleInterface):
-    input_spec = _InitSubDataInputSpec
-    output_spec = _InitSubDataOutputSpec
+class InitData(SimpleInterface):
+    input_spec = _InitDataInputSpec
+    output_spec = _InitDataOutputSpec
 
     def _run_interface(self, runtime):
+        self._results['dataset_dir'] = path.join(self.inputs.work_dir, self.inputs.subject)
+        dataset_url = {'HCP-YA': 'git@github.com:datalad-datasets/human-connectome-project-openaccess.git',
+                       'HCP-A': 'git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git',
+                       'HCP-D': 'git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git',
+                       'ABCD': 'git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git'}
+        dataset_dirs = {'HCP-YA': path.join(self._results['dataset_dir'], 'HCP1200'),
+                        'HCP-A': path.join(self._results['dataset_dir'], 'original', 'hcp', 'hcp_aging'),
+                        'HCP-D': path.join(self._results['dataset_dir'], 'original', 'hcp', 'hcp_development'),
+                        'ABCD': path.join(self._results['dataset_dir'], 'original', 'abcd', 'abcd-hcp-pipeline')}
+        dataset_dir = dataset_dirs[self.inputs.dataset]
+
         if self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
             source = 'inm7-storage'
         else:
             source = None
 
-        subject_dir = path.join(self.inputs.dataset_dir, self.inputs.subject)
-        dl.get(path=subject_dir, dataset=self.inputs.dataset_dir, get_data=False, source=source, on_failure='stop')
+        # install datasets
+        dl.install(path=self._results['dataset_dir'], source=dataset_url[self.inputs.dataset], on_failure='stop')
+        dl.get(path=dataset_dir, dataset=self._results['dataset_dir'], get_data=False, source=source, on_failure='stop')
+        subject_dir = path.join(dataset_dir, self.inputs.subject)
+        dl.get(path=subject_dir, dataset=dataset_dir, get_data=False, source=source, on_failure='stop')
 
         if 'HCP' in self.inputs.dataset:
             move_file = {'HCP-YA': 'Movement_Regressors.txt', 'HCP-A': 'Movement_Regressors_hp0_clean.txt',
                          'HCP-D': 'Movement_Regressors_hp0_clean.txt'}
 
             self._results['rs_dir'] = path.join(subject_dir, 'MNINonLinear')
-            dl.get(path=self._results['rs_dir'], dataset=self.inputs.dataset_dir, get_data=False, source=source, 
-                   on_failure='stop')
+            dl.get(path=self._results['rs_dir'], dataset=dataset_dir, get_data=False, source=source, on_failure='stop')
             anat_dir = path.join(subject_dir, 'T1w')
-            dl.get(path=anat_dir, dataset=self.inputs.dataset_dir, get_data=False, source=source, on_failure='stop')
+            dl.get(path=anat_dir, dataset=dataset_dir, get_data=False, source=source, on_failure='stop')
 
             # check rfMRI data
             runs = {'HCP-YA': ['rfMRI_REST1_LR', 'rfMRI_REST1_RL', 'rfMRI_REST2_LR', 'rfMRI_REST2_RL'],
@@ -187,24 +165,6 @@ class InitSubData(SimpleInterface):
 
         return runtime
 
-### InitFeatures: download extracted features if necessory
-
-class _InitFeaturesInputSpec(BaseInterfaceInputSpec):
-    features_dir = traits.Dict(dtype=str, desc='absolute path to extracted features for each dataset')
-
-class _InitFeaturesOutputSpec(TraitedSpec):
-    sublists = traits.Dict(dtype=list, desc='list of subjects available in each dataset')
-
-class InitFeatures(SimpleInterface):
-    input_spec = _InitFeaturesInputSpec
-    output_spec = _InitFeaturesOutputSpec
-
-    def _run_interface(self, runtime):
-        for dataset in self.inputs.features_dir:
-            feature_dir = self.inputs.features_dir[dataset]
-
-        return runtime
-
 ### SaveFeatures: save extracted features
 class _SaveFeaturesInputSpec(BaseInterfaceInputSpec):
     rsfc = traits.Dict(dtype=float, desc='resting-state functional connectivity')
@@ -262,34 +222,37 @@ class SaveFeatures(SimpleInterface):
 
         return runtime
 
+### InitFeatures: find subjects with extracted features
+
+class _InitFeaturesInputSpec(BaseInterfaceInputSpec):
+    features_dir = traits.Dict(dtype=str, desc='absolute path to extracted features for each dataset')
+
+class _InitFeaturesOutputSpec(TraitedSpec):
+    sublists = traits.Dict(dtype=list, desc='list of subjects available in each dataset')
+
+class InitFeatures(SimpleInterface):
+    input_spec = _InitFeaturesInputSpec
+    output_spec = _InitFeaturesOutputSpec
+
+    def _run_interface(self, runtime):
+        self._results['sublists'] = dict.fromkeys(self.inputs.features_dir)
+        for dataset in self.inputs.features_dir:
+            features_files = listdir(self.inputs.features_dir[dataset])
+            self._results['sublists'][dataset] = [file.rstrip('.h5') for file in features_files]
+
+        return runtime
+
 ### DropSubjectData: drop subject-wise data after feature extraction is done
 
 class _DropSubDataInputSpec(BaseInterfaceInputSpec):
-    rs_dir = traits.Str(desc='absolute path to installed subject MNINonLinear directory')  
-    rs_files = traits.Dict(dtype=str, desc='filenames of resting-state data')
-    t_files = traits.Dict(dtype=str, desc='filenames of task fMRI data')
-    anat_dir = traits.Str(desc='absolute path to installed subject T1w directory')
-    anat_files = traits.Dict(dtype=str, desc='filenames of anatomical data')
     sub_done = traits.Bool(False, usedefault=True, desc='whether subject workflow is completed')
+    dataset_dir = traits.Str(desc='absolute path to installed root dataset')
 
 class DropSubData(SimpleInterface):
     input_spec = _DropSubDataInputSpec
 
     def _run_interface(self, runtime):
         if self.inputs.sub_done:
-            for key in self.inputs.rs_files:
-                if self.inputs.rs_files[key] != '':
-                    dl.drop(path=self.inputs.rs_files[key], dataset=self.inputs.rs_dir, on_failure='stop')
-            
-            for key in self.inputs.t_files:
-                if self.inputs.t_files[key] != '':
-                    dl.drop(path=self.inputs.t_files[key], dataset=self.inputs.rs_dir, on_failure='stop')
-
-            for key in self.inputs.anat_files:
-                if self.inputs.anat_files[key] != '':
-                    if key == 't1_vol' or key == 'myelin_l' or key == 'myelin_r':
-                        dl.drop(path=self.inputs.anat_files[key], dataset=self.inputs.rs_dir, on_failure='stop')
-                    else:
-                        dl.drop(path=self.inputs.anat_files[key], dataset=self.inputs.anat_dir, on_failure='stop')
+            dl.remove(dataset=self.inputs.dataset_dir, reckless='kill', on_failure='continue')
 
         return runtime
