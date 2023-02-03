@@ -4,6 +4,7 @@ import nibabel as nib
 import pandas as pd
 import subprocess
 from os import path, environ
+import pathlib
 import logging
 
 from nipype.interfaces import fsl, freesurfer
@@ -36,7 +37,6 @@ class RSFC(SimpleInterface):
                                  'level3': np.array([]), 'level4': np.array([])}
         self._results['dfc'] = {'level1': np.array([]), 'level2': np.array([]),
                                 'level3': np.array([]), 'level4': np.array([])}
-        runs_exist = np.array([])
 
         n_runs = len(self.inputs.rs_runs) + self.inputs.hcpd_b_runs
         for i in range(n_runs):
@@ -50,17 +50,11 @@ class RSFC(SimpleInterface):
                 key_vol = f'{run}_vol'
 
             if self.inputs.rs_files[key_surf] and self.inputs.rs_files[key_vol]:
-                runs_exist = np.concatenate([runs_exist, [run]], axis=0)
                 t_surf = nib.load(self.inputs.rs_files[key_surf]).get_fdata()
                 t_vol = nib.load(self.inputs.rs_files[key_vol]).get_fdata()          
                 self._results['rsfc'], self._results['dfc'] = fc(t_surf, t_vol, self.inputs.dataset, run,
                                                                  self.inputs.rs_files, self._results['rsfc'], 
                                                                  self._results['dfc'])
-
-        for level in range(4):
-            key = f'level{level+1}'
-            self._results['rsfc'][key] = np.divide(self._results['rsfc'][key], len(runs_exist))
-            self._results['dfc'][key] = np.divide(self._results['dfc'][key], len(runs_exist))
                     
         return runtime
 
@@ -87,7 +81,7 @@ class NetworkStats(SimpleInterface):
                                      'level4_participation': np.array([]), 'level4_efficiency': np.array([])}
 
         for level in range(4):
-            rsfc = self.inputs.rsfc[f'level{level+1}']
+            rsfc = self.inputs.rsfc[f'level{level+1}'].mean(axis=2)
             strength = bct.strengths_und(rsfc)
             betweenness = bct.betweenness_wei(rsfc)
             participation = bct.participation_coef(rsfc, bct.community_louvain(rsfc, B='negative_sym')[0])
@@ -116,22 +110,15 @@ class TFC(SimpleInterface):
     output_spec = _TFCOutputSpec
 
     def _run_interface(self, runtime):
-        self._results['tfc'] = {}
+        self._results['tfc'] = {'level1': np.array([]), 'level2': np.array([]),
+                                'level3': np.array([]), 'level4': np.array([])}
 
         for run in self.inputs.t_runs:
-            key = run[:-3]
-            self._results['tfc'][key] = {'level1': np.array([]), 'level2': np.array([]),
-                                         'level3': np.array([]), 'level4': np.array([])}
             if self.inputs.t_files[f'{run}_surf'] and self.inputs.t_files[f'{run}_vol']:
                 t_surf = nib.load(self.inputs.t_files[f'{run}_surf']).get_fdata()
                 t_vol = nib.load(self.inputs.t_files[f'{run}_vol']).get_fdata()          
-                self._results['tfc'][key], _ = fc(t_surf, t_vol, self.inputs.dataset, run, self.inputs.t_files, 
-                                                  self._results['tfc'][key])
-                                        
-        for key in self._results['tfc']:
-            if self.inputs.dataset == 'HCP-YA' or (self.inputs.dataset == 'HCP-D' and not key == 'tfMRI_EMOTION'):
-                for key_level in self._results['tfc'][key]:
-                    self._results['tfc'][key][key_level] = np.divide(self._results['tfc'][key][key_level], 2)
+                self._results['tfc'], _ = fc(t_surf, t_vol, self.inputs.dataset, run, self.inputs.t_files, 
+                                             self._results['tfc'])
 
         return runtime
 
@@ -245,4 +232,34 @@ class Morphometry(SimpleInterface):
             self._results['morph'][f'level{level+1}_GMV'] = np.concatenate((stats_surf['GrayVol'].values, 
                                                             stats_vol['Volume_mm3'].values))
                                     
+        return runtime
+
+### Phenotype: extract phenotype and confounds
+
+class _PhenotypeInputSpec(BaseInterfaceInputSpec):
+    sublists = traits.Dict(dtype=list, desc='list of subjects available in each dataset')
+    phenotype_dir = traits.Dict(dtype=str, desc='absolute path to phenotype directory for each dataset')
+
+class _PhenotypeOutputSpec(TraitedSpec):
+    phenotypes = traits.Dict(desc='phenotype and confound values from subjects in sublists')
+
+class Phenotype(SimpleInterface):
+    input_spec = _PhenotypeInputSpec
+    output_spec = _PhenotypeOutputSpec
+
+    def _run_interface(self, runtime):
+        col_names = {'HCP-YA unres': ['Subject', 'Gender', 'FS_BrainSeg_Vol', 'FS_IntraCranial_Vol'],
+                     'HCP-YA res': ['Subject', 'Age_in_Yrs', 'Handedness']}        
+        self._results['phenotypes'] = pd.DataFrame()
+
+        for dataset in self.inputs.sublists:
+            if dataset == 'HCP-YA':
+                unres_file = sorted(pathlib.Path(self.inputs.phenotype_dir[dataset]).glob('unrestricted_*.csv'))[0]
+                res_file = sorted(pathlib.Path(self.inputs.phenotype_dir[dataset]).glob('RESTRICTED_*.csv'))[0]
+                unres_conf = pd.read_csv(unres_file, usecols=col_names['HCP-YA unres'])
+                res_conf = pd.read_csv(res_file, usecols=col_names['HCP-YA res'])
+                hcp_conf = unres_conf.join(res_conf.set_index('Subject'), on='Subject', how='inner').dropna()
+                
+
+
         return runtime

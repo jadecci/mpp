@@ -13,7 +13,7 @@ logging.getLogger('datalad').setLevel(logging.WARNING)
 
 def fc(t_surf, t_vol, dataset, run, func_files, sfc_dict, dfc_dict=None):
     if 'HCP' in dataset:
-        conf = nuisance_conf_HCP(t_vol, func_files['wm_mask'], func_files[f'{run}_movement'])
+        conf = nuisance_conf_HCP(t_vol, func_files['atlas_mask'])
     regressors = np.concatenate([zscore(conf), np.ones((conf.shape[0], 1)), 
                                  np.linspace(-1, 1, num=conf.shape[0]).reshape((conf.shape[0], 1))], axis=1)
     t_surf_resid = t_surf - np.dot(regressors, np.linalg.lstsq(regressors, t_surf, rcond=-1)[0])
@@ -54,44 +54,54 @@ def fc(t_surf, t_vol, dataset, run, func_files, sfc_dict, dfc_dict=None):
                - np.log(1 - sfc, where=~np.eye(sfc.shape[0], dtype=bool)))) # Fisher's z
         sfc[np.diag_indices_from(sfc)] = 0
         if sfc_dict[key].size:
-            sfc_dict[key] = sfc_dict[key] + sfc
+            sfc_dict[key] = np.dstack((sfc_dict[key], sfc))
         else:
             sfc_dict[key] = sfc
 
-        # dynamic FC (optional)
+        # dynamic FC (optional): 1st order ARR model
+        # see https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/fMRI_dynamics/Liegeois2017_Surrogates/CBIG_RL2017_ar_mls.m
         if not dfc_dict == None:
             y = tavg[:, range(1, tavg.shape[1])]
             z = np.ones((tavg.shape[0]+1, tavg.shape[1]-1))
             z[1:(tavg.shape[0]+1), :] = tavg[:, range(tavg.shape[1]-1)]
             b = np.linalg.lstsq((z @ z.T).T, (y @ z.T).T, rcond=None)[0].T
             if dfc_dict[key].size:
-                dfc_dict[key] = dfc_dict[key] + b[:, range(1, b.shape[1])]
+                dfc_dict[key] = np.dstack((dfc_dict[key], b[:, range(1, b.shape[1])]))
             else:
                 dfc_dict[key] = b[:, range(1, b.shape[1])]
 
     return sfc_dict, dfc_dict
 
 
-def nuisance_conf_HCP(t_vol, atlas_file, motion_file):
+def nuisance_conf_HCP(t_vol, atlas_file):
+    # Atlas labels follow FreeSurferColorLUT 
+    # see https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/AnatomicalROI/FreeSurferColorLUT
     csf_code = np.array([4, 5, 14, 15, 24, 31, 43, 44, 63, 250, 251, 252, 253, 254, 255]) - 1
     data = t_vol.reshape((t_vol.shape[0]*t_vol.shape[1]*t_vol.shape[2], t_vol.shape[3]))
     atlas = nib.load(atlas_file).get_fdata()
     atlas = atlas.reshape((data.shape[0]))
 
-    # WM & CSF confounds
+    # gloabl signals
+    global_signal = data[np.where(atlas != 0)[0], :].mean(axis=0)
+    global_diff = np.diff(global_signal, prepend=global_signal[0])
+
+    # WM signals
     wm_ind = np.where(atlas >= 3000)[0]
     wm_mask = np.zeros(atlas.shape)
     wm_mask[wm_ind] = 1
     wm_mask = binary_erosion(wm_mask).reshape((atlas.shape))
     wm_signal = data[np.where(wm_mask == 1)[0], :].mean(axis=0)
     wm_diff = np.diff(wm_signal, prepend=wm_signal[0])
+
+    # CSF signals
     csf_signal = data[[i for i in range(len(atlas)) if atlas[i] in csf_code]].mean(axis=0)
     csf_diff = np.diff(csf_signal, prepend=csf_signal[0])
 
-    # motion parameters
-    motion = pd.read_table(motion_file, sep='  ', header=None, engine='python')
-    motion = motion.join(np.power(motion, 2), lsuffix='motion', rsuffix='motion2')
+    # We will not regress out motion parameters for FIX denoised data
+    # see https://www.mail-archive.com/hcp-users@humanconnectome.org/msg02957.html
+    # motion = pd.read_table(motion_file, sep='  ', header=None, engine='python')
+    # motion = motion.join(np.power(motion, 2), lsuffix='motion', rsuffix='motion2')
 
-    conf = motion.assign(wm=wm_signal).assign(wmdiff=wm_diff).assign(csf=csf_signal).assign(csfdiff=csf_diff)
+    conf = np.vstack((global_signal, global_diff, wm_signal, wm_diff, csf_signal, csf_diff)).T
 
     return conf

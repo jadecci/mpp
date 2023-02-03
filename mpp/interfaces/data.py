@@ -55,9 +55,6 @@ class InitData(SimpleInterface):
         dl.get(path=subject_dir, dataset=dataset_dir, get_data=False, source=source, on_failure='stop')
 
         if 'HCP' in self.inputs.dataset:
-            move_file = {'HCP-YA': 'Movement_Regressors.txt', 'HCP-A': 'Movement_Regressors_hp0_clean.txt',
-                         'HCP-D': 'Movement_Regressors_hp0_clean.txt'}
-
             self._results['rs_dir'] = path.join(subject_dir, 'MNINonLinear')
             dl.get(path=self._results['rs_dir'], dataset=dataset_dir, get_data=False, source=source, on_failure='stop')
             anat_dir = path.join(subject_dir, 'T1w')
@@ -68,7 +65,7 @@ class InitData(SimpleInterface):
                     'HCP-A': ['rfMRI_REST1_AP', 'rfMRI_REST1_PA', 'rfMRI_REST2_AP', 'rfMRI_REST2_PA'],
                     'HCP-D': ['rfMRI_REST1_AP', 'rfMRI_REST1_PA', 'rfMRI_REST2_AP', 'rfMRI_REST2_PA']}
             self._results['rs_runs'] = runs[self.inputs.dataset]
-            self._results['rs_files'] = {'wm_mask': path.join(subject_dir, 'MNINonLinear', 'ROIs', 
+            self._results['rs_files'] = {'atlas_mask': path.join(subject_dir, 'MNINonLinear', 'ROIs', 
                                                               'Atlas_wmparc.2.nii.gz')}
 
             for i in range(4):
@@ -77,7 +74,6 @@ class InitData(SimpleInterface):
                 self._results['rs_files'][f'{run}_surf'] = path.join(run_dir, 
                                                                      f'{run}_Atlas_MSMAll_hp0_clean.dtseries.nii')
                 self._results['rs_files'][f'{run}_vol'] = path.join(run_dir, f'{run}_hp0_clean.nii.gz')
-                self._results['rs_files'][f'{run}_movement'] = path.join(run_dir, move_file[self.inputs.dataset])
             
             self._results['hcpd_b_runs'] = 0
             for key in self._results['rs_files']:
@@ -107,7 +103,7 @@ class InitData(SimpleInterface):
                     'HCP-D': ['tfMRI_CARIT_AP', 'tfMRI_CARIT_PA', 'tfMRI_EMOTION_PA', 'tfMRI_GUESSING_AP',
                                 'tfMRI_GUESSING_PA']}
             self._results['t_runs'] = runs[self.inputs.dataset]
-            self._results['t_files'] = {'wm_mask': path.join(subject_dir, 'MNINonLinear', 'ROIs', 
+            self._results['t_files'] = {'atlas_mask': path.join(subject_dir, 'MNINonLinear', 'ROIs', 
                                                             'Atlas_wmparc.2.nii.gz')}
 
             for run in runs[self.inputs.dataset]:
@@ -119,7 +115,8 @@ class InitData(SimpleInterface):
                     self._results['t_files'][f'{run}_surf'] = path.join(run_dir, 
                                                                 f'{run}_Atlas_MSMAlll_hp0_clean.dtseries.nii')
                     self._results['t_files'][f'{run}_vol'] = path.join(run_dir, f'{run}_hp0_clean.nii.gz')
-                self._results['t_files'][f'{run}_movement'] = path.join(run_dir,  move_file[self.inputs.dataset])
+                #self._results['t_files'][f'{run}_movement'] = path.join(run_dir,  move_file[self.inputs.dataset])
+                #self._results['t_files'][f'{run}_fd'] = path.join(run_dir, fd_file[self.inputs.dataset])
 
             for key in self._results['t_files']:
                 if path.islink(self._results['t_files'][key]):
@@ -206,7 +203,7 @@ class SaveFeatures(SimpleInterface):
             if self.inputs.tfc:
                 for key in self.inputs.tfc:
                     ds_tfc = f'/tfc/{key}/level{level+1}'
-                    data_tfc = self.inputs.tfc[key][f'level{level+1}']
+                    data_tfc = self.inputs.tfc[f'level{level+1}']
                     write_h5(output_file, ds_tfc, data_tfc, self.inputs.overwrite)
 
             for stats in ['GMV', 'CS', 'CT']:
