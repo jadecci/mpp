@@ -26,18 +26,20 @@ def main():
 
     sublist = pd.read_csv(args.sublist, header=None, squeeze=True)
     for subject in sublist:
-        subject_wf = init_subject_wf(args.dataset, subject, args.work_dir, args.output_dir, args.overwrite)
-        subject_wf.config['execution']['try_hard_link_datasink'] = 'false'
-        subject_wf.config['execution']['crashfile_format'] = 'txt'
-        subject_wf.config['execution']['stop_on_first_crash'] = 'true'
-        subject_wf.config['monitoring']['enabled'] = 'true'
+        output_file = path.join(args.output_dir, f'{args.dataset}_{subject}.h5')
+        if not path.isfile(output_file) or args.overwrite:
+            subject_wf = init_subject_wf(args.dataset, subject, args.work_dir, args.output_dir, args.overwrite)
+            subject_wf.config['execution']['try_hard_link_datasink'] = 'false'
+            subject_wf.config['execution']['crashfile_format'] = 'txt'
+            subject_wf.config['execution']['stop_on_first_crash'] = 'true'
+            subject_wf.config['monitoring']['enabled'] = 'true'
 
-        subject_wf.write_graph()
-        if args.condordag:
-            subject_wf.run(plugin='CondorDAGMan', plugin_args={'dagman_args': f'-outfile_dir {args.work_dir}',
-                                                               'wrapper_cmd': args.wrapper})
-        else:
-            subject_wf.run()
+            subject_wf.write_graph()
+            if args.condordag:
+                subject_wf.run(plugin='CondorDAGMan', plugin_args={'dagman_args': f'-outfile_dir {args.work_dir}',
+                                                                'wrapper_cmd': args.wrapper})
+            else:
+                subject_wf.run()
                                                   
 def init_subject_wf(dataset, subject, work_dir, output_dir, overwrite):
     subject_wf = pe.Workflow(f'subject_{subject}_wf', base_dir=work_dir)
