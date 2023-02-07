@@ -1,10 +1,11 @@
-from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, File, traits
+import pandas as pd
+from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 import datalad.api as dl
 from os import path, listdir
-from pathlib import Path
+import pathlib
 import logging
 
-from mpp.utilities.data import write_h5
+from mpp.utilities.data import write_h5, pheno_HCP
 
 base_dir = path.join(path.dirname(path.realpath(__file__)), '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)
@@ -25,6 +26,7 @@ class _InitDataOutputSpec(TraitedSpec):
     t_files = traits.Dict({}, dtype=str, usedefault=True, desc='filenames of task fMRI data')
     anat_files = traits.Dict(dtype=str, desc='filenames of anatomical data')
     hcpd_b_runs = traits.Int(desc='number of HCP-D b runs')
+    hcpad_astats = traits.File(desc='aseg.stats file for HCP-A and HCP-D brain volume computation')
     dataset_dir = traits.Str(desc='absolute path to installed root dataset')
 
 class InitData(SimpleInterface):
@@ -108,13 +110,8 @@ class InitData(SimpleInterface):
 
             for run in runs[self.inputs.dataset]:
                 run_dir = path.join(subject_dir, 'MNINonLinear', 'Results', run)
-                if self.inputs.dataset == 'HCP-YA':
-                    self._results['t_files'][f'{run}_surf'] = path.join(run_dir, f'{run}_Atlas_MSMAll.dtseries.nii')
-                    self._results['t_files'][f'{run}_vol'] = path.join(run_dir, f'{run}.nii.gz')
-                elif self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
-                    self._results['t_files'][f'{run}_surf'] = path.join(run_dir, 
-                                                                f'{run}_Atlas_MSMAlll_hp0_clean.dtseries.nii')
-                    self._results['t_files'][f'{run}_vol'] = path.join(run_dir, f'{run}_hp0_clean.nii.gz')
+                self._results['t_files'][f'{run}_surf'] = path.join(run_dir, f'{run}_Atlas_MSMAll.dtseries.nii')
+                self._results['t_files'][f'{run}_vol'] = path.join(run_dir, f'{run}.nii.gz')
                 #self._results['t_files'][f'{run}_movement'] = path.join(run_dir,  move_file[self.inputs.dataset])
                 #self._results['t_files'][f'{run}_fd'] = path.join(run_dir, fd_file[self.inputs.dataset])
 
@@ -154,11 +151,19 @@ class InitData(SimpleInterface):
                 else:
                     self._results['anat_files'][key] = ''
 
+            # check and get aseg.stats
+            if self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
+                self._results['hcpad_astats'] = path.join(anat_dir, 'stats', 'aseg.stats')
+                if path.islink(self._results['hcpad_astats']):
+                    dl.get(path=self._results['hcpad_astats'], dataset=self._results['anat_dir'], source=source,
+                           on_failure='stop')
+
         # get rfMRI data
         for key in self._results['rs_files']:
             if self._results['rs_files'][key] != '':
                 dl.get(path=self._results['rs_files'][key], dataset=self._results['rs_dir'], source=source, 
                        on_failure='stop')
+
 
         return runtime
 
@@ -183,7 +188,7 @@ class SaveFeatures(SimpleInterface):
     output_spec = _SaveFeaturesOutputSpec
 
     def _run_interface(self, runtime):
-        Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
         output_file = path.join(self.inputs.output_dir, f'{self.inputs.dataset}_{self.inputs.subject}.h5')
 
         for level in range(4):
@@ -219,23 +224,34 @@ class SaveFeatures(SimpleInterface):
 
         return runtime
 
-### InitFeatures: find subjects with extracted features
+### InitFeatures: find subjects with extracted features and available phenotype data
 
 class _InitFeaturesInputSpec(BaseInterfaceInputSpec):
     features_dir = traits.Dict(dtype=str, desc='absolute path to extracted features for each dataset')
+    phenotype = traits.Str(desc='phenotype to use as prediction target')
 
 class _InitFeaturesOutputSpec(TraitedSpec):
     sublists = traits.Dict(dtype=list, desc='list of subjects available in each dataset')
+    confounds = traits.Dict(dtype=dict, desc='confound values from subjects in sublists')
+    phenotypes = traits.Dict(dtype=list, desc='phenotype values from subjects in sublists')
 
 class InitFeatures(SimpleInterface):
     input_spec = _InitFeaturesInputSpec
     output_spec = _InitFeaturesOutputSpec
 
     def _run_interface(self, runtime):
-        self._results['sublists'] = dict.fromkeys(self.inputs.features_dir)
+        self._results['sublists'] = dict.fromkeys(self.inputs.features_dir)      
+        self._results['confounds'] = {}
+        self._results['phenotypes'] = {}
+
         for dataset in self.inputs.features_dir:
             features_files = listdir(self.inputs.features_dir[dataset])
-            self._results['sublists'][dataset] = [file.rstrip('.h5') for file in features_files]
+            if dataset == 'HCP-A' or 'HCP-D':
+                sublist = [file.rstrip('_V1_MR.h5').lstrip(dataset).lstrip('_') for file in features_files]
+            else:
+                sublist = [file.rstrip('.h5').lstrip(dataset).lstrip('_') for file in features_files]
+            sublist, pheno_dict = pheno_HCP(dataset, self.inputs.phenotype_dir[dataset], self.inputs.phenotype, sublist, 
+                                            pheno_dict)
 
         return runtime
 

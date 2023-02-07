@@ -7,14 +7,15 @@ setup(
     package_data={'mpp': ['data/**']},
     python_requires='>=3.7, <4',
     install_requires=[
-        'nipype==1.8.5',
-        'datalad==0.17.7',
-        'h5py==3.7.0',
-        'nibabel==4.0.2',
-        'numpy==1.21.6',
-        'pandas==1.3.5',
-        'scipy==1.7.3',
-        'bctpy==0.5.2',
+        'nipype>=1.8.5',
+        'datalad>=0.17.7',
+        'h5py>=3.7.0',
+        'nibabel>=4.0.2',
+        'numpy>=1.21.6',
+        'pandas>=1.3.5',
+        'scipy>=1.7.3',
+        'scikit-learn>=1.0.2'
+        'bctpy>=0.5.2',
         'psutil>=5.0',
     ],
     entry_points={

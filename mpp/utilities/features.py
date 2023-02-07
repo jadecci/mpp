@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import nibabel as nib
 from os import path
+import pathlib
 import sys
 import logging
 
@@ -105,3 +106,41 @@ def nuisance_conf_HCP(t_vol, atlas_file):
     conf = np.vstack((global_signal, global_diff, wm_signal, wm_diff, csf_signal, csf_diff)).T
 
     return conf
+
+def pheno_conf_HCP(dataset, pheno_dir, sublist, conf_dict):
+    # primary vairables
+    if dataset == 'HCP-YA':
+        unres_file = sorted(pathlib.Path(pheno_dir).glob('unrestricted_*.csv'))[0]
+        res_file = sorted(pathlib.Path(pheno_dir).glob('RESTRICTED_*.csv'))[0]
+        unres_conf = pd.read_csv(unres_file, usecols=['Subject', 'Gender', 'FS_BrainSeg_Vol', 'FS_IntraCranial_Vol'],
+                                 dtype={'Subject': str, 'Gender': str, 'FS_BrainSeg_Vol': float, 
+                                        'FS_IntraCranial_Vol': float})
+        res_conf = pd.read_csv(res_file, usecols=['Subject', 'Age_in_Yrs', 'Handedness'],
+                               dtype={'Subject': str, 'Age_in_Yrs': int, 'Handedness': int})
+        conf = unres_conf.merge(res_conf, on='Subject', how='inner').dropna()
+        conf = conf['Subject', 'Age_in_Yrs', 'Gender', 'Handedness', 'FS_BrainSeg_Vol', 'FS_IntraCranial_Vol']
+
+    elif dataset == 'HCP-A' or dataset == 'HCP-D':
+        conf = pd.read_table(path.join(pheno_dir, 'ssaga_cover_demo01.txt'), sep='\t', header=0, skiprows=[1], 
+                             usecols=[4, 5, 7], dtype={'src_subject_id': str, 'interview_age': int, 'sex': str})
+        conf = conf.merge(pd.read_table(path.join(pheno_dir, 'edinburgh_hand01.txt'), sep='\t', header=0, skiprows=[1],
+                                        usecols=[5, 70], dtype={'src_subject_id': str, 'hcp_handedness_score': int}),
+                                        on='src_subject_id', how='inner')
+        # add brain vol and ICV measures later: see fc-behaviour-prediction/data_proc/volstats_HCPA.sh
+        conf = conf['src_subject_id', 'interview_age', 'sex', 'hcp_handedness_score', '', '']
+
+    conf.columns = ['subject', 'age', 'gender', 'handedness', 'brainseg_vol', 'icv_vol']   
+    conf = conf.dropna().drop_duplicates(subset='subject') 
+    conf = conf[conf['subject'].isin(sublist)]
+
+    # secondary variables
+    conf['age2'] = np.power(conf['age'], 2)
+    conf['ageGender'] = conf['age'] * conf['gender']
+    conf['age2Gender'] = conf['age2'] * conf['gender']
+    # gender coding: 1 for Female, 2 for Male
+    conf['gender'] = [1 if item == 'F' else 2 for item in conf['gender']]
+
+    sublist = conf['subject'].to_list()
+    conf_dict = conf.set_index('subject').to_dict()
+
+    return sublist, conf_dict

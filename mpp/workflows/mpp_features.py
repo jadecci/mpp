@@ -7,7 +7,7 @@ import nipype.pipeline as pe
 from nipype.interfaces import utility as niu
 
 from mpp.interfaces.data import InitData, SaveFeatures, DropSubData
-from mpp.interfaces.features import RSFC, NetworkStats, TFC, MyelinEstimate, Morphometry
+from mpp.interfaces.features import RSFC, NetworkStats, TFC, MyelinEstimate, Morphometry, BrainVol
 
 base_dir = path.join(path.dirname(path.realpath(__file__)), '..', '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)
@@ -73,6 +73,11 @@ def init_subject_wf(dataset, subject, work_dir, output_dir, overwrite):
                                                ('t_runs', 'inputnode.t_runs'),
                                                ('t_files', 'inputnode.t_files')]),
                             (t_wf, save_features, [('outputnode.tfc', 'tfc')])])
+
+    # extract brain volumes for HCP-A and HCP-D subjects
+    if dataset == 'HCP-A' or dataset == 'HCP-D':
+        brainvol = pe.Node(BrainVol(output_dir=output_dir, subject=subject, dataset=dataset), name='brainvol')
+        subject_wf.connect([(init_data, brainvol, [('hcpad_astats', 'hcpad_astats')])])
 
     return subject_wf 
 
