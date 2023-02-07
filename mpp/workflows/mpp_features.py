@@ -74,6 +74,11 @@ def init_subject_wf(dataset, subject, work_dir, output_dir, overwrite):
                                                ('t_files', 'inputnode.t_files')]),
                             (t_wf, save_features, [('outputnode.tfc', 'tfc')])])
 
+    # extract brain volumes for HCP-A and HCP-D subjects
+    if dataset == 'HCP-A' or dataset == 'HCP-D':
+        brainvol = pe.Node(BrainVol(output_dir=output_dir, subject=subject, dataset=dataset), name='brainvol')
+        subject_wf.connect([(init_data, brainvol, [('hcpad_astats', 'hcpad_astats')])])
+
     return subject_wf 
 
 def init_rs_wf(dataset, subject):

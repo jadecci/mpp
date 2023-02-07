@@ -28,6 +28,7 @@ class _InitDataOutputSpec(TraitedSpec):
     t_files = traits.Dict({}, dtype=str, usedefault=True, desc='filenames of task fMRI data')
     anat_files = traits.Dict(dtype=str, desc='filenames of anatomical data')
     hcpd_b_runs = traits.Int(desc='number of HCP-D b runs')
+    hcpad_astats = traits.File(desc='aseg.stats file for HCP-A and HCP-D brain volume computation')
     dataset_dir = traits.Str(desc='absolute path to installed root dataset')
 
 class InitData(SimpleInterface):
