@@ -7,7 +7,7 @@ import nipype.pipeline as pe
 from nipype.interfaces import utility as niu
 
 from mpp.interfaces.data import InitData, SaveFeatures, DropSubData
-from mpp.interfaces.features import RSFC, NetworkStats, TFC, MyelinEstimate, Morphometry
+from mpp.interfaces.features import RSFC, NetworkStats, TFC, MyelinEstimate, Morphometry, BrainVol
 
 base_dir = path.join(path.dirname(path.realpath(__file__)), '..', '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)

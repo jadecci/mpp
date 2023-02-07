@@ -233,33 +233,3 @@ class Morphometry(SimpleInterface):
                                                             stats_vol['Volume_mm3'].values))
                                     
         return runtime
-
-### Phenotype: extract phenotype and confounds
-
-class _PhenotypeInputSpec(BaseInterfaceInputSpec):
-    sublists = traits.Dict(dtype=list, desc='list of subjects available in each dataset')
-    phenotype_dir = traits.Dict(dtype=str, desc='absolute path to phenotype directory for each dataset')
-
-class _PhenotypeOutputSpec(TraitedSpec):
-    phenotypes = traits.Dict(desc='phenotype and confound values from subjects in sublists')
-
-class Phenotype(SimpleInterface):
-    input_spec = _PhenotypeInputSpec
-    output_spec = _PhenotypeOutputSpec
-
-    def _run_interface(self, runtime):
-        col_names = {'HCP-YA unres': ['Subject', 'Gender', 'FS_BrainSeg_Vol', 'FS_IntraCranial_Vol'],
-                     'HCP-YA res': ['Subject', 'Age_in_Yrs', 'Handedness']}        
-        self._results['phenotypes'] = pd.DataFrame()
-
-        for dataset in self.inputs.sublists:
-            if dataset == 'HCP-YA':
-                unres_file = sorted(pathlib.Path(self.inputs.phenotype_dir[dataset]).glob('unrestricted_*.csv'))[0]
-                res_file = sorted(pathlib.Path(self.inputs.phenotype_dir[dataset]).glob('RESTRICTED_*.csv'))[0]
-                unres_conf = pd.read_csv(unres_file, usecols=col_names['HCP-YA unres'])
-                res_conf = pd.read_csv(res_file, usecols=col_names['HCP-YA res'])
-                hcp_conf = unres_conf.join(res_conf.set_index('Subject'), on='Subject', how='inner').dropna()
-                
-
-
-        return runtime

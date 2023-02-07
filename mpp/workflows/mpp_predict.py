@@ -1,21 +1,27 @@
 import pandas as pd
 from os import getcwd, path
-import argparse
+import argparse, configparser
 import logging
 
 import nipype.pipeline as pe
 from nipype.interfaces import utility as niu
 
 from mpp.interfaces.data import InitFeatures
+from mpp.interfaces.crossval import CrossValSplit
+from mpp.interfaces.features import Phenotype
 
-base_dir = path.join(path.dirname(path.realpath(__file__)), '..', '..')
+base_dir = path.join(path.dirname(path.realpath(__file__)), '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
 def main():
     parser = argparse.ArgumentParser(description='Multimodal psychometric prediction',
                 formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog, width=100))
     parser.add_argument('datasets', nargs='+', help='Datasets for cross-validation')
-    parser.add_argument('features', nargs='+', help='Absolute path to extracted features of each dataset.')
+    parser.add_argument('features', nargs='+', help='Absolute paths to extracted features of each dataset.')
+    parser.add_argument('phenotypes', nargs='+', help='Absolute paths to phenotype directory of each dataset')
+    parser.add_argument('target', type=str, help='Phenotype to use as prediction target')
+    parser.add_argument('--config', type=str, dest='config', default=path.join(base_dir, 'data', 'default.config'), 
+                        help='Custom configuration file')
     parser.add_argument('--ext_data', nargs='+', dest='ext_data', default=None, help='Dataset(s) as external test set')
     parser.add_argument('--ext_features', nargs='+', dest='ext_features', default=None,
                         help='Absolute path to extracted features of each external test set.')
@@ -26,23 +32,26 @@ def main():
     parser.add_argument('--wrapper', type=str, dest='wrapper', default='', help='wrapper script for HTCondor')
     args = parser.parse_args()
 
-    ## 
+    ## Configuration file
+    config_parse = configparser.ConfigParser()
+    config_parse.read(args.config)
+    config = {option: config_parse['USER'][option] for option in config_parse['USER']}
 
-    ## Overall workflow
+    ## Workflow nodes
     mp_wf = pe.Workflow('mp_wf', base_dir=args.work_dir)
-    init_data = pe.Node(InitFeatures(features_dir=dict(zip(args.datasets, args.features))), name='init_data')
+    init_data = pe.Node(InitFeatures(features_dir=dict(zip(args.datasets, args.features)), phenotype=args.target),
+                        name='init_data')
+    cv_split = pe.Node(CrossValSplit(config=config), name='cv_split')
+
+    ## Workflow connections
+    mp_wf.connect([(init_data, cv_split, [('sublists', 'sublists')]),
+                   (init_data, phenotype, [('sublists', 'sublists')])])
 
     ## config
     mp_wf.config['execution']['try_hard_link_datasink'] = 'false'
     mp_wf.config['execution']['crashfile_format'] = 'txt'
     mp_wf.config['execution']['stop_on_first_crash'] = 'true'
     mp_wf.config['monitoring']['enabled'] = 'true'
-
-    ## Individual subject's workflow
-    #sublist = pd.read_csv(args.sublist, header=None, squeeze=True)
-    #for subject in sublist:
-    #    subject_wf = init_subject_wf(args.dataset, subject, args.output_dir, args.overwrite)
-    #    mf_wf.connect(init_data, 'dataset_dir', subject_wf, 'inputnode.dataset_dir')
 
     mp_wf.write_graph()
     if args.condordag:
