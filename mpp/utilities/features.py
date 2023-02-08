@@ -8,11 +8,14 @@ import logging
 
 from scipy.stats import zscore
 from scipy.ndimage import binary_erosion
+from sklearn.metrics import pairwise_distances
+from mapalign.embed import compute_diffusion_map
+from statsmodels.formula.api import ols
 
 base_dir = path.join(path.dirname(path.realpath(__file__)), '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
-def fc(t_surf, t_vol, dataset, run, func_files, sfc_dict, dfc_dict=None):
+def fc(t_surf, t_vol, dataset, func_files, sfc_dict, dfc_dict=None):
     if 'HCP' in dataset:
         conf = nuisance_conf_HCP(t_vol, func_files['atlas_mask'])
     regressors = np.concatenate([zscore(conf), np.ones((conf.shape[0], 1)), 
@@ -52,7 +55,7 @@ def fc(t_surf, t_vol, dataset, run, func_files, sfc_dict, dfc_dict=None):
         # static FC 
         sfc = np.corrcoef(tavg)
         sfc = (0.5 * (np.log(1 + sfc, where=~np.eye(sfc.shape[0], dtype=bool)) 
-               - np.log(1 - sfc, where=~np.eye(sfc.shape[0], dtype=bool)))) # Fisher's z
+               - np.log(1 - sfc, where=~np.eye(sfc.shape[0], dtype=bool)))) # Fisher's z excluding diagonals
         sfc[np.diag_indices_from(sfc)] = 0
         if sfc_dict[key].size:
             sfc_dict[key] = np.dstack((sfc_dict[key], sfc))
@@ -72,7 +75,6 @@ def fc(t_surf, t_vol, dataset, run, func_files, sfc_dict, dfc_dict=None):
                 dfc_dict[key] = b[:, range(1, b.shape[1])]
 
     return sfc_dict, dfc_dict
-
 
 def nuisance_conf_HCP(t_vol, atlas_file):
     # Atlas labels follow FreeSurferColorLUT 
@@ -107,7 +109,7 @@ def nuisance_conf_HCP(t_vol, atlas_file):
 
     return conf
 
-def pheno_conf_HCP(dataset, pheno_dir, sublist, conf_dict):
+def pheno_conf_HCP(dataset, pheno_dir, features_dir, sublist, conf_dict):
     # primary vairables
     if dataset == 'HCP-YA':
         unres_file = sorted(pathlib.Path(pheno_dir).glob('unrestricted_*.csv'))[0]
@@ -126,8 +128,18 @@ def pheno_conf_HCP(dataset, pheno_dir, sublist, conf_dict):
         conf = conf.merge(pd.read_table(path.join(pheno_dir, 'edinburgh_hand01.txt'), sep='\t', header=0, skiprows=[1],
                                         usecols=[5, 70], dtype={'src_subject_id': str, 'hcp_handedness_score': int}),
                                         on='src_subject_id', how='inner')
-        # add brain vol and ICV measures later: see fc-behaviour-prediction/data_proc/volstats_HCPA.sh
-        conf = conf['src_subject_id', 'interview_age', 'sex', 'hcp_handedness_score', '', '']
+
+        brainseg_vols = []
+        icv_vols = []
+        for subject in conf['src_subject_id']:
+            astats_file = path.join(features_dir, f'{dataset}_astats', f'{subject}_V1_MR.txt')
+            aseg_stats = pd.read_csv(astats_file, sep='\t', index_col=0)
+            brainseg_vols.append(aseg_stats['BrainSegVol'][0])
+            icv_vols.append(aseg_stats['EstimatedTotalIntraCranialVol'][0])
+        conf['brainseg_vol'] = brainseg_vols
+        conf['icv_vol'] = icv_vols
+
+        conf = conf['src_subject_id', 'interview_age', 'sex', 'hcp_handedness_score', 'brainseg_vol', 'icv_vol']
 
     conf.columns = ['subject', 'age', 'gender', 'handedness', 'brainseg_vol', 'icv_vol']   
     conf = conf.dropna().drop_duplicates(subset='subject') 
@@ -144,3 +156,53 @@ def pheno_conf_HCP(dataset, pheno_dir, sublist, conf_dict):
     conf_dict.update(conf.set_index('subject').to_dict())
 
     return sublist, conf_dict
+
+def diffusion_mapping(image_features, sublist, input_key, output_key, gradients_dict, embedding=None):
+    n_parcels = image_features[sublist[0]][input_key].shape[0]
+    rsfc = np.zeros((n_parcels, n_parcels, len(sublist)))
+    for i in range(len(sublist)):
+        rsfc[:, :, i] = image_features[sublist[i]][input_key].mean(axis=2)
+
+    if embedding == None:
+        # transform by tanh and threshold RSFC at 90th percentile
+        rsfc = np.tanh(rsfc.mean(axis=2))
+        for i in range(rsfc.shape[0]):
+            rsfc[i, rsfc[i, :] < np.percentile(rsfc[i, :], 90)] = 0
+        rsfc[rsfc < 0] = 0 # there should be very few negative values after thresholding
+
+        affinity = 1 - pairwise_distances(rsfc, metric='cosine')
+        embedding = compute_diffusion_map(affinity, alpha=0.5)
+
+    for i in range(len(sublist)):
+        gradients_dict[sublist[i]][output_key] = embedding.T @ rsfc[:, :, i]
+
+    return gradients_dict, embedding
+
+def score(image_features, sublist, input_key, output_key, ac_dict, params=None):
+    # see https://github.com/katielavigne/score/blob/main/score.py
+
+    n_parcels = len(image_features[sublist[0]][input_key])
+    features = pd.DataFrame(columns=range(n_parcels), index=sublist)
+    for i in range(len(sublist)):
+        features.loc[sublist[i]] = image_features[sublist[i]][input_key]
+    features = features.join(pd.DataFrame({'mean': features.mean(axis=1)}))
+
+    ac = np.zeros((n_parcels, n_parcels, len(sublist)))
+    if params == None:
+        params = pd.DataFrame()
+        for i in range(n_parcels):
+            for j in range(n_parcels):
+                results = ols(f'features[{i}] ~ features[{2}] + mean', data=features).fit()
+                ac[i, j, :] = results.resid
+                params[f'{i}_{j}'] = results.params
+    else:
+        for i in range(n_parcels):
+            for j in range(n_parcels):
+                params_curr = params[f'{i}_{j}']
+                ac[i, j, :] = (params_curr['Intercept'] + params_curr[f'features[{j}]'] * features[j]
+                               + params_curr['mean'] * features['mean'])
+
+    for i in range(len(sublist)):
+        ac_dict[sublist[i]][output_key] = ac[:, :, i]
+
+    return ac_dict, params

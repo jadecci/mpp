@@ -8,7 +8,6 @@ from nipype.interfaces import utility as niu
 
 from mpp.interfaces.data import InitFeatures
 from mpp.interfaces.crossval import CrossValSplit
-from mpp.interfaces.features import Phenotype
 
 base_dir = path.join(path.dirname(path.realpath(__file__)), '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)
@@ -44,8 +43,7 @@ def main():
     cv_split = pe.Node(CrossValSplit(config=config), name='cv_split')
 
     ## Workflow connections
-    mp_wf.connect([(init_data, cv_split, [('sublists', 'sublists')]),
-                   (init_data, phenotype, [('sublists', 'sublists')])])
+    mp_wf.connect([(init_data, cv_split, [('sublists', 'sublists')])])
 
     ## config
     mp_wf.config['execution']['try_hard_link_datasink'] = 'false'

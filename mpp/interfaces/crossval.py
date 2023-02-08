@@ -28,11 +28,11 @@ class CrossValSplit(SimpleInterface):
         datasets = itertools.chain.from_iterable(datasets)
 
         self._results['cv_split'] = {}
-        rskf = RepeatedStratifiedKFold(n_splits=self.inputs.config['n_splits'], 
-                                       n_repeats=self.inputs.config['n_repeats'], 
+        n_folds = self.inputs.config['n_folds']
+        rskf = RepeatedStratifiedKFold(n_splits=n_folds, n_repeats=self.inputs.config['n_repeats'], 
                                        random_state=self.inputs.config['cv_seed'])
         for fold, (_, test_ind) in enumerate(rskf.split(subjects, datasets)):
-            key = f'Repeat{int(np.floor(fold/10))}Fold{int(fold%10)}'
+            key = f'repeat{int(np.floor(fold/n_folds))}_fold{int(fold%n_folds)}'
             self._results['cv_split'][key] = subjects[test_ind]
 
         return runtime

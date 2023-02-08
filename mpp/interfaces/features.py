@@ -10,7 +10,7 @@ import logging
 from nipype.interfaces import fsl, freesurfer
 import bct
 
-from mpp.utilities.features import nuisance_conf_HCP, fc
+from mpp.utilities.features import fc, diffusion_mapping, score
 
 base_dir = path.join(path.dirname(path.realpath(__file__)), '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)
@@ -232,4 +232,77 @@ class Morphometry(SimpleInterface):
             self._results['morph'][f'level{level+1}_GMV'] = np.concatenate((stats_surf['GrayVol'].values, 
                                                             stats_vol['Volume_mm3'].values))
                                     
+        return runtime
+
+### Gradient: extract gradient loadings
+
+class _GradientInputSpec(BaseInterfaceInputSpec):
+    sublists = traits.Dict(dtype=list, desc='list of subjects available in each dataset')
+    cv_split = traits.Dict(dtype=list, desc='list of subjects in the test split of each fold')
+    image_features = traits.Dict(dtype=dict, desc='previously extracted imaging features')
+    config = traits.Dict(desc='configuration settings')
+
+class _GradientOutputSpec(TraitedSpec):
+    gradients = traits.Dict(dtype=dict, desc='gradient loading features')
+
+class Gradient(SimpleInterface):
+    input_spec = _GradientInputSpec
+    output_spec = _GradientOutputSpec
+
+    def _run_interface(self, runtime):
+        all_sub = sum(self.inputs.sublists.values(), [])
+        self._results['gradients'] = dict.fromkeys(all_sub)
+
+        for repeat in self.inputs.config['n_repeats']:
+            for fold in self.inputs.config['n_folds']:
+                test_sub = self.inputs.cv_split[f'repeat{repeat}_fold{fold}']
+                val_sub = self.inputs.cv_split[f'repeat{repeat}_fold{(fold+1)%self.inputs.config["n_folds"]}']
+                train_sub = [subject for subject in all_sub if subject not in (test_sub + val_sub) ]
+
+                for level in range(4):
+                    input_key = [f'rsfc_level{level+1}']
+                    output_key = f'repeat{repeat}_fold{fold}_level{level+1}'
+                    self._results['gradients'], embed = diffusion_mapping(self.inputs.image_features, train_sub,
+                                                                          input_key, output_key,
+                                                                          self._results['gradients'])
+                    self._results['gradients'] = diffusion_mapping(self.inputs.image_features, (val_sub + test_sub), 
+                                                                   input_key, output_key, self._results['gradients'],
+                                                                   embed)
+
+        return runtime
+
+### AC: compute anatomical connectivity with structural co-registration (SCoRe)
+
+class _ACInputSpec(BaseInterfaceInputSpec):
+    sublists = traits.Dict(dtype=list, desc='list of subjects available in each dataset')
+    cv_split = traits.Dict(dtype=list, desc='list of subjects in the test split of each fold')
+    image_features = traits.Dict(dtype=dict, desc='previously extracted imaging features')
+    config = traits.Dict(desc='configuration settings')
+
+class _ACOutputSpec(TraitedSpec):
+    ac = traits.Dict(dtype=dict, desc='gradient loading features')
+
+class AC(SimpleInterface):
+    input_spec = _ACInputSpec
+    output_spec = _ACOutputSpec
+
+    def _run_interface(self, runtime):
+        all_sub = sum(self.inputs.sublists.values(), [])
+        self._results['ac'] = dict.fromkeys(all_sub)
+
+        for repeat in self.inputs.config['n_repeats']:
+            for fold in self.inputs.config['n_folds']:
+                test_sub = self.inputs.cv_split[f'repeat{repeat}_fold{fold}']
+                val_sub = self.inputs.cv_split[f'repeat{repeat}_fold{(fold+1)%self.inputs.config["n_folds"]}']
+                train_sub = [subject for subject in all_sub if subject not in (test_sub + val_sub) ]
+
+                for level in range(4):
+                    for feature in ['GMV', 'CS', 'CT', 'myelin']:
+                        input_key = [f'{feature}_level{level+1}']
+                        output_key = f'repeat{repeat}_fold{fold}_{feature}_level{level+1}'
+                        self._results['ac'], params = score(self.inputs.image_features, train_sub, input_key,
+                                                            output_key, self._results['ac'])
+                        self._results['ac'] = score(self.inputs.image_features, (val_sub + test_sub), input_key,
+                                                    output_key, self._results['ac'], params)
+
         return runtime

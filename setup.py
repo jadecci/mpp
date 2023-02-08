@@ -17,6 +17,7 @@ setup(
         'scikit-learn>=1.0.2'
         'bctpy>=0.5.2',
         'psutil>=5.0',
+        'statsmodels>=0.13.5'
     ],
     entry_points={
         'console_scripts': [
