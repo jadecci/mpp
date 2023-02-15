@@ -23,18 +23,18 @@ task_runs = {'HCP-YA': ['tfMRI_EMOTION_LR', 'tfMRI_EMOTION_RL', 'tfMRI_GAMBLING_
 ### InitSubData: install and get subject-specific data
 
 class _InitDataInputSpec(BaseInterfaceInputSpec):
-    dataset = traits.Str(desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
-    work_dir = traits.Str(desc='absolute path to work directory')
-    subject = traits.Str(desc='subject ID')
-    output_dir = traits.Str(desc='absolute path to output directory')
+    dataset = traits.Str(mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
+    work_dir = traits.Str(mandatory=True, desc='absolute path to work directory')
+    subject = traits.Str(mandatory=True, desc='subject ID')
+    output_dir = traits.Str(mandatory=True, desc='absolute path to output directory')
 
 class _InitDataOutputSpec(TraitedSpec):
     rs_dir = traits.Str(desc='absolute path to installed subject MNINonLinear directory')
     anat_dir = traits.Str(desc='absolute path to installed subject T1w directory')
     rs_runs = traits.List(desc='resting-state run names')
-    t_runs = traits.List([], usedefault=True, desc='task run names')
+    t_runs = traits.List([], desc='task run names')
     rs_files = traits.Dict(dtype=str, desc='filenames of resting-state data')
-    t_files = traits.Dict({}, dtype=str, usedefault=True, desc='filenames of task fMRI data')
+    t_files = traits.Dict({}, dtype=str, desc='filenames of task fMRI data')
     anat_files = traits.Dict(dtype=str, desc='filenames of anatomical data')
     hcpd_b_runs = traits.Int(desc='number of HCP-D b runs')
     hcpad_astats = traits.File(desc='aseg.stats file for HCP-A and HCP-D brain volume computation')
@@ -179,19 +179,19 @@ class InitData(SimpleInterface):
 
 ### SaveFeatures: save extracted features
 class _SaveFeaturesInputSpec(BaseInterfaceInputSpec):
-    rsfc = traits.Dict(dtype=float, desc='resting-state functional connectivity')
-    dfc = traits.Dict(dtype=float, desc='dynamic functional connectivity')
-    rs_stats = traits.Dict(dtype=float, desc='dynamic functional connectivity')
-    tfc = traits.Dict({}, usedefault=True, dtype=dict, desc='task-based functional connectivity')
-    myelin = traits.Dict(dtype=float, desc='myelin content estimates')
-    morph = traits.Dict(dtype=float, desc='morphometry features')
-    output_dir = traits.Str(desc='absolute path to output directory')
-    dataset = traits.Str(desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
-    subject = traits.Str(desc='subject ID')
-    overwrite = traits.Bool(desc='whether to overwrite existing results')
+    rsfc = traits.Dict(mandatory=True, dtype=float, desc='resting-state functional connectivity')
+    dfc = traits.Dict(dmandatory=True, type=float, desc='dynamic functional connectivity')
+    rs_stats = traits.Dict(mandatory=True, dtype=float, desc='dynamic functional connectivity')
+    tfc = traits.Dict({}, dtype=dict, desc='task-based functional connectivity')
+    myelin = traits.Dict(mandatory=True, dtype=float, desc='myelin content estimates')
+    morph = traits.Dict(mandatory=True, dtype=float, desc='morphometry features')
+    output_dir = traits.Str(mandatory=True, desc='absolute path to output directory')
+    dataset = traits.Str(mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
+    subject = traits.Str(mandatory=True, desc='subject ID')
+    overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
 
 class _SaveFeaturesOutputSpec(TraitedSpec):
-    sub_done = traits.Bool(False, usedefault=True, desc='whether subject workflow is completed')
+    sub_done = traits.Bool(False, desc='whether subject workflow is completed')
 
 class SaveFeatures(SimpleInterface):
     input_spec = _SaveFeaturesInputSpec
@@ -234,16 +234,32 @@ class SaveFeatures(SimpleInterface):
 
         return runtime
 
+### DropSubjectData: drop subject-wise data after feature extraction is done
+
+class _DropSubDataInputSpec(BaseInterfaceInputSpec):
+    sub_done = traits.Bool(False, desc='whether subject workflow is completed')
+    dataset_dir = traits.Str(mandatory=True, desc='absolute path to installed root dataset')
+
+class DropSubData(SimpleInterface):
+    input_spec = _DropSubDataInputSpec
+
+    def _run_interface(self, runtime):
+        if self.inputs.sub_done:
+            dl.remove(dataset=self.inputs.dataset_dir, reckless='kill', on_failure='continue')
+
+        return runtime
+
 ### InitFeatures: extract features and available phenotype data
 
 class _InitFeaturesInputSpec(BaseInterfaceInputSpec):
-    features_dir = traits.Dict(dtype=str, desc='absolute path to extracted features for each dataset')
-    phenotype = traits.Str(desc='phenotype to use as prediction target')
+    features_dir = traits.Dict(mandatory=True, dtype=str, desc='absolute path to extracted features for each dataset')
+    phenotype = traits.Str(mandatory=True, desc='phenotype to use as prediction target')
 
 class _InitFeaturesOutputSpec(TraitedSpec):
     sublists = traits.Dict(dtype=list, desc='list of subjects available in each dataset')
     confounds = traits.Dict(dtype=dict, desc='confound values from subjects in sublists')
-    phenotypes = traits.Dict(dtype=list, desc='phenotype values from subjects in sublists')
+    phenotypes = traits.Dict(dtype=float, desc='phenotype values from subjects in sublists')
+    phenotypes_perm = traits.Dict(dtype=float, desc='shuffled phenotype values for permutation')
     image_features = traits.Dict(dtype=dict, desc='previously extracted imaging features')
 
 class InitFeatures(SimpleInterface):
@@ -253,7 +269,6 @@ class InitFeatures(SimpleInterface):
     def _run_interface(self, runtime):
         self._results['sublists'] = dict.fromkeys(self.inputs.features_dir)      
         self._results['confounds'] = {}
-        self._results['phenotypes'] = {}
 
         for dataset in self.inputs.features_dir:
             # phenotype data
@@ -262,11 +277,12 @@ class InitFeatures(SimpleInterface):
                 sublist = [file.rstrip('_V1_MR.h5').lstrip(dataset).lstrip('_') for file in features_files]
             else:
                 sublist = [file.rstrip('.h5').lstrip(dataset).lstrip('_') for file in features_files]
-            sublist, self._results['phenotypes'] = pheno_HCP(dataset, self.inputs.phenotype_dir[dataset], 
-                                                             self.inputs.phenotype, sublist, self._results['phenotypes'])
+            sublist, pheno, pheno_perm = pheno_HCP(dataset, self.inputs.phenotype_dir[dataset], 
+                                                   self.inputs.phenotype, sublist)
             sublist, self._results['confounds'] = pheno_conf_HCP(dataset, self.inputs.phenotype_dir[dataset], 
-                                                                 self.inputs.features_dir[dataset], sublist, 
-                                                                 self._results['confounds'])
+                                                                 self.inputs.features_dir[dataset], sublist)
+            self._results['phenotypes'] = pheno
+            self._results['phenotypes_perm'] = pheno_perm
             self._results['sublists'][dataset] = sublist
 
             # previously extracted features
@@ -297,17 +313,28 @@ class InitFeatures(SimpleInterface):
 
         return runtime
 
-### DropSubjectData: drop subject-wise data after feature extraction is done
+### RegionwiseSave: extract features and available phenotype data
 
-class _DropSubDataInputSpec(BaseInterfaceInputSpec):
-    sub_done = traits.Bool(False, usedefault=True, desc='whether subject workflow is completed')
-    dataset_dir = traits.Str(desc='absolute path to installed root dataset')
+class _RegionwiseSaveInputSpec(BaseInterfaceInputSpec):
+    levels = traits.List(mandatory=True, dtype=str, desc='parcellation levels corresponding to the region numbers')
+    regions = traits.List(mandatory=True, dtype=int, desc='region number within each parcellation level')
+    r = traits.List(mandatory=True, dtype=float, desc='correlation accuracy')
+    cod = traits.List(mandatory=True, dtype=float, desc='coefficient of determination accuracy')
+    selected = traits.List(usedefault=True, dtype=list, desc='whether each feature is selected or not')
+    output_dir = traits.Str(mandatory=True, desc='absolute path to output directory')
+    overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
 
-class DropSubData(SimpleInterface):
-    input_spec = _DropSubDataInputSpec
+class RegionwiseSave(SimpleInterface):
+    input_spec = _RegionwiseSaveInputSpec
 
     def _run_interface(self, runtime):
-        if self.inputs.sub_done:
-            dl.remove(dataset=self.inputs.dataset_dir, reckless='kill', on_failure='continue')
+        pathlib.Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
+        output_file = path.join(self.inputs.output_dir, 'regionwise_results.h5')
+
+        write_h5(output_file, '/r', self.inputs.r, self.inputs.overwrite)
+        write_h5(output_file, '/cod', self.inputs.cod, self.inputs.overwrite)
+        write_h5(output_file, '/selected/features', self.inputs.selected, self.inputs.overwrite)
+        write_h5(output_file, '/selected/levelss', self.inputs.levels, self.inputs.overwrite)
+        write_h5(output_file, '/selected/regionss', self.inputs.regions, self.inputs.overwrite)
 
         return runtime

@@ -109,7 +109,7 @@ def nuisance_conf_HCP(t_vol, atlas_file):
 
     return conf
 
-def pheno_conf_HCP(dataset, pheno_dir, features_dir, sublist, conf_dict):
+def pheno_conf_HCP(dataset, pheno_dir, features_dir, sublist):
     # primary vairables
     if dataset == 'HCP-YA':
         unres_file = sorted(pathlib.Path(pheno_dir).glob('unrestricted_*.csv'))[0]
@@ -153,7 +153,7 @@ def pheno_conf_HCP(dataset, pheno_dir, features_dir, sublist, conf_dict):
     conf['gender'] = [1 if item == 'F' else 2 for item in conf['gender']]
 
     sublist = conf['subject'].to_list()
-    conf_dict.update(conf.set_index('subject').to_dict())
+    conf_dict = conf.set_index('subject').to_dict()
 
     return sublist, conf_dict
 

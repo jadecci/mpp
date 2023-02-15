@@ -24,7 +24,7 @@ def read_h5(h5_file, dataset):
 
     return data
 
-def pheno_HCP(dataset, pheno_dir, pheno_name, sublist, pheno_dict):
+def pheno_HCP(dataset, pheno_dir, pheno_name, sublist):
     if dataset == 'HCP-YA':
         col_names = {'totalcogcomp': 'CogTotalComp_AgeAdj'}
         unres_file = sorted(pathlib.Path(pheno_dir).glob('unrestricted_*.csv'))[0]
@@ -45,8 +45,11 @@ def pheno_HCP(dataset, pheno_dir, pheno_name, sublist, pheno_dict):
     pheno_data = pheno_data[pheno_data['subject'].isin(sublist)]
 
     sublist = pheno_data['subject'].to_list()
-    pheno_dict.update(pheno_data.set_index('subject').squeeze().to_dict())
+    pheno_dict = pheno_data.set_index('subject').squeeze().to_dict()
 
-    return sublist, pheno_dict
+    pheno_data[pheno_name] = pheno_data[pheno_name].sample(frac=1, ignore_index=True)
+    pheno_dict_perm = pheno_data.set_index('subject').squeeze().to_dict()
+
+    return sublist, pheno_dict, pheno_dict_perm
 
         

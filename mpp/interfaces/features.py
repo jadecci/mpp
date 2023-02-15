@@ -18,11 +18,11 @@ logging.getLogger('datalad').setLevel(logging.WARNING)
 ### RSFC: compute static and dynamic functional connectivity for resting-state
 
 class _RSFCInputSpec(BaseInterfaceInputSpec):
-    dataset = traits.Str(desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
-    rs_dir = traits.Str(desc='absolute path to installed subject MNINonLinear directory')
-    rs_runs = traits.List(desc='resting-state run names')
-    rs_files = traits.Dict(dtype=str, desc='filenames of resting-state data')
-    hcpd_b_runs = traits.Int(0, usedefault=True, desc='number of b runs added for HCP-D subject')
+    dataset = traits.Str(mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
+    rs_dir = traits.Str(mandatory=True, desc='absolute path to installed subject MNINonLinear directory')
+    rs_runs = traits.List(mandatory=True, desc='resting-state run names')
+    rs_files = traits.Dict(mandatory=True, dtype=str, desc='filenames of resting-state data')
+    hcpd_b_runs = traits.Int(usedefault=True, desc='number of b runs added for HCP-D subject')
 
 class _RSFCOutputSpec(TraitedSpec):
     rsfc = traits.Dict(dtype=float, desc='resting-state functional connectivity')
@@ -61,7 +61,7 @@ class RSFC(SimpleInterface):
 ### NetworkStats: compute network statistics based on RSFC
 
 class _NetworkStatsInputSpec(BaseInterfaceInputSpec):
-    rsfc = traits.Dict(dtype=float, desc='resting-state functional connectivity')
+    rsfc = traits.Dict(mandatory=True, dtype=float, desc='resting-state functional connectivity')
 
 class _NetworkStatsOutputSpec(TraitedSpec):
     rs_stats = traits.Dict(dtype=float, desc='dynamic functional connectivity')
@@ -97,10 +97,10 @@ class NetworkStats(SimpleInterface):
 ### TFC: compute task-based functional connectivity
 
 class _TFCInputSpec(BaseInterfaceInputSpec):
-    dataset = traits.Str(desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
-    t_dir = traits.Str(desc='absolute path to installed subject MNINonLinear directory')
-    t_runs = traits.List(desc='task run names')
-    t_files = traits.Dict(dtype=str, desc='filenames of task fMRI data')
+    dataset = traits.Str(mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
+    t_dir = traits.Str(mandatory=True, desc='absolute path to installed subject MNINonLinear directory')
+    t_runs = traits.List(mandatory=True, desc='task run names')
+    t_files = traits.Dict(mandatory=True, dtype=str, desc='filenames of task fMRI data')
 
 class _TFCOutputSpec(TraitedSpec):
     tfc = traits.Dict(dtype=dict, desc='task-based functional connectivity')
@@ -125,7 +125,7 @@ class TFC(SimpleInterface):
 ### MyelinEstimate: extract the myelin estimates from T1dividedbyT2 files
 
 class _MyelineEstimateInputSpec(BaseInterfaceInputSpec):
-    anat_files = traits.Dict(dtype=str, desc='filenames of anatomical data')
+    anat_files = traits.Dict(mandatory=True, dtype=str, desc='filenames of anatomical data')
 
 class _MyelineEstimateOutputSpec(TraitedSpec):
     myelin = traits.Dict(dtype=float, desc='myelin content estimates')
@@ -174,9 +174,9 @@ class MyelinEstimate(SimpleInterface):
 ### Morphometry: extract morphometry features
 
 class _MorphometryInputSpec(BaseInterfaceInputSpec):
-    anat_dir = traits.Str(desc='absolute path to installed subject T1w directory')
-    anat_files = traits.Dict(dtype=str, desc='filenames of anatomical data')
-    subject = traits.Str(desc='subject ID')
+    anat_dir = traits.Str(mandatory=True, desc='absolute path to installed subject T1w directory')
+    anat_files = traits.Dict(mandatory=True, dtype=str, desc='filenames of anatomical data')
+    subject = traits.Str(mandatory=True, desc='subject ID')
 
 class _MorphometryOutputSpec(TraitedSpec):
     morph = traits.Dict(dtype=float, desc='morphometry features')
@@ -237,10 +237,10 @@ class Morphometry(SimpleInterface):
 ### Gradient: extract gradient loadings
 
 class _GradientInputSpec(BaseInterfaceInputSpec):
-    sublists = traits.Dict(dtype=list, desc='list of subjects available in each dataset')
-    cv_split = traits.Dict(dtype=list, desc='list of subjects in the test split of each fold')
-    image_features = traits.Dict(dtype=dict, desc='previously extracted imaging features')
-    config = traits.Dict(desc='configuration settings')
+    sublists = traits.Dict(mandatory=True, dtype=list, desc='list of subjects available in each dataset')
+    cv_split = traits.Dict(mandatory=True, dtype=list, desc='list of subjects in the test split of each fold')
+    image_features = traits.Dict(mandatory=True, dtype=dict, desc='previously extracted imaging features')
+    config = traits.Dict(usedefault=True, desc='configuration settings')
 
 class _GradientOutputSpec(TraitedSpec):
     gradients = traits.Dict(dtype=dict, desc='gradient loading features')
@@ -253,11 +253,11 @@ class Gradient(SimpleInterface):
         all_sub = sum(self.inputs.sublists.values(), [])
         self._results['gradients'] = dict.fromkeys(all_sub)
 
-        for repeat in self.inputs.config['n_repeats']:
-            for fold in self.inputs.config['n_folds']:
+        for repeat in range(len(self.inputs.config['n_repeats'])):
+            for fold in range(len(self.inputs.config['n_folds'])):
                 test_sub = self.inputs.cv_split[f'repeat{repeat}_fold{fold}']
                 val_sub = self.inputs.cv_split[f'repeat{repeat}_fold{(fold+1)%self.inputs.config["n_folds"]}']
-                train_sub = [subject for subject in all_sub if subject not in (test_sub + val_sub) ]
+                train_sub = [subject for subject in all_sub if subject not in (test_sub + val_sub)]
 
                 for level in range(4):
                     input_key = [f'rsfc_level{level+1}']
@@ -274,10 +274,10 @@ class Gradient(SimpleInterface):
 ### AC: compute anatomical connectivity with structural co-registration (SCoRe)
 
 class _ACInputSpec(BaseInterfaceInputSpec):
-    sublists = traits.Dict(dtype=list, desc='list of subjects available in each dataset')
-    cv_split = traits.Dict(dtype=list, desc='list of subjects in the test split of each fold')
-    image_features = traits.Dict(dtype=dict, desc='previously extracted imaging features')
-    config = traits.Dict(desc='configuration settings')
+    sublists = traits.Dict(mandatory=True, dtype=list, desc='list of subjects available in each dataset')
+    cv_split = traits.Dict(mandatory=True, dtype=list, desc='list of subjects in the test split of each fold')
+    image_features = traits.Dict(mandatory=True, dtype=dict, desc='previously extracted imaging features')
+    config = traits.Dict(usedefault=True, desc='configuration settings')
 
 class _ACOutputSpec(TraitedSpec):
     ac = traits.Dict(dtype=dict, desc='gradient loading features')
@@ -290,11 +290,11 @@ class AC(SimpleInterface):
         all_sub = sum(self.inputs.sublists.values(), [])
         self._results['ac'] = dict.fromkeys(all_sub)
 
-        for repeat in self.inputs.config['n_repeats']:
-            for fold in self.inputs.config['n_folds']:
+        for repeat in range(len(self.inputs.config['n_repeats'])):
+            for fold in range(len(self.inputs.config['n_folds'])):
                 test_sub = self.inputs.cv_split[f'repeat{repeat}_fold{fold}']
                 val_sub = self.inputs.cv_split[f'repeat{repeat}_fold{(fold+1)%self.inputs.config["n_folds"]}']
-                train_sub = [subject for subject in all_sub if subject not in (test_sub + val_sub) ]
+                train_sub = [subject for subject in all_sub if subject not in (test_sub + val_sub)]
 
                 for level in range(4):
                     for feature in ['GMV', 'CS', 'CT', 'myelin']:
