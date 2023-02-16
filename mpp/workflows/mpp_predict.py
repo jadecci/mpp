@@ -26,7 +26,7 @@ def main():
     parser.add_argument('--ext_data', nargs='+', dest='ext_data', default=None, help='Dataset(s) as external test set')
     parser.add_argument('--ext_features', nargs='+', dest='ext_features', default=None,
                         help='Absolute path to extracted features of each external test set.')
-    parser.add_argument('--workdir', type=str, dest='work_dir', default=getcwd(), help='Work directory')
+    parser.add_argument('--work_dir', type=str, dest='work_dir', default=getcwd(), help='Work directory')
     parser.add_argument('--output_dir', type=str, dest='output_dir', default=getcwd(), help='output directory')
     parser.add_argument('--overwrite', dest='overwrite', action="store_true", help='overwrite existing results')
     parser.add_argument('--condordag', dest='condordag', action='store_true', help='submit graph workflow to HTCondor')
@@ -40,24 +40,26 @@ def main():
 
     ## Preparations
     mp_wf = pe.Workflow('mp_wf', base_dir=args.work_dir)
-    init_data = pe.Node(InitFeatures(features_dir=dict(zip(args.datasets, args.features)), phenotype=args.target),
+    init_data = pe.Node(InitFeatures(features_dir=dict(zip(args.datasets, args.features)), 
+                                     phenotypes_dir=dict(zip(args.datasets, args.phenotypes)), 
+                                     phenotype=args.target),
                         name='init_data')
     cv_split = pe.Node(CrossValSplit(config=config), name='cv_split')
     gradient = pe.Node(Gradient(config=config), name='gradient')
     ac = pe.Node(AC(config=config), name='ac')
-    cv_split_perm = pe.Node(CrossValSplit(config=config, permutation=True), name='cv_split')
+    cv_split_perm = pe.Node(CrossValSplit(config=config, permutation=True), name='cv_split_perm')
     gradient_perm = pe.Node(Gradient(config=config), name='gradient_perm')
     ac_perm = pe.Node(AC(config=config), name='ac_perm')
 
     mp_wf.connect([(init_data, cv_split, [('sublists', 'sublists')]),
-                   (init_data, gradient, [('sublist', 'sublist'),
-                                           'image_features', 'image_features']),
-                   (init_data, ac, [('sublist', 'sublist'),
+                   (init_data, gradient, [('sublists', 'sublists'),
+                                          ('image_features', 'image_features')]),
+                   (init_data, ac, [('sublists', 'sublists'),
                                     ('image_features', 'image_features')]),
                    (init_data, cv_split_perm, [('sublists', 'sublists')]),
-                   (init_data, gradient_perm, [('sublist', 'sublist'),
+                   (init_data, gradient_perm, [('sublists', 'sublists'),
                                                ('image_features', 'image_features')]),
-                   (init_data, ac_perm, [('sublist', 'sublist'),
+                   (init_data, ac_perm, [('sublists', 'sublists'),
                                          ('image_features', 'image_features')]),
                    (cv_split, gradient, [('cv_split', 'cv_split')]),
                    (cv_split, ac, [('cv_split', 'cv_split')]),
@@ -76,7 +78,7 @@ def main():
     rw_validate = pe.MapNode(RegionwiseModel(mode='validate', config=config), name='regionwise_validate', 
                                              iterfield=['level', 'region'])
     rw_select = pe.Node(FeatureSelect(), name='feature_select')
-    rw_test = pe.MapNod(RegionwiseModel(mode='test', config=config), name='regionwise_validate',
+    rw_test = pe.MapNode(RegionwiseModel(mode='test', config=config), name='regionwise_test',
                                         iterfield=['level', 'region'])
     rw_save = pe.Node(RegionwiseSave(output_dir=args.output_dir, overwrite=args.overwrite), name='regionwise_save')
     
@@ -100,8 +102,8 @@ def main():
                    (ac_perm, rw_validate, [('ac', 'ac_perm')]),
                    (rw_inputnode, rw_validate, [('levels', 'level'),
                                                 ('regions', 'region')]),
-                   (rw_inputnode, rw_select, [('levels', 'level'),
-                                              ('regions', 'region')]),
+                   (rw_inputnode, rw_select, [('levels', 'levels'),
+                                              ('regions', 'regions')]),
                    (rw_validate, rw_select, [('p_r', 'p_r'),
                                              ('p_cod', 'p_cod')]),
                    (rw_select, rw_test, [('selected_levels', 'level'),

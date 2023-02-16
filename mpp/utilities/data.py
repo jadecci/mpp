@@ -29,7 +29,7 @@ def pheno_HCP(dataset, pheno_dir, pheno_name, sublist):
         col_names = {'totalcogcomp': 'CogTotalComp_AgeAdj'}
         unres_file = sorted(pathlib.Path(pheno_dir).glob('unrestricted_*.csv'))[0]
         pheno_data = pd.read_csv(unres_file, usecols=['Subject', col_names[pheno_name]], dtype={'Subject': str, 
-                                 col_names[pheno_name]: float})['Subject', col_names[pheno_name]]
+                                 col_names[pheno_name]: float})[['Subject', col_names[pheno_name]]]
 
     elif dataset == 'HCP-A' or dataset == 'HCP-D':
         pheno_file = {'totalcogcomp': 'cogcomp01.txt'}
@@ -38,7 +38,7 @@ def pheno_HCP(dataset, pheno_dir, pheno_name, sublist):
 
         pheno_data = pd.read_table(path.join(pheno_dir, pheno_file[pheno_name]), sep='\t', header=0, skiprows=[1],
                                    usecols=[4, pheno_cols[pheno_name]], dtype={'src_subject_id': str, 
-                                   col_names[pheno_name]: float})['Subject', col_names[pheno_name]]
+                                   col_names[pheno_name]: float})[['src_subject_id', col_names[pheno_name]]]
 
     pheno_data.columns = ['subject', pheno_name]
     pheno_data = pheno_data.dropna().drop_duplicates(subset='subject')

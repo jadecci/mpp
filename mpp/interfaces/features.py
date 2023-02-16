@@ -52,9 +52,9 @@ class RSFC(SimpleInterface):
             if self.inputs.rs_files[key_surf] and self.inputs.rs_files[key_vol]:
                 t_surf = nib.load(self.inputs.rs_files[key_surf]).get_fdata()
                 t_vol = nib.load(self.inputs.rs_files[key_vol]).get_fdata()          
-                self._results['rsfc'], self._results['dfc'] = fc(t_surf, t_vol, self.inputs.dataset, run,
-                                                                 self.inputs.rs_files, self._results['rsfc'], 
-                                                                 self._results['dfc'])
+                self._results['rsfc'], self._results['dfc'] = fc(t_surf, t_vol, self.inputs.dataset,
+                                                                        self.inputs.rs_files, self._results['rsfc'], 
+                                                                        self._results['dfc'])
                     
         return runtime
 
@@ -117,7 +117,7 @@ class TFC(SimpleInterface):
             if self.inputs.t_files[f'{run}_surf'] and self.inputs.t_files[f'{run}_vol']:
                 t_surf = nib.load(self.inputs.t_files[f'{run}_surf']).get_fdata()
                 t_vol = nib.load(self.inputs.t_files[f'{run}_vol']).get_fdata()          
-                self._results['tfc'], _ = fc(t_surf, t_vol, self.inputs.dataset, run, self.inputs.t_files, 
+                self._results['tfc'], _ = fc(t_surf, t_vol, self.inputs.dataset, self.inputs.t_files, 
                                              self._results['tfc'])
 
         return runtime

@@ -216,10 +216,9 @@ class SaveFeatures(SimpleInterface):
                 write_h5(output_file, ds_stats, data_stats, self.inputs.overwrite)
     
             if self.inputs.tfc:
-                for key in self.inputs.tfc:
-                    ds_tfc = f'/tfc/{key}/level{level+1}'
-                    data_tfc = self.inputs.tfc[f'level{level+1}']
-                    write_h5(output_file, ds_tfc, data_tfc, self.inputs.overwrite)
+                ds_tfc = f'/tfc/level{level+1}'
+                data_tfc = self.inputs.tfc[f'level{level+1}']
+                write_h5(output_file, ds_tfc, data_tfc, self.inputs.overwrite)
 
             for stats in ['GMV', 'CS', 'CT']:
                 ds_morph = f'/morphometry/{stats}/level{level+1}'
@@ -253,6 +252,7 @@ class DropSubData(SimpleInterface):
 
 class _InitFeaturesInputSpec(BaseInterfaceInputSpec):
     features_dir = traits.Dict(mandatory=True, dtype=str, desc='absolute path to extracted features for each dataset')
+    phenotypes_dir = traits.Dict(mandatory=True, desc='absolute path to phenotype files for each dataset')
     phenotype = traits.Str(mandatory=True, desc='phenotype to use as prediction target')
 
 class _InitFeaturesOutputSpec(TraitedSpec):
@@ -277,9 +277,9 @@ class InitFeatures(SimpleInterface):
                 sublist = [file.rstrip('_V1_MR.h5').lstrip(dataset).lstrip('_') for file in features_files]
             else:
                 sublist = [file.rstrip('.h5').lstrip(dataset).lstrip('_') for file in features_files]
-            sublist, pheno, pheno_perm = pheno_HCP(dataset, self.inputs.phenotype_dir[dataset], 
+            sublist, pheno, pheno_perm = pheno_HCP(dataset, self.inputs.phenotypes_dir[dataset], 
                                                    self.inputs.phenotype, sublist)
-            sublist, self._results['confounds'] = pheno_conf_HCP(dataset, self.inputs.phenotype_dir[dataset], 
+            sublist, self._results['confounds'] = pheno_conf_HCP(dataset, self.inputs.phenotypes_dir[dataset], 
                                                                  self.inputs.features_dir[dataset], sublist)
             self._results['phenotypes'] = pheno
             self._results['phenotypes_perm'] = pheno_perm
@@ -288,7 +288,10 @@ class InitFeatures(SimpleInterface):
             # previously extracted features
             self._results['image_features'] = dict.fromkeys(sublist)
             for subject in sublist:
-                feature_file = path.join(self.inputs.features_dir[dataset], f'{dataset}_{subject}.h5')
+                if dataset == 'HCP-A' or 'HCP-D':
+                    feature_file = path.join(self.inputs.features_dir[dataset], f'{dataset}_{subject}_V1_MR.h5')
+                else:
+                    feature_file = path.join(self.inputs.features_dir[dataset], f'{dataset}_{subject}.h5')
                 feature_dict = {}
 
                 for level in range(4):
@@ -301,9 +304,8 @@ class InitFeatures(SimpleInterface):
                         feature_dict[f'{stats}_level{level+1}'] = read_h5(feature_file, ds_stats)
 
                     if 'HCP' in dataset:
-                        for task in task_runs[dataset]:
-                            ds_tfc = f'/tfc/{task}/level{level+1}'
-                            feature_dict[f'tfc_{task}_level{level+1}'] = read_h5(feature_file, ds_tfc)
+                        ds_tfc = f'/tfc/level{level+1}'
+                        feature_dict[f'tfc_level{level+1}'] = read_h5(feature_file, ds_tfc)
 
                     for stats in ['GMV', 'CS', 'CT']:
                         ds_morph = f'/morphometry/{stats}/level{level+1}'

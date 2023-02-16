@@ -12,14 +12,6 @@ from mpp.utilities.models import elastic_net, permutation_test
 base_dir = path.join(path.dirname(path.realpath(__file__)), '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
-task_runs = {'HCP-YA': ['tfMRI_EMOTION_LR', 'tfMRI_EMOTION_RL', 'tfMRI_GAMBLING_LR', 'tfMRI_GAMBLING_RL',
-                        'tfMRI_LANGUAGE_LR', 'tfMRI_LANGUAGE_RL', 'tfMRI_MOTOR_LR', 'tfMRI_MOTOR_RL',
-                        'tfMRI_RELATIONAL_LR', 'tfMRI_RELATIONAL_RL', 'tfMRI_SOCIAL_LR', 'tfMRI_SOCIAL_RL',
-                        'tfMRI_WM_LR', 'tfMRI_WM_RL'],
-            'HCP-A': ['tfMRI_CARIT_PA', 'tfMRI_FACENAME_PA', 'tfMRI_VISMOTOR_PA'],
-            'HCP-D': ['tfMRI_CARIT_AP', 'tfMRI_CARIT_PA', 'tfMRI_EMOTION_PA', 'tfMRI_GUESSING_AP',
-                      'tfMRI_GUESSING_PA']}
-
 ### CrossValSplit: generate cross-validation splits
 
 class _CrossValSplitInputSpec(BaseInterfaceInputSpec):
@@ -110,9 +102,9 @@ class RegionwiseModel(SimpleInterface):
                     x = np.concatenate([x, self.inputs.gradients[subjects[i]][gradient_key][:, self.inputs.region]])
 
                 # task features
-                dataset = [key for key in self.inputs.sublists if 'sub-04' in self.inputs.sublists[key]][0]
-                for task in task_runs[dataset]:
-                    x = np.concatenate([x, fdict[f'tfc_{task}_level{self.inputs.level}']])
+                task_data = fdict[f'tfc_level{self.inputs.level}']
+                if task_data.shape[2] == 3: # HCP-A
+                    x = np.concatenate([x, fdict[f'tfc_level{self.inputs.level}'].flatten()])
 
                 # structural features
                 if self.inputs.region < ((self.inputs.level) * 100):

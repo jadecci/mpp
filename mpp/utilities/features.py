@@ -120,7 +120,7 @@ def pheno_conf_HCP(dataset, pheno_dir, features_dir, sublist):
         res_conf = pd.read_csv(res_file, usecols=['Subject', 'Age_in_Yrs', 'Handedness'],
                                dtype={'Subject': str, 'Age_in_Yrs': int, 'Handedness': int})
         conf = unres_conf.merge(res_conf, on='Subject', how='inner').dropna()
-        conf = conf['Subject', 'Age_in_Yrs', 'Gender', 'Handedness', 'FS_BrainSeg_Vol', 'FS_IntraCranial_Vol']
+        conf = conf[['Subject', 'Age_in_Yrs', 'Gender', 'Handedness', 'FS_BrainSeg_Vol', 'FS_IntraCranial_Vol']]
 
     elif dataset == 'HCP-A' or dataset == 'HCP-D':
         conf = pd.read_table(path.join(pheno_dir, 'ssaga_cover_demo01.txt'), sep='\t', header=0, skiprows=[1], 
@@ -139,7 +139,7 @@ def pheno_conf_HCP(dataset, pheno_dir, features_dir, sublist):
         conf['brainseg_vol'] = brainseg_vols
         conf['icv_vol'] = icv_vols
 
-        conf = conf['src_subject_id', 'interview_age', 'sex', 'hcp_handedness_score', 'brainseg_vol', 'icv_vol']
+        conf = conf[['src_subject_id', 'interview_age', 'sex', 'hcp_handedness_score', 'brainseg_vol', 'icv_vol']]
 
     conf.columns = ['subject', 'age', 'gender', 'handedness', 'brainseg_vol', 'icv_vol']   
     conf = conf.dropna().drop_duplicates(subset='subject') 
