@@ -3,26 +3,24 @@ import numpy as np
 import nibabel as nib
 import pandas as pd
 import subprocess
-from os import path, environ
-import pathlib
-import logging
+from os import environ
+from pathlib import Path
 
 from nipype.interfaces import fsl, freesurfer
 import bct
 
 from mpp.utilities.features import fc, diffusion_mapping, score
+from mpp.utilities.data import read_h5
 
-base_dir = path.join(path.dirname(path.realpath(__file__)), '..')
-logging.getLogger('datalad').setLevel(logging.WARNING)
+base_dir = Path(__file__).resolve().parent.parent
 
 ### RSFC: compute static and dynamic functional connectivity for resting-state
 
 class _RSFCInputSpec(BaseInterfaceInputSpec):
     dataset = traits.Str(mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
-    rs_dir = traits.Str(mandatory=True, desc='absolute path to installed subject MNINonLinear directory')
     rs_runs = traits.List(mandatory=True, desc='resting-state run names')
-    rs_files = traits.Dict(mandatory=True, dtype=str, desc='filenames of resting-state data')
-    hcpd_b_runs = traits.Int(usedefault=True, desc='number of b runs added for HCP-D subject')
+    rs_files = traits.Dict(mandatory=True, dtype=Path, desc='filenames of resting-state data')
+    hcpd_b_runs = traits.Int(0, desc='number of b runs added for HCP-D subject')
 
 class _RSFCOutputSpec(TraitedSpec):
     rsfc = traits.Dict(dtype=float, desc='resting-state functional connectivity')
@@ -53,8 +51,8 @@ class RSFC(SimpleInterface):
                 t_surf = nib.load(self.inputs.rs_files[key_surf]).get_fdata()
                 t_vol = nib.load(self.inputs.rs_files[key_vol]).get_fdata()          
                 self._results['rsfc'], self._results['dfc'] = fc(t_surf, t_vol, self.inputs.dataset,
-                                                                        self.inputs.rs_files, self._results['rsfc'], 
-                                                                        self._results['dfc'])
+                                                                 self.inputs.rs_files, self._results['rsfc'], 
+                                                                 self._results['dfc'])
                     
         return runtime
 
@@ -98,9 +96,8 @@ class NetworkStats(SimpleInterface):
 
 class _TFCInputSpec(BaseInterfaceInputSpec):
     dataset = traits.Str(mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
-    t_dir = traits.Str(mandatory=True, desc='absolute path to installed subject MNINonLinear directory')
     t_runs = traits.List(mandatory=True, desc='task run names')
-    t_files = traits.Dict(mandatory=True, dtype=str, desc='filenames of task fMRI data')
+    t_files = traits.Dict(mandatory=True, dtype=Path, desc='filenames of task fMRI data')
 
 class _TFCOutputSpec(TraitedSpec):
     tfc = traits.Dict(dtype=dict, desc='task-based functional connectivity')
@@ -125,7 +122,7 @@ class TFC(SimpleInterface):
 ### MyelinEstimate: extract the myelin estimates from T1dividedbyT2 files
 
 class _MyelineEstimateInputSpec(BaseInterfaceInputSpec):
-    anat_files = traits.Dict(mandatory=True, dtype=str, desc='filenames of anatomical data')
+    anat_files = traits.Dict(mandatory=True, dtype=Path, desc='filenames of anatomical data')
 
 class _MyelineEstimateOutputSpec(TraitedSpec):
     myelin = traits.Dict(dtype=float, desc='myelin content estimates')
@@ -144,10 +141,10 @@ class MyelinEstimate(SimpleInterface):
         myelin_vol = nib.load(self.inputs.anat_files['myelin_vol']).get_fdata()
 
         for level in range(4):
-            parc_Sch_file = path.join(base_dir, 'data', 'atlas', 
-                                      f'Schaefer2018_{level+1}00Parcels_17Networks_order.dlabel.nii')
+            parc_Sch_file = Path(base_dir, 'data', 'atlas', 
+                                 f'Schaefer2018_{level+1}00Parcels_17Networks_order.dlabel.nii')
             parc_Sch = nib.load(parc_Sch_file).get_fdata()
-            parc_Mel_file = path.join(base_dir, 'data', 'atlas', f'Tian_Subcortex_S{level+1}_3T.nii.gz')
+            parc_Mel_file = Path(base_dir, 'data', 'atlas', f'Tian_Subcortex_S{level+1}_3T.nii.gz')
             parc_Mel = nib.load(parc_Mel_file).get_fdata()
 
             parc_surf = np.zeros(((level+1)*100))
@@ -175,7 +172,7 @@ class MyelinEstimate(SimpleInterface):
 
 class _MorphometryInputSpec(BaseInterfaceInputSpec):
     anat_dir = traits.Str(mandatory=True, desc='absolute path to installed subject T1w directory')
-    anat_files = traits.Dict(mandatory=True, dtype=str, desc='filenames of anatomical data')
+    anat_files = traits.Dict(mandatory=True, dtype=Path, desc='filenames of anatomical data')
     subject = traits.Str(mandatory=True, desc='subject ID')
 
 class _MorphometryOutputSpec(TraitedSpec):
@@ -194,8 +191,8 @@ class Morphometry(SimpleInterface):
         for level in range(4): 
             stats_surf = pd.DataFrame()
             for hemi in ['lh', 'rh']:
-                annot_file = path.join(base_dir, 'data', 'label', 
-                                        f'{hemi}.Schaefer2018_{level+1}00Parcels_17Networks_order.annot')
+                annot_file = Path(base_dir, 'data', 'label', 
+                                  f'{hemi}.Schaefer2018_{level+1}00Parcels_17Networks_order.annot')
                 hemi_table = f'{hemi}.fs_stats'
                 subprocess.run(['mris_anatomical_stats', '-a', annot_file, '-noglobal', '-f', hemi_table, 
                         self.inputs.subject, hemi], env=dict(environ, **{'SUBJECTS_DIR': self.inputs.anat_dir}),
@@ -206,7 +203,7 @@ class Morphometry(SimpleInterface):
             self._results['morph'][f'level{level+1}_CS'] = stats_surf['SurfArea'].values
             self._results['morph'][f'level{level+1}_CT'] = stats_surf['ThickAvg'].values
 
-            seg_file = path.join(base_dir, 'data', 'atlas', f'Tian_Subcortex_S{level+1}_3T.nii.gz')
+            seg_file = Path(base_dir, 'data', 'atlas', f'Tian_Subcortex_S{level+1}_3T.nii.gz')
             seg_up_file = f'S{level}_upsampled.nii.gz'
             flt = fsl.FLIRT()
             flt.inputs.in_file = seg_file
@@ -234,75 +231,86 @@ class Morphometry(SimpleInterface):
                                     
         return runtime
 
-### Gradient: extract gradient loadings
+### GradientAC: extract gradient loadings and anatomical connectivity
 
-class _GradientInputSpec(BaseInterfaceInputSpec):
+class _GradientACInputSpec(BaseInterfaceInputSpec):
+    features_dir = traits.Dict(mandatory=True, dtype=str, desc='absolute path to extracted features for each dataset')
     sublists = traits.Dict(mandatory=True, dtype=list, desc='list of subjects available in each dataset')
     cv_split = traits.Dict(mandatory=True, dtype=list, desc='list of subjects in the test split of each fold')
-    image_features = traits.Dict(mandatory=True, dtype=dict, desc='previously extracted imaging features')
-    config = traits.Dict(usedefault=True, desc='configuration settings')
+    cv_split_perm = traits.Dict(mandatory=True, dtype=list, desc='list of permuted subjects')
+    repeat = traits.Int(mandatory=True, desc='current repeat of cross-validation')
+    fold = traits.Int(mandatory=True, desc='current fold in the repeat')
+    level = traits.Str(mandatory=True, desc='parcellation level')
+    config = traits.Dict({}, desc='configuration settings')
 
-class _GradientOutputSpec(TraitedSpec):
-    gradients = traits.Dict(dtype=dict, desc='gradient loading features')
+class _GradientACOutputSpec(TraitedSpec):
+    embeddings = traits.Dict(desc='embeddings for gradients')
+    params = traits.Dict(desc='parameters for anatomical connectivity')
+    repeat = traits.Int(desc='current repeat of cross-validation')
+    fold = traits.Int(desc='current fold in the repeat')
+    level = traits.Str(desc='parcellation level')
 
-class Gradient(SimpleInterface):
-    input_spec = _GradientInputSpec
-    output_spec = _GradientOutputSpec
+class GradientAC(SimpleInterface):
+    input_spec = _GradientACInputSpec
+    output_spec = _GradientACOutputSpec
 
-    def _run_interface(self, runtime):
+    def _extract_features(self):
         all_sub = sum(self.inputs.sublists.values(), [])
-        self._results['gradients'] = dict.fromkeys(all_sub)
+        image_features = dict.fromkeys(all_sub)
+        
+        for subject in all_sub:
+            dataset = [key for key in self.inputs.sublists if subject in self.inputs.sublists[key]][0]
+            if dataset == 'HCP-A' or 'HCP-D':
+                feature_file = Path(self.inputs.features_dir[dataset], f'{dataset}_{subject}_V1_MR.h5')
+            else:
+                feature_file = Path(self.inputs.features_dir[dataset], f'{dataset}_{subject}.h5')
 
-        for repeat in range(len(self.inputs.config['n_repeats'])):
-            for fold in range(len(self.inputs.config['n_folds'])):
-                test_sub = self.inputs.cv_split[f'repeat{repeat}_fold{fold}']
-                val_sub = self.inputs.cv_split[f'repeat{repeat}_fold{(fold+1)%self.inputs.config["n_folds"]}']
-                train_sub = [subject for subject in all_sub if subject not in (test_sub + val_sub)]
+            feature_sub = {}
+            feature_sub['rsfc'] = read_h5(feature_file, f'/rsfc/level{self.inputs.level}')
+            feature_sub['myelin'] = read_h5(feature_file, f'/myelin/level{self.inputs.level}')
+            for stats in ['GMV', 'CS', 'CT']:
+                ds_morph = f'/morphometry/{stats}/level{self.inputs.level}'
+                feature_sub[stats] = read_h5(feature_file, ds_morph)  
+            image_features[subject] = feature_sub
+        
+        return image_features
 
-                for level in range(4):
-                    input_key = [f'rsfc_level{level+1}']
-                    output_key = f'repeat{repeat}_fold{fold}_level{level+1}'
-                    self._results['gradients'], embed = diffusion_mapping(self.inputs.image_features, train_sub,
-                                                                          input_key, output_key,
-                                                                          self._results['gradients'])
-                    self._results['gradients'] = diffusion_mapping(self.inputs.image_features, (val_sub + test_sub), 
-                                                                   input_key, output_key, self._results['gradients'],
-                                                                   embed)
-
-        return runtime
-
-### AC: compute anatomical connectivity with structural co-registration (SCoRe)
-
-class _ACInputSpec(BaseInterfaceInputSpec):
-    sublists = traits.Dict(mandatory=True, dtype=list, desc='list of subjects available in each dataset')
-    cv_split = traits.Dict(mandatory=True, dtype=list, desc='list of subjects in the test split of each fold')
-    image_features = traits.Dict(mandatory=True, dtype=dict, desc='previously extracted imaging features')
-    config = traits.Dict(usedefault=True, desc='configuration settings')
-
-class _ACOutputSpec(TraitedSpec):
-    ac = traits.Dict(dtype=dict, desc='gradient loading features')
-
-class AC(SimpleInterface):
-    input_spec = _ACInputSpec
-    output_spec = _ACOutputSpec
-
-    def _run_interface(self, runtime):
+    def _compute_features(self, image_features, cv_split, repeat):
         all_sub = sum(self.inputs.sublists.values(), [])
-        self._results['ac'] = dict.fromkeys(all_sub)
+        gradients = dict.fromkeys(all_sub)
+        ac = dict.fromkeys(all_sub)
+        n_folds = int(self.inputs.config['n_folds'])
 
-        for repeat in range(len(self.inputs.config['n_repeats'])):
-            for fold in range(len(self.inputs.config['n_folds'])):
-                test_sub = self.inputs.cv_split[f'repeat{repeat}_fold{fold}']
-                val_sub = self.inputs.cv_split[f'repeat{repeat}_fold{(fold+1)%self.inputs.config["n_folds"]}']
-                train_sub = [subject for subject in all_sub if subject not in (test_sub + val_sub)]
+        test_sub = cv_split[f'repeat{repeat}_fold{self.inputs.fold}']
+        val_sub = cv_split[f'repeat{repeat}_fold{(self.inputs.fold+1)%n_folds}']
+        testval_sub = np.concatenate((val_sub, test_sub))
+        train_sub = [subject for subject in all_sub if subject not in testval_sub]
 
-                for level in range(4):
-                    for feature in ['GMV', 'CS', 'CT', 'myelin']:
-                        input_key = [f'{feature}_level{level+1}']
-                        output_key = f'repeat{repeat}_fold{fold}_{feature}_level{level+1}'
-                        self._results['ac'], params = score(self.inputs.image_features, train_sub, input_key,
-                                                            output_key, self._results['ac'])
-                        self._results['ac'] = score(self.inputs.image_features, (val_sub + test_sub), input_key,
-                                                    output_key, self._results['ac'], params)
+        _, embed = diffusion_mapping(image_features, train_sub, 'rsfc', gradients)
+        for feature in ['GMV', 'CS', 'CT', 'myelin']:
+            _, params = score(image_features, train_sub, feature, ac)
+            
+        return embed, params
+    
+    def _run_interface(self, runtime):
+        image_features = self._extract_features()
+        self._results['embeddings'] = {}
+        self._results['params'] = {}
+
+        embed, params = self._compute_features(image_features, self.inputs.cv_split, self.inputs.repeat)
+        self._results['embeddings']['embedding'] = embed
+        self._results['params']['params'] = params
+
+        # assuming n_repeats_perm = n_repeats x 10
+        if int(self.inputs.config['n_repeats_perm']) == (int(self.inputs.config['n_repeats']) * 10):
+            for repeat_split in range(10):
+                repeat = int(self.inputs.repeat) * 10 + repeat_split
+                embed, params = self._compute_features(image_features, self.inputs.cv_split_perm, repeat)
+                self._results['embeddings'][f'repeat{repeat}'] = embed
+                self._results['params'][f'repeat{repeat}'] = params
+
+        self._results['repeat'] = self.inputs.repeat
+        self._results['fold'] = self.inputs.fold
+        self._results['level'] = self.inputs.level
 
         return runtime

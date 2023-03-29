@@ -1,15 +1,15 @@
 import pandas as pd
-from os import getcwd, path
+from pathlib import Path
 import argparse
 import logging
 
 import nipype.pipeline as pe
 from nipype.interfaces import utility as niu
 
-from mpp.interfaces.data import InitData, SaveFeatures, DropSubData
+from mpp.interfaces.data import InitData, SaveFeatures, DropSubData, InitDiffusionData
 from mpp.interfaces.features import RSFC, NetworkStats, TFC, MyelinEstimate, Morphometry
+from mpp.interfaces.preproc import HCPMinProc
 
-base_dir = path.join(path.dirname(path.realpath(__file__)), '..', '..')
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
 def main():
@@ -17,8 +17,10 @@ def main():
                 formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog, width=100))
     parser.add_argument('dataset', type=str, help='Dataset (HCP-YA, HCP-A, HCP-D, ABCD)')
     parser.add_argument('sublist', type=str, help='Absolute path to the subject list (.csv).')
-    parser.add_argument('--workdir', type=str, dest='work_dir', default=getcwd(), help='Work directory')
-    parser.add_argument('--output_dir', type=str, dest='output_dir', default=getcwd(), help='output directory')
+    parser.add_argument('--diffusion', dest='diffusion', action='store_true', 
+                        help='Process diffusion data and extract diffusion features')
+    parser.add_argument('--workdir', type=Path, dest='work_dir', default=Path.cwd(), help='Work directory')
+    parser.add_argument('--output_dir', type=Path, dest='output_dir', default=Path.cwd(), help='output directory')
     parser.add_argument('--overwrite', dest='overwrite', action="store_true", help='overwrite existing results')
     parser.add_argument('--condordag', dest='condordag', action='store_true', help='submit graph workflow to HTCondor')
     parser.add_argument('--wrapper', type=str, dest='wrapper', default='', help='wrapper script for HTCondor')
@@ -26,9 +28,12 @@ def main():
 
     sublist = pd.read_csv(args.sublist, header=None, squeeze=True)
     for subject in sublist:
-        output_file = path.join(args.output_dir, f'{args.dataset}_{subject}.h5')
-        if not path.isfile(output_file) or args.overwrite:
-            subject_wf = init_subject_wf(args.dataset, subject, args.work_dir, args.output_dir, args.overwrite)
+        output_file = Path(args.output_dir, f'{args.dataset}_{subject}.h5')
+        if not output_file.is_file() or args.overwrite:
+            if args.diffusion:
+                subject_wf = init_d_wf(args.dataset, subject, args.work_dir, args.output_dir, args.overwrite)
+            else:
+                subject_wf = init_subject_wf(args.dataset, subject, args.work_dir, args.output_dir, args.overwrite)
             subject_wf.config['execution']['try_hard_link_datasink'] = 'false'
             subject_wf.config['execution']['crashfile_format'] = 'txt'
             subject_wf.config['execution']['stop_on_first_crash'] = 'true'
@@ -53,10 +58,9 @@ def init_subject_wf(dataset, subject, work_dir, output_dir, overwrite):
     rs_wf = init_rs_wf(dataset, subject)
     anat_wf = init_anat_wf(subject)
 
-    subject_wf.connect([(init_data, rs_wf, [('rs_dir', 'inputnode.rs_dir'),
-                                             ('rs_runs', 'inputnode.rs_runs'),
-                                             ('rs_files', 'inputnode.rs_files'),
-                                             ('hcpd_b_runs', 'inputnode.hcpd_b_runs')]),
+    subject_wf.connect([(init_data, rs_wf, [('rs_runs', 'inputnode.rs_runs'),
+                                            ('rs_files', 'inputnode.rs_files'),
+                                            ('hcpd_b_runs', 'inputnode.hcpd_b_runs')]),
                          (init_data, anat_wf, [('anat_dir', 'inputnode.anat_dir'),
                                                ('anat_files', 'inputnode.anat_files')]),
                          (init_data, drop_data, [('dataset_dir', 'dataset_dir')]),
@@ -70,8 +74,7 @@ def init_subject_wf(dataset, subject, work_dir, output_dir, overwrite):
     # task features are only extracted for HCP subjects
     if 'HCP' in dataset:
         t_wf = init_t_wf(dataset, subject)
-        subject_wf.connect([(init_data, t_wf, [('rs_dir', 'inputnode.t_dir'),
-                                               ('t_runs', 'inputnode.t_runs'),
+        subject_wf.connect([(init_data, t_wf, [('t_runs', 'inputnode.t_runs'),
                                                ('t_files', 'inputnode.t_files')]),
                             (t_wf, save_features, [('outputnode.tfc', 'tfc')])])
 
@@ -80,16 +83,15 @@ def init_subject_wf(dataset, subject, work_dir, output_dir, overwrite):
 def init_rs_wf(dataset, subject):
     rs_wf = pe.Workflow(f'subject_{subject}_rs_wf')
 
-    inputnode = pe.Node(niu.IdentityInterface(fields=['rs_dir', 'rs_runs', 'rs_files', 'hcpd_b_runs']), 
+    inputnode = pe.Node(niu.IdentityInterface(fields=['rs_runs', 'rs_files', 'hcpd_b_runs']), 
                                               name='inputnode')
     rsfc = pe.Node(RSFC(dataset=dataset), name='rsfc')
     network_stats = pe.Node(NetworkStats(), name='network_stats')
     outputnode = pe.Node(niu.IdentityInterface(fields=['rsfc', 'dfc', 'rs_stats']), name='outputnode')
 
-    rs_wf.connect([(inputnode, rsfc, [('rs_dir', 'rs_dir'),
-                                       ('rs_runs', 'rs_runs'),
-                                       ('rs_files', 'rs_files'),
-                                       ('hcpd_b_runs', 'hcpd_b_runs')]),
+    rs_wf.connect([(inputnode, rsfc, [('rs_runs', 'rs_runs'),
+                                      ('rs_files', 'rs_files'),
+                                      ('hcpd_b_runs', 'hcpd_b_runs')]),
                     (rsfc, network_stats, [('rsfc', 'rsfc')]),
                     (rsfc, outputnode, [('rsfc', 'rsfc'),
                                         ('dfc', 'dfc')]),
@@ -100,12 +102,11 @@ def init_rs_wf(dataset, subject):
 def init_t_wf(dataset, subject):
     t_wf = pe.Workflow(f'subject_{subject}_t_wf')
 
-    inputnode = pe.Node(niu.IdentityInterface(fields=['t_dir', 't_runs', 't_files']), name='inputnode')
+    inputnode = pe.Node(niu.IdentityInterface(fields=['t_runs', 't_files']), name='inputnode')
     tfc = pe.Node(TFC(dataset=dataset), name='tfc')
     outputnode = pe.Node(niu.IdentityInterface(fields=['tfc']), name='outputnode')
 
-    t_wf.connect([(inputnode, tfc, [('t_dir', 't_dir'),
-                                    ('t_runs', 't_runs'),
+    t_wf.connect([(inputnode, tfc, [('t_runs', 't_runs'),
                                     ('t_files', 't_files')]),
                   (tfc, outputnode, [('tfc', 'tfc')])])
 
@@ -126,6 +127,21 @@ def init_anat_wf(subject):
                      (morphometry, outputnode, [('morph', 'morph')])])
 
     return anat_wf
+
+def init_d_wf(dataset, subject, work_dir, output_dir, overwrite):
+    d_wf = pe.Workflow(f'subject_{subject}_diffusion_wf', base_dir=work_dir)
+
+    init_data = pe.Node(InitDiffusionData(dataset=dataset, work_dir=work_dir, subject=subject, output_dir=output_dir),
+                                 name='init_data')
+    
+    hcp_proc = HCPMinProc(dataset=dataset, work_dir=work_dir).run()
+    hcp_proc_wf = hcp_proc.outputs.hcp_proc_wf
+
+    d_wf.connect([(init_data, hcp_proc_wf, [('dataset_dir', 'inputnode.dataset_dir'),
+                                            ('d_files', 'inputnode.d_files'),
+                                            ('fs_files', 'inputnode.fs_files')])])
+        
+    return d_wf
 
 if __name__ == '__main__':
     main()

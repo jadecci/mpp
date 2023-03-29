@@ -157,52 +157,70 @@ def pheno_conf_HCP(dataset, pheno_dir, features_dir, sublist):
 
     return sublist, conf_dict
 
-def diffusion_mapping(image_features, sublist, input_key, output_key, gradients_dict, embedding=None):
-    n_parcels = image_features[sublist[0]][input_key].shape[0]
-    rsfc = np.zeros((n_parcels, n_parcels, len(sublist)))
-    for i in range(len(sublist)):
-        rsfc[:, :, i] = image_features[sublist[i]][input_key].mean(axis=2)
+def diffusion_mapping(image_features, sublist, input_key, gradients_dict, embedding=None, sub_rsfc=None):
+    if sub_rsfc is not None and embedding is not None:
+        embed = embedding
+        gradients_dict = embed.T @ sub_rsfc.mean(axis=2)
+    else:
+        n_parcels = image_features[sublist[0]][input_key].shape[0]
+        rsfc = np.zeros((n_parcels, n_parcels, len(sublist)))
+        for i in range(len(sublist)):
+            rsfc[:, :, i] = image_features[sublist[i]][input_key].mean(axis=2)
 
-    if embedding == None:
-        # transform by tanh and threshold RSFC at 90th percentile
-        rsfc = np.tanh(rsfc.mean(axis=2))
-        for i in range(rsfc.shape[0]):
-            rsfc[i, rsfc[i, :] < np.percentile(rsfc[i, :], 90)] = 0
-        rsfc[rsfc < 0] = 0 # there should be very few negative values after thresholding
+        if embedding is None:
+            # transform by tanh and threshold RSFC at 90th percentile
+            rsfc_thresh = np.tanh(rsfc.mean(axis=2))
+            for i in range(rsfc_thresh.shape[0]):
+                rsfc_thresh[i, rsfc_thresh[i, :] < np.percentile(rsfc_thresh[i, :], 90)] = 0
+            rsfc_thresh[rsfc_thresh < 0] = 0 # there should be very few negative values after thresholding
 
-        affinity = 1 - pairwise_distances(rsfc, metric='cosine')
-        embedding = compute_diffusion_map(affinity, alpha=0.5)
+            affinity = 1 - pairwise_distances(rsfc_thresh, metric='cosine')
+            embed = compute_diffusion_map(affinity, alpha=0.5)
+        else:
+            embed = embedding
 
-    for i in range(len(sublist)):
-        gradients_dict[sublist[i]][output_key] = embedding.T @ rsfc[:, :, i]
+        for i in range(len(sublist)):
+            gradients_dict[sublist[i]] = embed.T @ rsfc[:, :, i]
 
-    return gradients_dict, embedding
+    return gradients_dict, embed
 
-def score(image_features, sublist, input_key, output_key, ac_dict, params=None):
+def score(image_features, sublist, input_key, ac_dict, params=None, sub_features=None):
     # see https://github.com/katielavigne/score/blob/main/score.py
 
-    n_parcels = len(image_features[sublist[0]][input_key])
-    features = pd.DataFrame(columns=range(n_parcels), index=sublist)
-    for i in range(len(sublist)):
-        features.loc[sublist[i]] = image_features[sublist[i]][input_key]
-    features = features.join(pd.DataFrame({'mean': features.mean(axis=1)}))
+    if sub_features is not None and params is not None:
+        mean_features = sub_features.mean()
+        n_parcels = sub_features.shape[0]
+        ac_dict = np.zeros((n_parcels, n_parcels))
 
-    ac = np.zeros((n_parcels, n_parcels, len(sublist)))
-    if params == None:
-        params = pd.DataFrame()
-        for i in range(n_parcels):
-            for j in range(n_parcels):
-                results = ols(f'features[{i}] ~ features[{2}] + mean', data=features).fit()
-                ac[i, j, :] = results.resid
-                params[f'{i}_{j}'] = results.params
-    else:
         for i in range(n_parcels):
             for j in range(n_parcels):
                 params_curr = params[f'{i}_{j}']
-                ac[i, j, :] = (params_curr['Intercept'] + params_curr[f'features[{j}]'] * features[j]
-                               + params_curr['mean'] * features['mean'])
+                ac_dict[i, j] = params_curr[0] + params_curr[1] * sub_features[j] + params_curr[2] * mean_features
 
-    for i in range(len(sublist)):
-        ac_dict[sublist[i]][output_key] = ac[:, :, i]
+    else:
+        n_parcels = len(image_features[sublist[0]][input_key])
+        features = pd.DataFrame(columns=range(n_parcels), index=sublist)
+        for i in range(len(sublist)):
+            features.loc[sublist[i]] = image_features[sublist[i]][input_key]
+        features = features.join(pd.DataFrame({'mean': features.mean(axis=1)}))
+        features[features.columns] = features[features.columns].apply(pd.to_numeric)
+
+        ac = np.zeros((n_parcels, n_parcels, len(sublist)))
+        if params is None:
+            params = pd.DataFrame()
+            for i in range(n_parcels):
+                for j in range(n_parcels):
+                    results = ols(f'features[{i}] ~ features[{j}] + mean', data=features).fit()
+                    ac[i, j, :] = results.resid
+                    params[f'{i}_{j}'] = [results.params['Intercept'], results.params[f'features[{j}]'], 
+                                        results.params['mean']]
+        else:
+            for i in range(n_parcels):
+                for j in range(n_parcels):
+                    params_curr = params[f'{i}_{j}']
+                    ac[i, j, :] = params_curr[0] + params_curr[1] * features[j] + params_curr[2] * features['mean']
+
+        for i in range(len(sublist)):
+            ac_dict[sublist[i]] = ac[:, :, i]
 
     return ac_dict, params

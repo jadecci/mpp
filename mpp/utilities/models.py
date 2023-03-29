@@ -16,9 +16,9 @@ def elastic_net(train_x, train_y, test_x, test_y, n_alphas):
     return r, cod, en.coef_
 
 def permutation_test(acc, null_acc):
-    all_acc = np.concatenate(([acc], null_acc))
+    all_acc = np.vstack((acc, null_acc))
     rank = all_acc.argsort(axis=0)
-    ind = rank.shape[0] - np.where(rank==0)[0][0]
+    ind = [rank.shape[0] - np.where(rank[:, i]==0)[0][0] for i in range(rank.shape[1])]
     p = np.divide(ind, all_acc.shape[0])
 
     return p

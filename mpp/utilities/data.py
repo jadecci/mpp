@@ -1,7 +1,6 @@
 import h5py
 import pandas as pd
-from os import path
-import pathlib
+from pathlib import Path
 import logging
 
 logging.getLogger('datalad').setLevel(logging.WARNING)
@@ -27,7 +26,7 @@ def read_h5(h5_file, dataset):
 def pheno_HCP(dataset, pheno_dir, pheno_name, sublist):
     if dataset == 'HCP-YA':
         col_names = {'totalcogcomp': 'CogTotalComp_AgeAdj'}
-        unres_file = sorted(pathlib.Path(pheno_dir).glob('unrestricted_*.csv'))[0]
+        unres_file = sorted(Path(pheno_dir).glob('unrestricted_*.csv'))[0]
         pheno_data = pd.read_csv(unres_file, usecols=['Subject', col_names[pheno_name]], dtype={'Subject': str, 
                                  col_names[pheno_name]: float})[['Subject', col_names[pheno_name]]]
 
@@ -36,12 +35,12 @@ def pheno_HCP(dataset, pheno_dir, pheno_name, sublist):
         pheno_cols = {'totalcogcomp': 30}
         col_names = {'totalcogcomp': 'nih_totalcogcomp_ageadjusted'}
 
-        pheno_data = pd.read_table(path.join(pheno_dir, pheno_file[pheno_name]), sep='\t', header=0, skiprows=[1],
+        pheno_data = pd.read_table(Path(pheno_dir, pheno_file[pheno_name]), sep='\t', header=0, skiprows=[1],
                                    usecols=[4, pheno_cols[pheno_name]], dtype={'src_subject_id': str, 
                                    col_names[pheno_name]: float})[['src_subject_id', col_names[pheno_name]]]
 
     pheno_data.columns = ['subject', pheno_name]
-    pheno_data = pheno_data.dropna().drop_duplicates(subset='subject')
+    pheno_data = pheno_data.dropna().drop_duplicates(subset='subject').reset_index(drop=True)
     pheno_data = pheno_data[pheno_data['subject'].isin(sublist)]
 
     sublist = pheno_data['subject'].to_list()
