@@ -80,12 +80,10 @@ class RegionwiseModel(SimpleInterface):
         y = np.zeros((len(subjects)))
         x_all = np.zeros((len(subjects), len(confounds)))
 
-        for i in range(len(subjects)):
-            subject = subjects[i]
-
+        for i, subject in enumerate(subjects):
             if self.inputs.level == 'conf':
-                for j in range(len(confounds)):
-                    x_all[i, j] = self.inputs.confounds[confounds[j]][subject]
+                for j, confound in enumerate(confounds):
+                    x_all[i, j] = self.inputs.confounds[confound][subject]
             else:
                 dataset = [key for key in self.inputs.sublists if subject in self.inputs.sublists[key]][0]
                 if dataset == 'HCP-A' or 'HCP-D':

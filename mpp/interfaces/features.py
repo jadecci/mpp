@@ -1,4 +1,6 @@
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
+import nipype.pipeline as pe
+from nipype.interfaces import utility as niu
 import numpy as np
 import nibabel as nib
 import pandas as pd
@@ -9,8 +11,9 @@ from pathlib import Path
 from nipype.interfaces import fsl, freesurfer
 import bct
 
-from mpp.utilities.features import fc, diffusion_mapping, score
+from mpp.utilities.features import fc, diffusion_mapping, score, add_subdir, atlas_files, add_annot, CombineAtlas, SC
 from mpp.utilities.data import read_h5
+from mpp.utilities.preproc import t1_files, fs_files_aparc, combine_4strings
 
 base_dir = Path(__file__).resolve().parent.parent
 
@@ -141,10 +144,8 @@ class MyelinEstimate(SimpleInterface):
         myelin_vol = nib.load(self.inputs.anat_files['myelin_vol']).get_fdata()
 
         for level in range(4):
-            parc_Sch_file = Path(base_dir, 'data', 'atlas', 
-                                 f'Schaefer2018_{level+1}00Parcels_17Networks_order.dlabel.nii')
+            parc_Sch_file, _, _, parc_Mel_file = atlas_files(level)
             parc_Sch = nib.load(parc_Sch_file).get_fdata()
-            parc_Mel_file = Path(base_dir, 'data', 'atlas', f'Tian_Subcortex_S{level+1}_3T.nii.gz')
             parc_Mel = nib.load(parc_Mel_file).get_fdata()
 
             parc_surf = np.zeros(((level+1)*100))
@@ -312,5 +313,104 @@ class GradientAC(SimpleInterface):
         self._results['repeat'] = self.inputs.repeat
         self._results['fold'] = self.inputs.fold
         self._results['level'] = self.inputs.level
+
+        return runtime
+
+### SC: generates a workflow for constructing structural connectivity
+
+class _SCWFInputSpec(BaseInterfaceInputSpec):
+    subject = traits.Str(mandatory=True, desc='subject ID')
+    work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
+
+class _SCWFOutputSpec(TraitedSpec):
+    sc_wf = traits.Any(desc='structural connectivity workflow')
+
+class SCWF(SimpleInterface):
+    input_spec = _SCWFInputSpec
+    output_spec = _SCWFOutputSpec
+    
+    def _run_interface(self, runtime):
+        tmp_dir = Path(self.inputs.work_dir, 'sc_tmp')
+        tmp_dir.mkdir(parents=True, exist_ok=True)
+
+        self._results['sc_wf'] = pe.Workflow('sc_wf', base_dir=self.inputs.work_dir)
+        inputnode = pe.Node(niu.IdentityInterface(fields=['tck_file', 't1_files', 'fs_files', 'fs_dir']),
+                            name='inputnode')
+        sub_dir = pe.Node(niu.Function(function=add_subdir, output_names=['sub_dir']), name='sub_dir')
+        sub_dir.inputs.sub_dir = tmp_dir
+        sub_dir.inputs.subject = self.inputs.subject
+        split_t1_files = pe.Node(niu.Function(function=t1_files, output_names=['t1', 't1_restore', 't1_restore_brain',
+                                                                               'bias', 'fs_mask', 'xfm']), 
+                                 name='split_t1_files')
+        split_fs_files = pe.Node(niu.Function(function=fs_files_aparc, output_names=['lh_aparc', 'rh_aparc',
+                                                                                     'lh_white', 'rh_white',
+                                                                                     'lh_pial', 'rh_pial',
+                                                                                     'lh_ribbon', 'rh_ribbon',
+                                                                                     'ribbon']),
+                                 name='split_fs_files')
+        split_atlas = pe.Node(niu.Function(function=atlas_files, output_names=['cort_atlas', 'lh_cort_annot',
+                                                                               'rh_cort_annot', 'subcort_atlas',
+                                                                               'level']), 
+                              iterables=[('level', [0, 1, 2, 3])], name='split_atlas')
+        split_atlas.inputs.data_dir = Path(base_dir, 'data')
+        std2t1 = pe.Node(fsl.InvWarp(), name='std2t1')
+        subcort_t1 = pe.Node(fsl.ApplyWarp(interp='nn', relwarp=True), name='subcort_t1')
+        lh_cort_sub = pe.Node(freesurfer.SurfaceTransform(hemi='lh', source_subject='fsaverage',
+                                                          target_subject=self.inputs.subject),
+                              name='lh_cort_sub')
+        rh_cort_sub = pe.Node(freesurfer.SurfaceTransform(hemi='rh', source_subject='fsaverage',
+                                                          target_subject=self.inputs.subject),
+                              name='rh_cort_sub')
+        copy_annot = pe.Node(niu.Function(function=add_annot, output_names=['annot_args']), name='copy_annot')
+        copy_annot.inputs.subject = self.inputs.subject
+        aseg_out = pe.Node(niu.Function(function=combine_4strings, output_names=['str_out']), name='aseg_out')
+        aseg_out.inputs.str1 = str(tmp_dir)
+        aseg_out.inputs.str2 = 'aparc2aseg_'
+        aseg_out.inputs.str4 = '.nii.gz'
+        cort_aseg = pe.Node(freesurfer.Aparc2Aseg(subject_id=self.inputs.subject), name='cort_aseg')
+        cort_t1 = pe.Node(fsl.FLIRT(interp='nearestneighbour'), name='cort_t1')
+        combine_atlas = pe.Node(CombineAtlas(work_dir=tmp_dir), name='combine_atlas')
+        sc = pe.Node(SC(work_dir=tmp_dir), name='sc')
+        outputnode = pe.JoinNode(niu.IdentityInterface(fields=['count_files', 'length_files']), name='outputnode',
+                                 joinfield=['count_files', 'length_files'], joinsource='split_atlas')
+
+        self._results['sc_wf'].connect([(inputnode, sub_dir, [('fs_dir', 'fs_dir')]),
+                                        (inputnode, split_t1_files, [('t1_files', 't1_files')]),
+                                        (inputnode, split_fs_files, [('fs_files', 'fs_files')]),
+                                        (split_t1_files, std2t1, [('xfm', 'warp'),
+                                                                  ('t1_restore_brain', 'reference')]),
+                                        (split_t1_files, subcort_t1, [('t1_restore_brain', 'ref_file')]),
+                                        (std2t1, subcort_t1, [('inverse_warp', 'field_file')]),
+                                        (split_atlas, subcort_t1, [('subcort_atlas', 'in_file')]),
+                                        (sub_dir, lh_cort_sub, [('sub_dir', 'subjects_dir')]),
+                                        (split_atlas, lh_cort_sub, [('lh_cort_annot', 'source_annot_file')]),
+                                        (sub_dir, rh_cort_sub, [('sub_dir', 'subjects_dir')]),
+                                        (split_atlas, rh_cort_sub, [('rh_cort_annot', 'source_annot_file')]),
+                                        (sub_dir, copy_annot, [('sub_dir', 'sub_dir')]),
+                                        (lh_cort_sub, copy_annot, [('out_file', 'lh_annot')]),
+                                        (rh_cort_sub, copy_annot, [('out_file', 'rh_annot')]),
+                                        (split_atlas, aseg_out, [('level', 'str3')]),
+                                        (sub_dir, cort_aseg, [('sub_dir', 'subjects_dir')]),
+                                        (split_fs_files, cort_aseg, [('lh_aparc', 'lh_annotation'),
+                                                                     ('rh_aparc', 'rh_annotation'),
+                                                                     ('lh_pial', 'lh_pial'),
+                                                                     ('rh_pial', 'rh_pial'),
+                                                                     ('lh_ribbon', 'lh_ribbon'),
+                                                                     ('rh_ribbon', 'rh_ribbon'),
+                                                                     ('lh_white', 'lh_white'),
+                                                                     ('rh_white', 'rh_white'),
+                                                                     ('ribbon', 'ribbon')]),
+                                        (copy_annot, cort_aseg, [('annot_args', 'args')]),
+                                        (aseg_out, cort_aseg, [('str_out', 'out_file')]),
+                                        (split_t1_files, cort_t1, [('t1_restore_brain', 'reference')]),
+                                        (cort_aseg, cort_t1, [('out_file', 'in_file')]),
+                                        (split_atlas, combine_atlas, [('level', 'level')]),
+                                        (subcort_t1, combine_atlas, [('out_file', 'subcort_file')]),
+                                        (cort_t1, combine_atlas, [('out_file', 'cort_file')]),
+                                        (inputnode, sc, [('tck_file', 'tck_file')]),
+                                        (split_atlas, sc, [('level', 'level')]),
+                                        (combine_atlas, sc, [('combined_file', 'atlas_file')]),
+                                        (sc, outputnode, [('count_file', 'count_files'),
+                                                          ('length_file', 'length_files')])])
 
         return runtime

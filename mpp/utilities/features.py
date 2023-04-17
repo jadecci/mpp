@@ -1,9 +1,10 @@
+from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 import numpy as np
 import pandas as pd
 import nibabel as nib
-from os import path
-import pathlib
+from pathlib import Path
 import sys
+import subprocess
 import logging
 
 from scipy.stats import zscore
@@ -12,7 +13,7 @@ from sklearn.metrics import pairwise_distances
 from mapalign.embed import compute_diffusion_map
 from statsmodels.formula.api import ols
 
-base_dir = path.join(path.dirname(path.realpath(__file__)), '..')
+base_dir = Path(__file__).resolve().parent.parent
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
 def fc(t_surf, t_vol, dataset, func_files, sfc_dict, dfc_dict=None):
@@ -25,10 +26,8 @@ def fc(t_surf, t_vol, dataset, func_files, sfc_dict, dfc_dict=None):
     for level in range(4):
         key = f'level{level+1}'
 
-        parc_Sch_file = path.join(base_dir, 'data', 'atlas', 
-                                  f'Schaefer2018_{level+1}00Parcels_17Networks_order.dlabel.nii')
+        parc_Sch_file, _, _, parc_Mel_file = atlas_files(level)
         parc_Sch = nib.load(parc_Sch_file).get_fdata()
-        parc_Mel_file = path.join(base_dir, 'data', 'atlas', f'Tian_Subcortex_S{level+1}_3T.nii.gz')
         parc_Mel = nib.load(parc_Mel_file).get_fdata()
         
         mask = parc_Mel.nonzero()
@@ -112,8 +111,8 @@ def nuisance_conf_HCP(t_vol, atlas_file):
 def pheno_conf_HCP(dataset, pheno_dir, features_dir, sublist):
     # primary vairables
     if dataset == 'HCP-YA':
-        unres_file = sorted(pathlib.Path(pheno_dir).glob('unrestricted_*.csv'))[0]
-        res_file = sorted(pathlib.Path(pheno_dir).glob('RESTRICTED_*.csv'))[0]
+        unres_file = sorted(Path(pheno_dir).glob('unrestricted_*.csv'))[0]
+        res_file = sorted(Path(pheno_dir).glob('RESTRICTED_*.csv'))[0]
         unres_conf = pd.read_csv(unres_file, usecols=['Subject', 'Gender', 'FS_BrainSeg_Vol', 'FS_IntraCranial_Vol'],
                                  dtype={'Subject': str, 'Gender': str, 'FS_BrainSeg_Vol': float, 
                                         'FS_IntraCranial_Vol': float})
@@ -132,8 +131,8 @@ def pheno_conf_HCP(dataset, pheno_dir, features_dir, sublist):
         brainseg_vols = []
         icv_vols = []
         for subject in conf['src_subject_id']:
-            astats_file = path.join(features_dir, f'{dataset}_astats', f'{subject}_V1_MR.txt')
-            aseg_stats = pd.read_csv(astats_file, sep='\t', index_col=0)
+            astats_file = Path(features_dir, f'{dataset}_astats', f'{subject}_V1_MR.txt')
+            aseg_stats = pd.read_csv(str(astats_file), sep='\t', index_col=0)
             brainseg_vols.append(aseg_stats['BrainSegVol'][0])
             icv_vols.append(aseg_stats['EstimatedTotalIntraCranialVol'][0])
         conf['brainseg_vol'] = brainseg_vols
@@ -224,3 +223,111 @@ def score(image_features, sublist, input_key, ac_dict, params=None, sub_features
             ac_dict[sublist[i]] = ac[:, :, i]
 
     return ac_dict, params
+
+def add_subdir(sub_dir, subject, fs_dir):
+    from pathlib import Path
+    from os import symlink, getenv
+
+    Path(sub_dir).mkdir(parents=True, exist_ok=True)
+    if not Path(sub_dir, subject).is_symlink():
+        symlink(fs_dir, Path(sub_dir, subject))
+    if not Path(sub_dir, 'fsaverage').is_symlink():
+        symlink(Path(getenv('FREESURFER_HOME'), 'subjects', 'fsaverage'), Path(sub_dir, 'fsaverage'))
+
+    return sub_dir
+
+def atlas_files(data_dir, level):
+    from pathlib import Path
+
+    parc_Sch = Path(data_dir, 'atlas', f'Schaefer2018_{int(level)+1}00Parcels_17Networks_order.dlabel.nii')
+    lh_annot_Sch = Path(data_dir, 'label', f'lh.Schaefer2018_{int(level)+1}00Parcels_17Networks_order.annot')
+    rh_annot_Sch = Path(data_dir, 'label', f'rh.Schaefer2018_{int(level)+1}00Parcels_17Networks_order.annot')
+    parc_Mel = Path(data_dir, 'atlas', f'Tian_Subcortex_S{int(level)+1}_3T.nii.gz')
+
+    return parc_Sch, lh_annot_Sch, rh_annot_Sch, parc_Mel, level
+
+def add_annot(sub_dir, subject, lh_annot, rh_annot):
+    import shutil
+    from pathlib import Path
+
+    if Path(lh_annot).is_file():
+        shutil.copyfile(lh_annot, Path(sub_dir, subject, 'label', Path(lh_annot).name))
+    if Path(rh_annot).is_file():
+        shutil.copyfile(rh_annot, Path(sub_dir, subject, 'label', Path(rh_annot).name))
+
+    annot_name = str(Path(lh_annot).name).split('.')[1:-1]
+    annot_name = '.'.join(annot_name)
+    annot_args = f'--annot {annot_name}'
+    
+    return annot_args
+
+# combine cortex and subcortex atlases in T1 space
+
+class _CombineAtlasInputSpec(BaseInterfaceInputSpec):
+    cort_file = traits.File(mandatory=True, exists=True, desc='cortex atlas in T1 space')
+    subcort_file = traits.File(mandatory=True, exists=True, desc='subcortex atlas in t1 space')
+    work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
+    level = traits.Int(mandatory=True, desc='parcellation level (0 to 3)')
+
+class _CombineAtlasOutputSpec(TraitedSpec):
+    combined_file = traits.File(exists=True, desc='combined atlas in T1 space')
+
+class CombineAtlas(SimpleInterface):
+    input_spec = _CombineAtlasInputSpec
+    output_spec = _CombineAtlasOutputSpec
+
+    def _run_interface(self, runtime):
+        atlas_img = nib.load(self.inputs.cort_file)
+        atlas_cort = atlas_img.get_fdata()
+        atlas_subcort = nib.load(self.inputs.subcort_file).get_fdata()
+        atlas = np.zeros((atlas_cort.shape))
+
+        cort_parcels = np.unique(atlas_cort)
+        for parcel in cort_parcels:
+            if parcel > 1000 and parcel < 2000: # lh
+                atlas[atlas_cort==parcel] = parcel - 1000
+            elif parcel > 2000: # rh
+                atlas[atlas_cort==parcel] = parcel - 2000 + (len(cort_parcels) - 1) / 2
+
+        for parcel in np.unique(atlas_subcort):
+            if parcel != 0:
+                atlas[atlas_subcort==parcel] = parcel + 100
+
+        self._results['combined_file'] = Path(self.inputs.work_dir, f'atlas_combine_level{self.inputs.level}.nii.gz')
+        nib.save(nib.Nifti1Image(atlas, header=atlas_img.header, affine=atlas_img.affine), 
+                 self._results['combined_file'])
+
+        return runtime
+    
+# SC: structural connectivity construction
+
+class _SCInputSpec(BaseInterfaceInputSpec):
+    atlas_file = traits.File(mandatory=True, exists=True, desc='combined atlas in T1 space')
+    tck_file = traits.File(mandatory=True, exists=True, desc='tracks file')
+    work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
+    level = traits.Int(mandatory=True, desc='parcellation level (0 to 3)')
+
+class _SCOutputSpec(TraitedSpec):
+    count_file = traits.File(exists=True, desc='SC based on streamline count')
+    length_file = traits.File(exists=True, desc='SC based on streamline length')
+
+class SC(SimpleInterface):
+    input_spec = _SCInputSpec
+    output_spec = _SCOutputSpec
+
+    def _run_interface(self, runtime):
+        self._results['count_file'] = Path(self.inputs.work_dir, f'sc_count_level{self.inputs.level}.csv')
+        sc_count = ['tck2connectome', '-assignment_radial_search', '2',
+                    '-symmetric', '-nthreads', '0',
+                    str(self.inputs.tck_file), str(self.inputs.atlas_file), str(self._results['count_file'])]
+        if not self._results['count_file'].is_file():
+            subprocess.run(sc_count, check=True)
+
+        self._results['length_file'] = Path(self.inputs.work_dir, f'sc_length_level{self.inputs.level}.csv')
+        sc_length = ['tck2connectome', '-assignment_radial_search', '2', '-scale_length', '-stat_edge', 'mean',
+                     '-symmetric', '-nthreads', '0',
+                     str(self.inputs.tck_file), str(self.inputs.atlas_file), str(self._results['length_file'])]
+        if not self._results['length_file'].is_file():
+            subprocess.run(sc_length, check=True)
+
+        return runtime

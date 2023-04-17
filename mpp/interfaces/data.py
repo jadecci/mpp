@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 import datalad.api as dl
 import subprocess
@@ -180,8 +181,10 @@ class _InitDiffusionDataInputSpec(BaseInterfaceInputSpec):
 
 class _InitDiffusionDataOutputSpec(TraitedSpec):
     d_files = traits.Dict(dtype=Path, desc='filenames of diffusion data')
+    t1_files = traits.Dict(dtype=Path, desc='filenames of T1w data')
     fs_files = traits.Dict(dtype=Path, desc='filenames of FreeSurfer outputs')
     dataset_dir = traits.Directory(desc='absolute path to installed root dataset')
+    fs_dir = traits.Directory(desc='FreeSurfer subject directory')
 
 class InitDiffusionData(SimpleInterface):
     input_spec = _InitDiffusionDataInputSpec
@@ -209,8 +212,11 @@ class InitDiffusionData(SimpleInterface):
         if self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
             d_dir = Path(subject_dir, 'unprocessed', 'Diffusion')
             dl.get(path=d_dir.parent, dataset=dataset_dir, get_data=False, source=source, on_failure='stop')
+            anat_dir = Path(subject_dir, 'T1w')
             fs_dir = Path(subject_dir, 'T1w', self.inputs.subject)
-            dl.get(path=fs_dir.parent, dataset=dataset_dir, get_data=False, source=source, on_failure='stop')
+            dl.get(path=anat_dir, dataset=dataset_dir, get_data=False, source=source, on_failure='stop')
+            mni_dir = Path(subject_dir, 'MNINonLinear')
+            dl.get(path=mni_dir, dataset=dataset_dir, get_data=False, source=source, on_failure='stop')
 
             self._results['d_files'] = {}
             for dirs in [98, 99]:
@@ -224,16 +230,54 @@ class InitDiffusionData(SimpleInterface):
                 else:
                     self._results['d_files'][key] = ''
 
-            self._results['fs_files'] = {'lh_pial': Path(fs_dir, 'surf', 'lh.pial'),}
+            self._results['fs_files'] = {'lh_aparc': Path(fs_dir, 'label', 'lh.aparc.annot'),
+                                         'rh_aparc': Path(fs_dir, 'label', 'rh.aparc.annot'),
+                                         'lh_pial': Path(fs_dir, 'surf', 'lh.pial'),
+                                         'rh_pial': Path(fs_dir, 'surf', 'rh.pial'),
+                                         'lh_white': Path(fs_dir, 'surf', 'lh.white'),
+                                         'rh_white': Path(fs_dir, 'surf', 'rh.white'),
+                                         'lh_white_deformed': Path(fs_dir, 'surf', 'lh.white.deformed'),
+                                         'rh_white_deformed': Path(fs_dir, 'surf', 'rh.white.deformed'),
+                                         'lh_reg': Path(fs_dir, 'surf', 'lh.sphere.reg'),
+                                         'rh_reg': Path(fs_dir, 'surf', 'rh.sphere.reg'),
+                                         'lh_ribbon': Path(fs_dir, 'mri', 'lh.ribbon.mgz'),
+                                         'rh_ribbon': Path(fs_dir, 'mri', 'rh.ribbon.mgz'),
+                                         'ribbon': Path(fs_dir, 'mri', 'ribbon.mgz'),
+                                         'orig': Path(fs_dir, 'mri', 'orig.mgz'),
+                                         'eye': Path(fs_dir, 'mri', 'transforms', 'eye.dat'),
+                                         'lh_thickness': Path(fs_dir, 'surf', 'lh.thickness'),
+                                         'rh_thickness': Path(fs_dir, 'surf', 'rh.thickness')}
             for key in self._results['fs_files']:
                 if self._results['fs_files'][key].is_symlink():
-                    dl.get(path=self._results['fs_files'][key], dataset=fs_dir.parent, source=source, on_failure='stop')
+                    dl.get(path=self._results['fs_files'][key], dataset=anat_dir, source=source, on_failure='stop')
                 else:
-                    self._results['anat_files'][key] = ''
+                    self._results['fs_files'][key] = ''
+            self._results['fs_dir'] = fs_dir
+
+            self._results['t1_files'] = {'t1': Path(anat_dir, 'T1w_acpc_dc.nii.gz'),
+                                         't1_restore': Path(anat_dir, 'T1w_acpc_dc_restore.nii.gz'),
+                                         't1_restore_brain': Path(anat_dir, 'T1w_acpc_dc_restore_brain.nii.gz'),
+                                         'bias': Path(anat_dir, 'BiasField_acpc_dc.nii.gz'),
+                                         'fs_mask': Path(anat_dir, 'brainmask_fs.nii.gz'),
+                                         't1_to_mni': Path(mni_dir, 'xfms', 'acpc_dc2standard.nii.gz'),
+                                         'aseg': Path(mni_dir, 'mri', 'aseg.mgz'),
+                                         'aparc_aseg': Path(mni_dir, 'mri', 'aparc+aseg.mgz'),
+                                         'brainmask': Path(mni_dir, 'mri', 'brainmask.mgz'),
+                                         'talairach_xfm': Path(mni_dir, 'mri', 'xfms', 'talairach.xfm'),
+                                         'norm': Path(mni_dir, 'mri', 'norm.mgz')}
+            for key in self._results['t1_files']:
+                if self._results['t1_files'][key].is_symlink():
+                    if key == 't1_to_mni' or key == 'aseg':
+                        dl.get(path=self._results['t1_files'][key], dataset=mni_dir, source=source, on_failure='stop')
+                    else:
+                        dl.get(path=self._results['t1_files'][key], dataset=anat_dir, source=source, on_failure='stop')
+                else:
+                    self._results['t1_files'][key] = ''
 
         return runtime
 
 ### SaveFeatures: save extracted features
+
 class _SaveFeaturesInputSpec(BaseInterfaceInputSpec):
     rsfc = traits.Dict(mandatory=True, dtype=float, desc='resting-state functional connectivity')
     dfc = traits.Dict(dmandatory=True, type=float, desc='dynamic functional connectivity')
@@ -243,18 +287,14 @@ class _SaveFeaturesInputSpec(BaseInterfaceInputSpec):
     morph = traits.Dict(mandatory=True, dtype=float, desc='morphometry features')
     output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
     dataset = traits.Str(mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
+    dataset_dir = traits.Directory(mandatory=True, desc='absolute path to installed root dataset')
     subject = traits.Str(mandatory=True, desc='subject ID')
     overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
 
-class _SaveFeaturesOutputSpec(TraitedSpec):
-    sub_done = traits.Bool(desc='whether subject workflow is completed')
-
 class SaveFeatures(SimpleInterface):
     input_spec = _SaveFeaturesInputSpec
-    output_spec = _SaveFeaturesOutputSpec
 
     def _run_interface(self, runtime):
-        self._results['sub_done'] = False
         Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
         output_file = Path(self.inputs.output_dir, f'{self.inputs.dataset}_{self.inputs.subject}.h5')
 
@@ -286,22 +326,39 @@ class SaveFeatures(SimpleInterface):
             data_myelin = self.inputs.myelin[f'level{level+1}']
             write_h5(output_file, ds_myelin, data_myelin, self.inputs.overwrite)
 
-        self._results['sub_done'] = True
+        dl.remove(dataset=self.inputs.dataset_dir, reckless='kill', on_failure='continue')
 
         return runtime
+    
+### SaveDFeatures: save extracted features
 
-### DropSubjectData: drop subject-wise data after feature extraction is done
-
-class _DropSubDataInputSpec(BaseInterfaceInputSpec):
-    sub_done = traits.Bool(False, desc='whether subject workflow is completed')
+class _SaveDFeaturesInputSpec(BaseInterfaceInputSpec):
+    count_files = traits.List(mandatory=True, desc='SC based on streamline count')
+    length_files = traits.List(mandatory=True, desc='SC based on streamline length')
+    output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
+    dataset = traits.Str(mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
     dataset_dir = traits.Directory(mandatory=True, desc='absolute path to installed root dataset')
+    subject = traits.Str(mandatory=True, desc='subject ID')
+    overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
 
-class DropSubData(SimpleInterface):
-    input_spec = _DropSubDataInputSpec
+class SaveDFeatures(SimpleInterface):
+    input_spec = _SaveDFeaturesInputSpec
 
     def _run_interface(self, runtime):
-        if self.inputs.sub_done:
-            dl.remove(dataset=self.inputs.dataset_dir, reckless='kill', on_failure='continue')
+        Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
+        output_file = Path(self.inputs.output_dir, f'{self.inputs.dataset}_{self.inputs.subject}.h5')
+
+        for count_file in self.inputs.count_files:
+            sc_count = pd.read_csv(count_file, header=None)
+            ds_count = f'/sc/count/level{str(sc_count.shape[0])[0]}'
+            write_h5(output_file, ds_count, np.array(sc_count), self.inputs.overwrite)
+
+        for length_file in self.inputs.length_files:
+            sc_length = pd.read_csv(length_file, header=None)
+            ds_length = f'/sc/length/level{str(sc_length.shape[0])[0]}'
+            write_h5(output_file, ds_length, np.array(sc_length), self.inputs.overwrite)
+
+        dl.remove(dataset=self.inputs.dataset_dir, reckless='kill', on_failure='continue')
 
         return runtime
 
