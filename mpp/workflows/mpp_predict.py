@@ -66,6 +66,8 @@ def main():
                           name='rw_validate', mem_gb=5)
     rw_select = pe.JoinNode(RegionSelect(), name='rw_select', joinfield=['results'], joinsource='features', mem_gb=5)
     rw_select.inputs.levels = args.levels
+    rw_select.inputs.output_dir = args.output_dir
+    rw_select.inputs.overwrite = args.overwrite
     rw_select.inputs.config = config
     rw_test = pe.Node(RegionwiseModel(mode='test', config=config, features_dir=features_dir), 
                       name='rw_test', mem_gb=5)

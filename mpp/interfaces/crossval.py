@@ -7,14 +7,14 @@ from sklearn.model_selection import RepeatedStratifiedKFold
 from statsmodels.stats.multitest import multipletests
 
 from mpp.utilities.models import elastic_net, permutation_test
-from mpp.utilities.data import read_h5
+from mpp.utilities.data import read_h5, write_h5
 from mpp.utilities.features import diffusion_mapping, score
 
 ### CrossValSplit: generate cross-validation splits
 
 class _CrossValSplitInputSpec(BaseInterfaceInputSpec):
     sublists = traits.Dict(mandatory=True, dtype=list, desc='list of subjects available in each dataset')
-    config = traits.Dict({}, desc='configuration settings')
+    config = traits.Dict(mandatory=True, desc='configuration settings')
     permutation = traits.Bool(False, desc='use n_repeats_perm instead')
 
 class _CrossValSplitOutputSpec(TraitedSpec):
@@ -65,7 +65,7 @@ class _RegionwiseModelInputSpec(BaseInterfaceInputSpec):
     mode = traits.Str(mandatory=True, desc=("'validate' to train and validate models with permutation tests, "
                                             + "'test' to train and test models on test folds"))
     selected = traits.Dict(dtype=list, desc='selected regions for each parcellation level')
-    config = traits.Dict({}, desc='configuration settings')
+    config = traits.Dict(mandatory=True, desc='configuration settings')
 
 class _RegionwiseModelOutputSpec(TraitedSpec):
     results = traits.Dict(desc='accuracy results')
@@ -124,8 +124,7 @@ class RegionwiseModel(SimpleInterface):
 
                 # TODO: diffusion features
 
-                x_all = x if i == 0 else np.dstack((x_all.T, x.T)).T
-                # ValueError: all the input array dimensions for the concatenation axis must match exactly, but along dimension 1, the array at index 0 has size 711 and the array at index 1 has size 595
+                x_all = x if i == 0 else np.dstack((x_all.T, x.T)).T                
 
             # phenotype
             if permutation:
@@ -151,11 +150,11 @@ class RegionwiseModel(SimpleInterface):
         train_x, train_y = self._extract_data(train_sub, repeat, permutation=permutation)
         val_x, val_y = self._extract_data(val_sub, repeat, permutation=permutation)
 
-        r = np.zeros((train_x.shape[1]))
-        cod = np.zeros((train_x.shape[1]))
-        for region in range(train_x.shape[1]):
-            r[region], cod[region], _ = elastic_net(train_x[:, region], train_y, 
-                                                    val_x[:, region], val_y, 
+        r = np.zeros((train_x.shape[2]))
+        cod = np.zeros((train_x.shape[2]))
+        for region in range(train_x.shape[2]):
+            r[region], cod[region], _ = elastic_net(train_x[:, :, region], train_y, 
+                                                    val_x[:, :, region], val_y, 
                                                     int(self.inputs.config['n_alphas']))
         r =  np.nan_to_num(r)
 
@@ -169,13 +168,13 @@ class RegionwiseModel(SimpleInterface):
         train_x, train_y = self._extract_data(train_sub, self.inputs.repeat)
         test_x, test_y = self._extract_data(test_sub, self.inputs.repeat)
 
-        r = np.zeros((train_x.shape[1]))
-        cod = np.zeros((train_x.shape[1]))
-        coef = np.zeros((train_x.shape[1], train_x.shape[2]))
-        for region in range(train_x.shape[1]):
-            if self.inputs.selected[self.inputs.level][region]:
-                r[region], cod[region], coef[region, :] = elastic_net(train_x[:, region], train_y, 
-                                                                      test_x[:, region], test_y, 
+        r = np.zeros((train_x.shape[2]))
+        cod = np.zeros((train_x.shape[2]))
+        coef = np.zeros((train_x.shape[2], train_x.shape[1]))
+        for region in range(train_x.shape[2]):
+            if self.inputs.selected[f'regions_level{self.inputs.level}'][region]:
+                r[region], cod[region], coef[region, :] = elastic_net(train_x[:, :, region], train_y, 
+                                                                      test_x[:, :, region], test_y, 
                                                                       int(self.inputs.config['n_alphas']))
 
         return r, cod, coef
@@ -200,8 +199,9 @@ class RegionwiseModel(SimpleInterface):
         
         elif self.inputs.mode == 'test':
             key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
-            self._results['results'][f'r_{key}'], self._results[f'cod_{key}'], coef = self._test()
-            self._results['selected'][key] = list(coef != 0)
+            self._results['results'][f'r_{key}'], self._results['results'][f'cod_{key}'], coef = self._test()
+            self._results['selected'] = {}
+            self._results['selected'][f'features_{key}'] = list(coef != 0)
 
         return runtime
 
@@ -210,7 +210,9 @@ class RegionwiseModel(SimpleInterface):
 class _RegionSelectInputSpec(BaseInterfaceInputSpec):
     results = traits.List(dtype=dict, desc='accuracy results')
     levels = traits.List(mandatory=True, desc='parcellation levels (1 to 4)')
-    config = traits.Dict({}, desc='configuration settings')
+    output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
+    overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
+    config = traits.Dict(mandatory=True, desc='configuration settings')
 
 class _RegionSelectOutputSpec(TraitedSpec):
     selected = traits.Dict(dtype=list, desc='selected regions for each parcellation level')
@@ -232,16 +234,23 @@ class RegionSelect(SimpleInterface):
         n_regions = [n_region_dict[level] for level in self.inputs.levels]
 
         results = np.zeros((int(n_repeats), sum(n_regions)))
-        for repeat in range(n_repeats):
-            for fold in range(n_folds):
+        for repeat in range(int(n_repeats)):
+            for fold in range(int(n_folds)):
                 pos = 0
                 for level in self.inputs.levels:
                     key_curr = f'{key}_repeat{repeat}_fold{fold}_level{level}'
                     regions = range(pos, pos + n_region_dict[level])
                     pos = pos + n_region_dict[level]
-                    results[repeat, regions] = results_dict[key_curr]
+                    results[repeat, regions] = results[repeat, regions] + results_dict[key_curr]
+        results[repeat, regions] = np.divide(results[repeat, regions], int(n_folds))
 
         return results
+    
+    def _save_results(self, results_dict):
+        Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
+        output_file = Path(self.inputs.output_dir, 'regionwise_results.h5')
+        for key in results_dict:
+            write_h5(output_file, f'/{key}', np.array(results_dict[key]), self.inputs.overwrite)
     
     def _run_interface(self, runtime):
         n_region_dict = {'1': 116, '2': 232, '3': 350, '4': 454}
@@ -253,10 +262,13 @@ class RegionSelect(SimpleInterface):
         p = permutation_test(results.mean(axis=0), results_perm)
         selected = multipletests(p, method='fdr_bh')[0]
 
+        self._results['selected'] = {}
         pos = 0
         for level in self.inputs.levels:
             regions = range(pos, pos + n_region_dict[level])
             pos = pos + n_region_dict[level]
-            self._results['selected_regions'][level] = selected[regions]
+            self._results['selected'][f'regions_level{level}'] = selected[regions]
+
+        self._save_results(self._results['selected'])
 
         return runtime

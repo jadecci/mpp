@@ -280,7 +280,7 @@ class InitDiffusionData(SimpleInterface):
 
 class _SaveFeaturesInputSpec(BaseInterfaceInputSpec):
     rsfc = traits.Dict(mandatory=True, dtype=float, desc='resting-state functional connectivity')
-    dfc = traits.Dict(dmandatory=True, type=float, desc='dynamic functional connectivity')
+    dfc = traits.Dict(dmandatory=True, dtype=float, desc='dynamic functional connectivity')
     rs_stats = traits.Dict(mandatory=True, dtype=float, desc='dynamic functional connectivity')
     tfc = traits.Dict({}, dtype=dict, desc='task-based functional connectivity')
     myelin = traits.Dict(mandatory=True, dtype=float, desc='myelin content estimates')
@@ -405,7 +405,6 @@ class InitFeatures(SimpleInterface):
 class _RegionwiseSaveInputSpec(BaseInterfaceInputSpec):
     results = traits.List(dtype=dict, desc='accuracy results')
     selected_features = traits.List(dtype=dict, desc='whether each feature is selected or not')
-    selected_regions = traits.Dict(dtype=list, desc='selected regions for each parcellation level')
     output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
     overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
 
@@ -419,8 +418,8 @@ class RegionwiseSave(SimpleInterface):
         results = {key: item for d in self.inputs.results for key, item in d.items()}
         features = {key: item for d in self.inputs.selected_features for key, item in d.items()}
 
-        write_h5(output_file, '/accuracies', results, self.inputs.overwrite)
-        write_h5(output_file, '/selected/features', features, self.inputs.overwrite)
-        write_h5(output_file, '/selected/regions', self.inputs.selected_regions, self.inputs.overwrite)
+        for dict_data in results, features:
+            for key in dict_data:
+                write_h5(output_file, f'/{key}', np.array(dict_data[key]), self.inputs.overwrite)
 
         return runtime
