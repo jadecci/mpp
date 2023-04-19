@@ -7,7 +7,7 @@ import nipype.pipeline as pe
 from nipype.interfaces import utility as niu
 from nipype.interfaces import fsl
 
-from mpp.interfaces.data import InitData, SaveFeatures, DropSubData, InitDiffusionData, SaveDFeatures
+from mpp.interfaces.data import InitData, SaveFeatures, InitDiffusionData, SaveDFeatures
 from mpp.interfaces.features import RSFC, NetworkStats, TFC, MyelinEstimate, Morphometry, SCWF
 from mpp.interfaces.preproc import HCPMinProc, CSD, TCK
 

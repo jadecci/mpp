@@ -14,7 +14,7 @@ setup(
         'numpy>=1.21.6',
         'pandas>=1.3.5',
         'scipy>=1.7.3',
-        'scikit-learn>=1.0.2'
+        'scikit-learn>=1.0.2',
         'bctpy>=0.5.2',
         'psutil>=5.0',
         'statsmodels>=0.13.5',
