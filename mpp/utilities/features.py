@@ -282,7 +282,7 @@ class CombineAtlas(SimpleInterface):
         atlas_subcort = nib.load(self.inputs.subcort_file).get_fdata()
         atlas = np.zeros((atlas_cort.shape))
 
-        cort_parcels = np.unique(atlas_cort)
+        cort_parcels = np.unique(atlas_cort[np.where(atlas_cort > 1000)])
         for parcel in cort_parcels:
             if parcel > 1000 and parcel < 2000: # lh
                 atlas[atlas_cort==parcel] = parcel - 1000
@@ -291,7 +291,7 @@ class CombineAtlas(SimpleInterface):
 
         for parcel in np.unique(atlas_subcort):
             if parcel != 0:
-                atlas[atlas_subcort==parcel] = parcel + 100
+                atlas[atlas_subcort==parcel] = parcel + 100 * (self.inputs.level + 1)
 
         self._results['combined_file'] = Path(self.inputs.work_dir, f'atlas_combine_level{self.inputs.level}.nii.gz')
         nib.save(nib.Nifti1Image(atlas, header=atlas_img.header, affine=atlas_img.affine), 

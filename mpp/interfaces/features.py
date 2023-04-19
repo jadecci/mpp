@@ -365,7 +365,7 @@ class SCWF(SimpleInterface):
         copy_annot.inputs.subject = self.inputs.subject
         aseg_out = pe.Node(niu.Function(function=combine_4strings, output_names=['str_out']), name='aseg_out')
         aseg_out.inputs.str1 = str(tmp_dir)
-        aseg_out.inputs.str2 = 'aparc2aseg_'
+        aseg_out.inputs.str2 = '/aparc2aseg_'
         aseg_out.inputs.str4 = '.nii.gz'
         cort_aseg = pe.Node(freesurfer.Aparc2Aseg(subject_id=self.inputs.subject), name='cort_aseg')
         cort_t1 = pe.Node(fsl.FLIRT(interp='nearestneighbour'), name='cort_t1')
