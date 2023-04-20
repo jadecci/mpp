@@ -20,8 +20,16 @@ datalad remove -d datasets_repo --reckless kill
 ```bash
 mkdir vm-singularity-ce && cp singularity_files/* vm-singularity-ce/ && cd vm-singularity-ce
 vagrant init sylabs/singularity-ce-3.9-ubuntu-bionic64 
-# if plugin not installed yet: vagrant plugin install vagrant-disksize
-# then add to Vagrantfile: config.disksize.size = '50GB'
+# if plugin not installed yet
+vagrant plugin install vagrant-disksize 
+# then add to Vagrantfile: 
+# config.disksize.size = '50GB'
+# config.vm.provider "virtualbox" do |vb|
+#     vb.memory = "2048"
 vagrant up && vagrant ssh
+# add the available disk space to partition
+sudo cfdisk /dev/sda
+# add the space to disk
+sudo lvextend -r -l +100%FREE /dev/mapper/vagrant--vg-root
 sudo singularity build mdiffusion /vagrant/mdiffusion.def
 ```

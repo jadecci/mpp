@@ -7,8 +7,8 @@ From: debian:11
 
 %post -c /bin/bash
 	apt-get update
-	apt-get install python3 python3-pip python2 curl unzip -y
-	apt-get install git g++ libeigen3-dev zlib1g-dev libqt5opengl5-dev libqt5svg5-dev libgl1-mesa-dev libfftw3-dev libtiff5-dev libpng-dev -y
+	apt-get install python3 python3-pip python-is-python3 python2 curl unzip -y
+	apt-get install git clang libeigen3-dev zlib1g-dev libqt5opengl5-dev libqt5svg5-dev libgl1-mesa-dev libfftw3-dev libtiff5-dev libpng-dev -y
 
 	python3 -m pip install git+https://github.com/jadecci/mpp.git@d4f7e34841cf2e014e4826092da87a4806cf07be
 
@@ -20,8 +20,10 @@ From: debian:11
 	unzip workbench.zip -d /usr/local
 
 	git clone https://github.com/MRtrix3/mrtrix3.git /usr/local/mrtrix3
-	/usr/local/mrtrix3/configure
-	/usr/local/mrtrix3/build
+	cd /usr/local/mrtrix3
+	./configure
+	./build
+	cd /root
 
 	python3 /fslinstaller.py -V 6.0.6.4 -d /usr/local/fsl
 
