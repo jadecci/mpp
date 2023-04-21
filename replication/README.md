@@ -13,9 +13,13 @@ python3 sublist/create_sublist_ABCD.py datasets_repo/original/abcd sublist/ABCD.
 datalad remove -d datasets_repo --reckless kill
 ``` 
 
-## 2. Features Extraction
+## 2. Features extraction
 
-1. Create a singularity container for diffusion processing (done in macOS Ventura)
+## Additional information
+
+### 1. Creation of singularity containers
+
+To create a singularity container for diffusion processing (done in macOS Ventura):
 
 ```bash
 mkdir vm-singularity-ce && cp singularity_files/* vm-singularity-ce/ && cd vm-singularity-ce
@@ -26,10 +30,13 @@ vagrant plugin install vagrant-disksize
 # config.disksize.size = '50GB'
 # config.vm.provider "virtualbox" do |vb|
 #     vb.memory = "2048"
+# end
 vagrant up && vagrant ssh
-# add the available disk space to partition
+# add the available disk space
 sudo cfdisk /dev/sda
-# add the space to disk
+sudo pvresize /dev/sda1
 sudo lvextend -r -l +100%FREE /dev/mapper/vagrant--vg-root
-sudo singularity build mdiffusion /vagrant/mdiffusion.def
+# build singularity image
+sudo singularity build mdiffusion.sif /vagrant/mdiffusion.def
+cp mdiffusion.sif /vagrant/mdiffusion.sif
 ```
