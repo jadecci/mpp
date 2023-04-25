@@ -1,5 +1,6 @@
-Bootstrap: library
-From: debian:11
+Bootstrap: debootstrap
+OSVersion: stable
+MirrorURL: http://ftp.us.debian.org/debian/
 
 %files
 	/vagrant/fslinstaller.py /fslinstaller.py
@@ -41,4 +42,4 @@ From: debian:11
 	. ${FSLDIR}/etc/fslconf/fsl.sh
 
 %runscript
-	mfeatures
+	exec mfeatures $@
