@@ -20,10 +20,18 @@ setup(
         'statsmodels>=0.13.5',
         'mapalign @ git+https://github.com/satra/mapalign@3e8c7af51355896666e24d49544b1afa47e78364'
     ],
+    extras_require={
+        'dev': [
+            'flake8',
+            'pyre-check',
+            'pytest',
+            'pytest-cov',
+        ],
+    },
     entry_points={
         'console_scripts': [
             'mfeatures=mpp.workflows.mpp_features:main',
             'mpredict=mpp.workflows.mpp_predict:main'
         ]
-    }
+    },
 )
