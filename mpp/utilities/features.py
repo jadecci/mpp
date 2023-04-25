@@ -1,60 +1,72 @@
-from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
+import sys
+from typing import Union
+from pathlib import Path
+import logging
+
 import numpy as np
 import pandas as pd
 import nibabel as nib
-from pathlib import Path
-import sys
-import subprocess
-import logging
-
 from scipy.stats import zscore
 from scipy.ndimage import binary_erosion
 from sklearn.metrics import pairwise_distances
 from mapalign.embed import compute_diffusion_map
 from statsmodels.formula.api import ols
 
+from mpp.exceptions import DatasetError
+
 base_dir = Path(__file__).resolve().parent.parent
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
-def fc(t_surf, t_vol, dataset, func_files, sfc_dict, dfc_dict=None):
-    if 'HCP' in dataset:
-        conf = nuisance_conf_HCP(t_vol, func_files['atlas_mask'])
-    regressors = np.concatenate([zscore(conf), np.ones((conf.shape[0], 1)), 
-                                 np.linspace(-1, 1, num=conf.shape[0]).reshape((conf.shape[0], 1))], axis=1)
+
+def fc(
+        t_surf: np.ndarray, t_vol: np.ndarray, dataset: str, func_files: dict, sfc_dict: dict,
+        dfc_dict: Union[dict, None] = None) -> tuple[dict, Union[dict, None]]:
+    if dataset in ['HCP-YA', 'HCP-A', 'HCP-D']:
+        conf = nuisance_conf_hcp(t_vol, func_files['atlas_mask'])
+    else:
+        raise DatasetError()
+
+    regressors = np.concatenate((
+        zscore(conf), np.ones((conf.shape[0], 1)),
+        np.linspace(-1, 1, num=conf.shape[0]).reshape((conf.shape[0], 1))), axis=1)
     t_surf_resid = t_surf - np.dot(regressors, np.linalg.lstsq(regressors, t_surf, rcond=-1)[0])
 
     for level in range(4):
         key = f'level{level+1}'
+        parc_sch_file, _, _, parc_mel_file, _ = atlas_files(Path(base_dir, 'data'), level)
+        parc_sch = nib.load(parc_sch_file).get_fdata()
+        parc_mel = nib.load(parc_mel_file).get_fdata()
 
-        parc_Sch_file, _, _, parc_Mel_file = atlas_files(level)
-        parc_Sch = nib.load(parc_Sch_file).get_fdata()
-        parc_Mel = nib.load(parc_Mel_file).get_fdata()
-        
-        mask = parc_Mel.nonzero()
-        t_vol_subcort = np.array([t_vol[mask[0][i], mask[1][i], mask[2][i], :] for i in range(mask[0].shape[0])])
-        t_vol_resid = t_vol_subcort.T - np.dot(regressors, np.linalg.lstsq(regressors, t_vol_subcort.T, rcond=-1)[0])
+        mask = parc_mel.nonzero()
+        t_vol_subcort = np.array(
+            [t_vol[mask[0][i], mask[1][i], mask[2][i], :] for i in range(mask[0].shape[0])])
+        t_vol_resid = (
+                t_vol_subcort.T -
+                np.dot(regressors, np.linalg.lstsq(regressors, t_vol_subcort.T, rcond=-1)[0]))
 
-        t_surf = t_surf_resid[:, range(parc_Sch.shape[1])]
+        t_surf = t_surf_resid[:, range(parc_sch.shape[1])]
         parc_surf = np.zeros(((level+1)*100, t_surf.shape[0]))
         for parcel in range((level+1)*100):
-            selected = t_surf[:, np.where(parc_Sch==(parcel+1))[1]]
+            selected = t_surf[:, np.where(parc_sch == (parcel + 1))[1]]
             selected = selected[:, ~np.isnan(selected[0, :])]
             parc_surf[parcel, :] = selected.mean(axis=1)
 
-        parcels = np.unique(parc_Mel[mask]).astype(int)
+        parcels = np.unique(parc_mel[mask]).astype(int)
         parc_vol = np.zeros((parcels.shape[0], t_vol_resid.shape[0]))
         for parcel in parcels:
-            selected = t_vol_resid[:, np.where(parc_Mel[mask]==(parcel))[0]]
+            selected = t_vol_resid[:, np.where(parc_mel[mask] == (parcel))[0]]
             selected = selected[:, ~np.isnan(selected[0, :])]
-            selected = selected[:, np.where(np.abs(selected.mean(axis=0))>=sys.float_info.epsilon)[0]]
+            selected = selected[
+                       :, np.where(np.abs(selected.mean(axis=0)) >= sys.float_info.epsilon)[0]]
             parc_vol[parcel-1, :] = selected.mean(axis=1)
 
         tavg = np.concatenate([parc_surf, parc_vol], axis=0)
 
-        # static FC 
+        # static FC (Fisher's z excluding diagonals)
         sfc = np.corrcoef(tavg)
-        sfc = (0.5 * (np.log(1 + sfc, where=~np.eye(sfc.shape[0], dtype=bool)) 
-               - np.log(1 - sfc, where=~np.eye(sfc.shape[0], dtype=bool)))) # Fisher's z excluding diagonals
+        sfc = (
+                0.5 * (np.log(1 + sfc, where=~np.eye(sfc.shape[0], dtype=bool)) -
+                       np.log(1 - sfc, where=~np.eye(sfc.shape[0], dtype=bool))))
         sfc[np.diag_indices_from(sfc)] = 0
         if sfc_dict[key].size:
             sfc_dict[key] = np.dstack((sfc_dict[key], sfc))
@@ -62,8 +74,8 @@ def fc(t_surf, t_vol, dataset, func_files, sfc_dict, dfc_dict=None):
             sfc_dict[key] = sfc
 
         # dynamic FC (optional): 1st order ARR model
-        # see https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/fMRI_dynamics/Liegeois2017_Surrogates/CBIG_RL2017_ar_mls.m
-        if not dfc_dict == None:
+        # see https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/fMRI_dynamics/Liegeois2017_Surrogates/CBIG_RL2017_ar_mls.m # noqa: E501
+        if dfc_dict is not None:
             y = tavg[:, range(1, tavg.shape[1])]
             z = np.ones((tavg.shape[0]+1, tavg.shape[1]-1))
             z[1:(tavg.shape[0]+1), :] = tavg[:, range(tavg.shape[1]-1)]
@@ -75,8 +87,9 @@ def fc(t_surf, t_vol, dataset, func_files, sfc_dict, dfc_dict=None):
 
     return sfc_dict, dfc_dict
 
-def nuisance_conf_HCP(t_vol, atlas_file):
-    # Atlas labels follow FreeSurferColorLUT 
+
+def nuisance_conf_hcp(t_vol: np.ndarray, atlas_file: Union[Path, str]) -> np.ndarray:
+    # Atlas labels follow FreeSurferColorLUT
     # see https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/AnatomicalROI/FreeSurferColorLUT
     csf_code = np.array([4, 5, 14, 15, 24, 31, 43, 44, 63, 250, 251, 252, 253, 254, 255]) - 1
     data = t_vol.reshape((t_vol.shape[0]*t_vol.shape[1]*t_vol.shape[2], t_vol.shape[3]))
@@ -108,25 +121,35 @@ def nuisance_conf_HCP(t_vol, atlas_file):
 
     return conf
 
-def pheno_conf_HCP(dataset, pheno_dir, features_dir, sublist):
+
+def pheno_conf_hcp(
+        dataset: str, pheno_dir: Union[Path, str], features_dir: Union[Path, str],
+        sublist: list) -> tuple[list, dict]:
     # primary vairables
     if dataset == 'HCP-YA':
         unres_file = sorted(Path(pheno_dir).glob('unrestricted_*.csv'))[0]
         res_file = sorted(Path(pheno_dir).glob('RESTRICTED_*.csv'))[0]
-        unres_conf = pd.read_csv(unres_file, usecols=['Subject', 'Gender', 'FS_BrainSeg_Vol', 'FS_IntraCranial_Vol'],
-                                 dtype={'Subject': str, 'Gender': str, 'FS_BrainSeg_Vol': float, 
-                                        'FS_IntraCranial_Vol': float})
-        res_conf = pd.read_csv(res_file, usecols=['Subject', 'Age_in_Yrs', 'Handedness'],
-                               dtype={'Subject': str, 'Age_in_Yrs': int, 'Handedness': int})
+        unres_conf = pd.read_csv(
+            unres_file, usecols=['Subject', 'Gender', 'FS_BrainSeg_Vol', 'FS_IntraCranial_Vol'],
+            dtype={
+                'Subject': str, 'Gender': str, 'FS_BrainSeg_Vol': float,
+                'FS_IntraCranial_Vol': float})
+        res_conf = pd.read_csv(
+            res_file, usecols=['Subject', 'Age_in_Yrs', 'Handedness'],
+            dtype={'Subject': str, 'Age_in_Yrs': int, 'Handedness': int})
         conf = unres_conf.merge(res_conf, on='Subject', how='inner').dropna()
-        conf = conf[['Subject', 'Age_in_Yrs', 'Gender', 'Handedness', 'FS_BrainSeg_Vol', 'FS_IntraCranial_Vol']]
+        conf = conf[[
+            'Subject', 'Age_in_Yrs', 'Gender', 'Handedness', 'FS_BrainSeg_Vol',
+            'FS_IntraCranial_Vol']]
 
     elif dataset == 'HCP-A' or dataset == 'HCP-D':
-        conf = pd.read_table(path.join(pheno_dir, 'ssaga_cover_demo01.txt'), sep='\t', header=0, skiprows=[1], 
-                             usecols=[4, 5, 7], dtype={'src_subject_id': str, 'interview_age': int, 'sex': str})
-        conf = conf.merge(pd.read_table(path.join(pheno_dir, 'edinburgh_hand01.txt'), sep='\t', header=0, skiprows=[1],
-                                        usecols=[5, 70], dtype={'src_subject_id': str, 'hcp_handedness_score': int}),
-                                        on='src_subject_id', how='inner')
+        conf = pd.read_table(
+            Path(pheno_dir, 'ssaga_cover_demo01.txt'), sep='\t', header=0, skiprows=[1],
+            usecols=[4, 5, 7], dtype={'src_subject_id': str, 'interview_age': int, 'sex': str})
+        conf = conf.merge(pd.read_table(
+            Path(pheno_dir, 'edinburgh_hand01.txt'), sep='\t', header=0, skiprows=[1],
+            usecols=[5, 70], dtype={'src_subject_id': str, 'hcp_handedness_score': int}),
+            on='src_subject_id', how='inner')
 
         brainseg_vols = []
         icv_vols = []
@@ -138,10 +161,15 @@ def pheno_conf_HCP(dataset, pheno_dir, features_dir, sublist):
         conf['brainseg_vol'] = brainseg_vols
         conf['icv_vol'] = icv_vols
 
-        conf = conf[['src_subject_id', 'interview_age', 'sex', 'hcp_handedness_score', 'brainseg_vol', 'icv_vol']]
+        conf = conf[[
+            'src_subject_id', 'interview_age', 'sex', 'hcp_handedness_score', 'brainseg_vol',
+            'icv_vol']]
 
-    conf.columns = ['subject', 'age', 'gender', 'handedness', 'brainseg_vol', 'icv_vol']   
-    conf = conf.dropna().drop_duplicates(subset='subject') 
+    else:
+        raise DatasetError()
+
+    conf.columns = ['subject', 'age', 'gender', 'handedness', 'brainseg_vol', 'icv_vol']
+    conf = conf.dropna().drop_duplicates(subset='subject')
     conf = conf[conf['subject'].isin(sublist)]
 
     # secondary variables
@@ -151,80 +179,74 @@ def pheno_conf_HCP(dataset, pheno_dir, features_dir, sublist):
     # gender coding: 1 for Female, 2 for Male
     conf['gender'] = [1 if item == 'F' else 2 for item in conf['gender']]
 
-    sublist = conf['subject'].to_list()
+    sublist_out = conf['subject'].to_list()
     conf_dict = conf.set_index('subject').to_dict()
 
-    return sublist, conf_dict
+    return sublist_out, conf_dict
 
-def diffusion_mapping(image_features, sublist, input_key, gradients_dict, embedding=None, sub_rsfc=None):
-    if sub_rsfc is not None and embedding is not None:
-        embed = embedding
-        gradients_dict = embed.T @ sub_rsfc.mean(axis=2)
-    else:
-        n_parcels = image_features[sublist[0]][input_key].shape[0]
-        rsfc = np.zeros((n_parcels, n_parcels, len(sublist)))
-        for i in range(len(sublist)):
-            rsfc[:, :, i] = image_features[sublist[i]][input_key].mean(axis=2)
 
-        if embedding is None:
-            # transform by tanh and threshold RSFC at 90th percentile
-            rsfc_thresh = np.tanh(rsfc.mean(axis=2))
-            for i in range(rsfc_thresh.shape[0]):
-                rsfc_thresh[i, rsfc_thresh[i, :] < np.percentile(rsfc_thresh[i, :], 90)] = 0
-            rsfc_thresh[rsfc_thresh < 0] = 0 # there should be very few negative values after thresholding
+def diffusion_mapping(image_features: dict, sublist: list, input_key: str) -> np.ndarray:
+    n_parcels = image_features[sublist[0]][input_key].shape[0]
+    rsfc = np.zeros((n_parcels, n_parcels, len(sublist)))
+    for i in range(len(sublist)):
+        rsfc[:, :, i] = image_features[sublist[i]][input_key].mean(axis=2)
 
-            affinity = 1 - pairwise_distances(rsfc_thresh, metric='cosine')
-            embed = compute_diffusion_map(affinity, alpha=0.5)
-        else:
-            embed = embedding
+    # transform by tanh and threshold RSFC at 90th percentile
+    rsfc_thresh = np.tanh(rsfc.mean(axis=2))
+    for i in range(rsfc_thresh.shape[0]):
+        rsfc_thresh[i, rsfc_thresh[i, :] < np.percentile(rsfc_thresh[i, :], 90)] = 0
+    rsfc_thresh[rsfc_thresh < 0] = 0  # there should be very few negatives after thresholding
 
-        for i in range(len(sublist)):
-            gradients_dict[sublist[i]] = embed.T @ rsfc[:, :, i]
+    affinity = 1 - pairwise_distances(rsfc_thresh, metric='cosine')
+    embed = compute_diffusion_map(affinity, alpha=0.5)
 
-    return gradients_dict, embed
+    return embed
 
-def score(image_features, sublist, input_key, ac_dict, params=None, sub_features=None):
+
+def diffusion_mapping_sub(embed: np.ndarray, sub_rsfc: np.ndarray) -> np.ndarray:
+    return embed.T @ sub_rsfc.mean(axis=2)
+
+
+def score(
+        image_features: dict, sublist: list, input_key: str) -> pd.DataFrame:
     # see https://github.com/katielavigne/score/blob/main/score.py
+    n_parcels = len(image_features[sublist[0]][input_key])
+    features = pd.DataFrame(columns=range(n_parcels), index=sublist)
+    for i in range(len(sublist)):
+        features.loc[sublist[i]] = image_features[sublist[i]][input_key]
+    features = features.join(pd.DataFrame({'mean': features.mean(axis=1)}))
+    features[features.columns] = features[features.columns].apply(pd.to_numeric)
 
-    if sub_features is not None and params is not None:
-        mean_features = sub_features.mean()
-        n_parcels = sub_features.shape[0]
-        ac_dict = np.zeros((n_parcels, n_parcels))
+    ac = np.zeros((n_parcels, n_parcels, len(sublist)))
+    params = pd.DataFrame()
+    for i in range(n_parcels):
+        for j in range(n_parcels):
+            results = ols(f'features[{i}] ~ features[{j}] + mean', data=features).fit()
+            ac[i, j, :] = results.resid
+            params[f'{i}_{j}'] = [
+                results.params['Intercept'], results.params[f'features[{j}]'],
+                results.params['mean']]
 
-        for i in range(n_parcels):
-            for j in range(n_parcels):
-                params_curr = params[f'{i}_{j}']
-                ac_dict[i, j] = params_curr[0] + params_curr[1] * sub_features[j] + params_curr[2] * mean_features
+    return params
 
-    else:
-        n_parcels = len(image_features[sublist[0]][input_key])
-        features = pd.DataFrame(columns=range(n_parcels), index=sublist)
-        for i in range(len(sublist)):
-            features.loc[sublist[i]] = image_features[sublist[i]][input_key]
-        features = features.join(pd.DataFrame({'mean': features.mean(axis=1)}))
-        features[features.columns] = features[features.columns].apply(pd.to_numeric)
 
-        ac = np.zeros((n_parcels, n_parcels, len(sublist)))
-        if params is None:
-            params = pd.DataFrame()
-            for i in range(n_parcels):
-                for j in range(n_parcels):
-                    results = ols(f'features[{i}] ~ features[{j}] + mean', data=features).fit()
-                    ac[i, j, :] = results.resid
-                    params[f'{i}_{j}'] = [results.params['Intercept'], results.params[f'features[{j}]'], 
-                                        results.params['mean']]
-        else:
-            for i in range(n_parcels):
-                for j in range(n_parcels):
-                    params_curr = params[f'{i}_{j}']
-                    ac[i, j, :] = params_curr[0] + params_curr[1] * features[j] + params_curr[2] * features['mean']
+def score_sub(params: pd.DataFrame, sub_features: np.ndarray) -> np.ndarray:
+    # see https://github.com/katielavigne/score/blob/main/score.py
+    mean_features = sub_features.mean()
+    n_parcels = sub_features.shape[0]
+    ac = np.zeros((n_parcels, n_parcels))
 
-        for i in range(len(sublist)):
-            ac_dict[sublist[i]] = ac[:, :, i]
+    for i in range(n_parcels):
+        for j in range(n_parcels):
+            params_curr = params[f'{i}_{j}']
+            ac[i, j] = (
+                    params_curr[0] + params_curr[1] * sub_features[j] +
+                    params_curr[2] * mean_features)
+    return ac
 
-    return ac_dict, params
 
-def add_subdir(sub_dir, subject, fs_dir):
+def add_subdir(
+        sub_dir: Union[Path, str], subject: str, fs_dir: Union[Path, str]) -> Union[Path, str]:
     from pathlib import Path
     from os import symlink, getenv
 
@@ -232,21 +254,31 @@ def add_subdir(sub_dir, subject, fs_dir):
     if not Path(sub_dir, subject).is_symlink():
         symlink(fs_dir, Path(sub_dir, subject))
     if not Path(sub_dir, 'fsaverage').is_symlink():
-        symlink(Path(getenv('FREESURFER_HOME'), 'subjects', 'fsaverage'), Path(sub_dir, 'fsaverage'))
+        symlink(
+            Path(getenv('FREESURFER_HOME'), 'subjects', 'fsaverage'), Path(sub_dir, 'fsaverage'))
 
     return sub_dir
 
-def atlas_files(data_dir, level):
+
+def atlas_files(
+        data_dir: Union[Path, str],
+        level: Union[str, int]) -> tuple[Path, Path, Path, Path, Union[str, int]]:
     from pathlib import Path
 
-    parc_Sch = Path(data_dir, 'atlas', f'Schaefer2018_{int(level)+1}00Parcels_17Networks_order.dlabel.nii')
-    lh_annot_Sch = Path(data_dir, 'label', f'lh.Schaefer2018_{int(level)+1}00Parcels_17Networks_order.annot')
-    rh_annot_Sch = Path(data_dir, 'label', f'rh.Schaefer2018_{int(level)+1}00Parcels_17Networks_order.annot')
-    parc_Mel = Path(data_dir, 'atlas', f'Tian_Subcortex_S{int(level)+1}_3T.nii.gz')
+    parc_sch = Path(
+        data_dir, 'atlas', f'Schaefer2018_{int(level)+1}00Parcels_17Networks_order.dlabel.nii')
+    lh_annot_sch = Path(
+        data_dir, 'label', f'lh.Schaefer2018_{int(level)+1}00Parcels_17Networks_order.annot')
+    rh_annot_sch = Path(
+        data_dir, 'label', f'rh.Schaefer2018_{int(level)+1}00Parcels_17Networks_order.annot')
+    parc_mel = Path(data_dir, 'atlas', f'Tian_Subcortex_S{int(level)+1}_3T.nii.gz')
 
-    return parc_Sch, lh_annot_Sch, rh_annot_Sch, parc_Mel, level
+    return parc_sch, lh_annot_sch, rh_annot_sch, parc_mel, level
 
-def add_annot(sub_dir, subject, lh_annot, rh_annot):
+
+def add_annot(
+        sub_dir: Union[Path, str], subject: str, lh_annot: Union[Path, str],
+        rh_annot: Union[Path, str]) -> str:
     import shutil
     from pathlib import Path
 
@@ -258,76 +290,5 @@ def add_annot(sub_dir, subject, lh_annot, rh_annot):
     annot_name = str(Path(lh_annot).name).split('.')[1:-1]
     annot_name = '.'.join(annot_name)
     annot_args = f'--annot {annot_name}'
-    
+
     return annot_args
-
-# combine cortex and subcortex atlases in T1 space
-
-class _CombineAtlasInputSpec(BaseInterfaceInputSpec):
-    cort_file = traits.File(mandatory=True, exists=True, desc='cortex atlas in T1 space')
-    subcort_file = traits.File(mandatory=True, exists=True, desc='subcortex atlas in t1 space')
-    work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
-    level = traits.Int(mandatory=True, desc='parcellation level (0 to 3)')
-
-class _CombineAtlasOutputSpec(TraitedSpec):
-    combined_file = traits.File(exists=True, desc='combined atlas in T1 space')
-
-class CombineAtlas(SimpleInterface):
-    input_spec = _CombineAtlasInputSpec
-    output_spec = _CombineAtlasOutputSpec
-
-    def _run_interface(self, runtime):
-        atlas_img = nib.load(self.inputs.cort_file)
-        atlas_cort = atlas_img.get_fdata()
-        atlas_subcort = nib.load(self.inputs.subcort_file).get_fdata()
-        atlas = np.zeros((atlas_cort.shape))
-
-        cort_parcels = np.unique(atlas_cort[np.where(atlas_cort > 1000)])
-        for parcel in cort_parcels:
-            if parcel > 1000 and parcel < 2000: # lh
-                atlas[atlas_cort==parcel] = parcel - 1000
-            elif parcel > 2000: # rh
-                atlas[atlas_cort==parcel] = parcel - 2000 + (len(cort_parcels) - 1) / 2
-
-        for parcel in np.unique(atlas_subcort):
-            if parcel != 0:
-                atlas[atlas_subcort==parcel] = parcel + 100 * (self.inputs.level + 1)
-
-        self._results['combined_file'] = Path(self.inputs.work_dir, f'atlas_combine_level{self.inputs.level}.nii.gz')
-        nib.save(nib.Nifti1Image(atlas, header=atlas_img.header, affine=atlas_img.affine), 
-                 self._results['combined_file'])
-
-        return runtime
-    
-# SC: structural connectivity construction
-
-class _SCInputSpec(BaseInterfaceInputSpec):
-    atlas_file = traits.File(mandatory=True, exists=True, desc='combined atlas in T1 space')
-    tck_file = traits.File(mandatory=True, exists=True, desc='tracks file')
-    work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
-    level = traits.Int(mandatory=True, desc='parcellation level (0 to 3)')
-
-class _SCOutputSpec(TraitedSpec):
-    count_file = traits.File(exists=True, desc='SC based on streamline count')
-    length_file = traits.File(exists=True, desc='SC based on streamline length')
-
-class SC(SimpleInterface):
-    input_spec = _SCInputSpec
-    output_spec = _SCOutputSpec
-
-    def _run_interface(self, runtime):
-        self._results['count_file'] = Path(self.inputs.work_dir, f'sc_count_level{self.inputs.level}.csv')
-        sc_count = ['tck2connectome', '-assignment_radial_search', '2',
-                    '-symmetric', '-nthreads', '0',
-                    str(self.inputs.tck_file), str(self.inputs.atlas_file), str(self._results['count_file'])]
-        if not self._results['count_file'].is_file():
-            subprocess.run(sc_count, check=True)
-
-        self._results['length_file'] = Path(self.inputs.work_dir, f'sc_length_level{self.inputs.level}.csv')
-        sc_length = ['tck2connectome', '-assignment_radial_search', '2', '-scale_length', '-stat_edge', 'mean',
-                     '-symmetric', '-nthreads', '0',
-                     str(self.inputs.tck_file), str(self.inputs.atlas_file), str(self._results['length_file'])]
-        if not self._results['length_file'].is_file():
-            subprocess.run(sc_length, check=True)
-
-        return runtime

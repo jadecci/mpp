@@ -1,0 +1,5 @@
+[flake8]
+max-line-length = 100
+exclude =
+    replication/singularity_files/fslinstaller.py,
+    .git

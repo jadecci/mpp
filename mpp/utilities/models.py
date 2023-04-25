@@ -1,8 +1,10 @@
 import numpy as np
-
 from sklearn.linear_model import ElasticNetCV
 
-def elastic_net(train_x, train_y, test_x, test_y, n_alphas):
+
+def elastic_net(
+        train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
+        n_alphas: int) -> tuple[float, float, np.ndarray]:
     # see https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNetCV.html
     l1_ratio = [.1, .5, .7, .9, .95, .99, 1]
 
@@ -15,10 +17,11 @@ def elastic_net(train_x, train_y, test_x, test_y, n_alphas):
 
     return r, cod, en.coef_
 
-def permutation_test(acc, null_acc):
+
+def permutation_test(acc: np.ndarray, null_acc: np.ndarray) -> np.ndarray:
     all_acc = np.vstack((acc, null_acc))
     rank = all_acc.argsort(axis=0)
-    ind = [rank.shape[0] - np.where(rank[:, i]==0)[0][0] for i in range(rank.shape[1])]
+    ind = [rank.shape[0] - np.where(rank[:, i] == 0)[0][0] for i in range(rank.shape[1])]
     p = np.divide(ind, all_acc.shape[0])
 
     return p
