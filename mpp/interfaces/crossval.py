@@ -7,8 +7,7 @@ from sklearn.model_selection import RepeatedStratifiedKFold
 from statsmodels.stats.multitest import multipletests
 
 from mpp.utilities.models import elastic_net, permutation_test
-from mpp.utilities.data import read_h5, write_h5
-from mpp.utilities.features import diffusion_mapping_sub, score_sub
+from mpp.utilities.data import write_h5, cv_extract_data
 
 
 class _CrossValSplitInputSpec(BaseInterfaceInputSpec):
@@ -50,7 +49,6 @@ class _RegionwiseModelInputSpec(BaseInterfaceInputSpec):
     sublists = traits.Dict(mandatory=True, dtype=list, desc='available subjects in each dataset')
     features_dir = traits.Dict(
         mandatory=True, dtype=str, desc='absolute path to extracted features for each dataset')
-    confounds = traits.Dict(mandatory=True, dtype=dict, desc='confound values')
     phenotypes = traits.Dict(mandatory=True, dtype=float, desc='phenotype values')
     phenotypes_perm = traits.Dict({}, dtype=float, desc='shuffled phenotype values for permutation')
 
@@ -81,83 +79,13 @@ class RegionwiseModel(SimpleInterface):
     input_spec = _RegionwiseModelInputSpec
     output_spec = _RegionwiseModelOutputSpec
 
-    def _extract_data(
-            self, subjects: list, repeat: int, permutation: bool = False) -> tuple[np.ndarray, ...]:
-        confounds = [
-            'age', 'gender', 'handedness', 'brainseg_vol', 'icv_vol',
-            'age2', 'ageGender', 'age2Gender']
-        y = np.zeros((len(subjects)))
-        x_all = np.zeros((len(subjects), len(confounds)))
-
-        for i, subject in enumerate(subjects):
-            if self.inputs.level == 'conf':
-                for j, confound in enumerate(confounds):
-                    x_all[i, j] = self.inputs.confounds[confound][subject]
-            else:
-                dataset = [
-                    key for key in self.inputs.sublists if subject in self.inputs.sublists[key]][0]
-                if dataset == 'HCP-A' or 'HCP-D':
-                    feature_file = Path(
-                        self.inputs.features_dir[dataset], f'{dataset}_{subject}_V1_MR.h5')
-                else:
-                    feature_file = Path(
-                        self.inputs.features_dir[dataset], f'{dataset}_{subject}.h5')
-
-                rsfc = read_h5(feature_file, f'/rsfc/level{self.inputs.level}')
-                dfc = read_h5(feature_file, f'/dfc/level{self.inputs.level}')
-                strength = read_h5(
-                    feature_file, f'/network_stats/strength/level{self.inputs.level}')
-                betweenness = read_h5(
-                    feature_file, f'/network_stats/betweenness/level{self.inputs.level}')
-                participation = read_h5(
-                    feature_file, f'/network_stats/participation/level{self.inputs.level}')
-                efficiency = read_h5(
-                    feature_file, f'/network_stats/efficiency/level{self.inputs.level}')
-                # tfc = read_h5(feature_file, f'/tfc/level{self.inputs.level}')
-                myelin = read_h5(feature_file, f'/myelin/level{self.inputs.level}')
-                gmv = read_h5(feature_file, f'/morphometry/GMV/level{self.inputs.level}')
-                cs = read_h5(feature_file, f'/morphometry/CS/level{self.inputs.level}')
-                ct = read_h5(feature_file, f'/morphometry/CT/level{self.inputs.level}')
-
-                if permutation:
-                    gradients = diffusion_mapping_sub(
-                        self.inputs.embeddings[f'repeat{repeat}'], rsfc)
-                    ac_gmv = score_sub(self.inputs.params[f'repeat{repeat}'], gmv)
-                    ac_cs = score_sub(self.inputs.params[f'repeat{repeat}'], cs)
-                    ac_ct = score_sub(self.inputs.params[f'repeat{repeat}'], ct)
-                else:
-                    gradients = diffusion_mapping_sub(self.inputs.embeddings['embedding'], rsfc)
-                    ac_gmv = score_sub(self.inputs.params['params'], gmv)
-                    ac_cs = score_sub(self.inputs.params['params'], cs)
-                    ac_ct = score_sub(self.inputs.params['params'], ct)
-
-                x = np.vstack((
-                    rsfc.mean(axis=2), dfc.mean(axis=2),
-                    strength, betweenness, participation, efficiency,
-                    # tfc.reshape(tfc.shape[0], tfc.shape[1]*tfc.shape[2]).T,
-                    myelin, gmv,
-                    np.pad(cs, (0, len(gmv)-len(cs))), np.pad(ct, (0, len(gmv)-len(ct))),
-                    gradients, ac_gmv,
-                    np.hstack((ac_cs, np.zeros((ac_cs.shape[0], len(gmv)-len(cs))))),
-                    np.hstack((ac_ct, np.zeros((ac_cs.shape[0], len(gmv)-len(ct)))))))
-
-                # TODO: diffusion features
-
-                x_all = x if i == 0 else np.dstack((x_all.T, x.T)).T
-
-            # phenotype
-            if permutation:
-                y[i] = self.inputs.phenotypes_perm[subjects[i]]
-            else:
-                y[i] = self.inputs.phenotypes[subjects[i]]
-
-        return x_all, y
-
     def _validate(self, repeat: int, permutation: bool = False) -> tuple[np.ndarray, ...]:
         if permutation:
             cv_split = self.inputs.cv_split_perm
+            phenotypes = self.inputs.phenotypes_perm
         else:
             cv_split = self.inputs.cv_split
+            phenotypes = self.inputs.phenotypes
         n_folds = int(self.inputs.config["n_folds"])
         all_sub = sum(self.inputs.sublists.values(), [])
 
@@ -166,11 +94,15 @@ class RegionwiseModel(SimpleInterface):
         testval_sub = np.concatenate((val_sub, test_sub))
         train_sub = [subject for subject in all_sub if subject not in testval_sub]
 
-        train_x, train_y = self._extract_data(train_sub, repeat, permutation=permutation)
-        val_x, val_y = self._extract_data(val_sub, repeat, permutation=permutation)
+        train_x, train_y = cv_extract_data(
+            self.inputs.sublists, self.inputs.features_dir, train_sub, repeat, self.inputs.level,
+            self.inputs.embeddings, self.inputs.params, phenotypes, permutation=permutation)
+        val_x, val_y = cv_extract_data(
+            self.inputs.sublists, self.inputs.features_dir, val_sub, repeat, self.inputs.level,
+            self.inputs.embeddings, self.inputs.params, phenotypes, permutation=permutation)
 
-        r = np.zeros((train_x.shape[2]))
-        cod = np.zeros((train_x.shape[2]))
+        r = np.zeros(train_x.shape[2])
+        cod = np.zeros(train_x.shape[2])
         for region in range(train_x.shape[2]):
             r[region], cod[region], _ = elastic_net(
                 train_x[:, :, region], train_y, val_x[:, :, region], val_y,
@@ -184,19 +116,24 @@ class RegionwiseModel(SimpleInterface):
         test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
         train_sub = [subject for subject in all_sub if subject not in test_sub]
 
-        train_x, train_y = self._extract_data(train_sub, self.inputs.repeat)
-        test_x, test_y = self._extract_data(test_sub, self.inputs.repeat)
+        train_x, train_y = cv_extract_data(
+            self.inputs.sublists, self.inputs.features_dir, train_sub, self.inputs.repeat,
+            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes)
+        test_x, test_y = cv_extract_data(
+            self.inputs.sublists, self.inputs.features_dir, test_sub, self.inputs.repeat,
+            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes)
 
-        r = np.zeros((train_x.shape[2]))
-        cod = np.zeros((train_x.shape[2]))
+        r = np.zeros(train_x.shape[2])
+        cod = np.zeros(train_x.shape[2])
         coef = np.zeros((train_x.shape[2], train_x.shape[1]))
+        l1_ratios = np.zeros(train_x.shape[2])
         for region in range(train_x.shape[2]):
             if self.inputs.selected[f'regions_level{self.inputs.level}'][region]:
-                r[region], cod[region], coef[region, :] = elastic_net(
+                r[region], cod[region], coef[region, :], l1_ratios[region, :] = elastic_net(
                     train_x[:, :, region], train_y, test_x[:, :, region], test_y,
                     int(self.inputs.config['n_alphas']))
 
-        return r, cod, coef
+        return r, cod, coef, l1_ratios
 
     def _run_interface(self, runtime):
         self._results['results'] = {}
@@ -221,9 +158,10 @@ class RegionwiseModel(SimpleInterface):
 
         elif self.inputs.mode == 'test':
             key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
-            r, cod, coef = self._test()
+            r, cod, coef, l1_ratios = self._test()
             self._results['results'][f'r_{key}'] = r
             self._results['results'][f'cod_{key}'] = cod
+            self._results['results'][f'l1ratio_{key}'] = l1_ratios
             self._results['selected'] = {}
             self._results['selected'][f'features_{key}'] = list(coef != 0)
 
@@ -272,11 +210,11 @@ class RegionSelect(SimpleInterface):
 
         return results
 
-    def _save_results(self, results_dict: dict) -> None:
+    def _save_results(self) -> None:
         Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
         output_file = Path(self.inputs.output_dir, 'regionwise_results.h5')
-        for key in results_dict:
-            write_h5(output_file, f'/{key}', np.array(results_dict[key]), self.inputs.overwrite)
+        for key, val in self._results['selected'].items():
+            write_h5(output_file, f'/{key}', np.array(val), self.inputs.overwrite)
 
     def _run_interface(self, runtime):
         n_region_dict = {'1': 116, '2': 232, '3': 350, '4': 454}
@@ -295,6 +233,62 @@ class RegionSelect(SimpleInterface):
             pos = pos + n_region_dict[level]
             self._results['selected'][f'regions_level{level}'] = selected[regions]
 
-        self._save_results(self._results['selected'])
+        self._save_results()
+
+        return runtime
+
+
+class _IntegratedFeaturesModelInputSpec(BaseInterfaceInputSpec):
+    sublists = traits.Dict(mandatory=True, dtype=list, desc='available subjects in each dataset')
+    features_dir = traits.Dict(
+        mandatory=True, dtype=str, desc='absolute path to extracted features for each dataset')
+    phenotypes = traits.Dict(mandatory=True, dtype=float, desc='phenotype values')
+    embeddings = traits.Dict(mandatory=True, desc='embeddings for gradients')
+    params = traits.Dict(mandatory=True, desc='parameters for anatomical connectivity')
+    cv_split = traits.Dict(mandatory=True, dtype=list, desc='test subjects of each fold')
+
+    level = traits.Str(mandatory=True, desc='parcellation level (1 to 4)')
+    repeat = traits.Int(mandatory=True, desc='current repeat of cross-validation')
+    fold = traits.Int(mandatory=True, desc='current fold in the repeat')
+
+    selected_regions = traits.Dict(dtype=list, desc='selected regions for each parcellation level')
+    selected_features = traits.Dict(mandatory=True, desc='whether each feature is selected')
+    config = traits.Dict(mandatory=True, desc='configuration settings')
+
+
+class _IntegratedFeaturesModelOutputSpec(TraitedSpec):
+    results = traits.Dict(desc='accuracy results')
+
+
+class IntegratedFeaturesModel(SimpleInterface):
+    """Train and test the integrated features model"""
+    input_spec = _IntegratedFeaturesModelInputSpec
+    output_spec = _IntegratedFeaturesModelOutputSpec
+
+    def _run_interface(self, runtime):
+        all_sub = sum(self.inputs.sublists.values(), [])
+        test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
+        train_sub = [subject for subject in all_sub if subject not in test_sub]
+        selected_features = list(self.inputs.selected_features.values())[0]
+        selected_regions = self.inputs.selected_regions[f'regions_level{self.inputs.level}']
+
+        train_x, train_y = cv_extract_data(
+            self.inputs.sublists, self.inputs.features_dir, train_sub, self.inputs.repeat,
+            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes,
+            selected_features, selected_regions)
+        test_x, test_y = cv_extract_data(
+            self.inputs.sublists, self.inputs.features_dir, test_sub, self.inputs.repeat,
+            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes,
+            selected_features, selected_regions)
+
+        r, cod, coef, l1_ratio = elastic_net(
+            train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
+
+        key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
+        self._results['results'][f'r_{key}'] = r
+        self._results['results'][f'cod_{key}'] = cod
+        self._results['results'][f'l1ratio_{key}'] = l1_ratio
+        self._results['selected'] = {}
+        self._results['selected'][f'features_{key}'] = list(coef != 0)
 
         return runtime

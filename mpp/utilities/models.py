@@ -4,7 +4,7 @@ from sklearn.linear_model import ElasticNetCV
 
 def elastic_net(
         train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
-        n_alphas: int) -> tuple[float, float, np.ndarray]:
+        n_alphas: int) -> tuple[float, float, np.ndarray, float]:
     # see https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNetCV.html
     l1_ratio = [.1, .5, .7, .9, .95, .99, 1]
 
@@ -15,7 +15,7 @@ def elastic_net(
     r = np.corrcoef(test_y, test_ybar)[0, 1]
     cod = en.score(test_x, test_y)
 
-    return r, cod, en.coef_
+    return r, cod, en.coef_, en.l1_ratio_
 
 
 def permutation_test(acc: np.ndarray, null_acc: np.ndarray) -> np.ndarray:

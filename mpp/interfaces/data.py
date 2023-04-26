@@ -493,3 +493,24 @@ class RegionwiseSave(SimpleInterface):
                 write_h5(output_file, f'/{key}', np.array(val), self.inputs.overwrite)
 
         return runtime
+
+
+class _IntegratedFeaturesSaveInputSpec(BaseInterfaceInputSpec):
+    results = traits.List(dtype=dict, desc='accuracy results')
+    output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
+    overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
+
+
+class IntegratedFeaturesSave(SimpleInterface):
+    """Save integrated features prediction results"""
+    input_spec = _IntegratedFeaturesSaveInputSpec
+
+    def _run_interface(self, runtime):
+        Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
+        output_file = Path(self.inputs.output_dir, 'integratedfeatures_results.h5')
+
+        results = {key: item for d in self.inputs.results for key, item in d.items()}
+        for key, val in results.items():
+            write_h5(output_file, f'/{key}', np.array(val), self.inputs.overwrite)
+
+        return runtime

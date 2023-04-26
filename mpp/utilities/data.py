@@ -7,6 +7,7 @@ import h5py
 import pandas as pd
 
 from mpp.exceptions import DatasetError
+from mpp.utilities.features import diffusion_mapping_sub, score_sub
 
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
@@ -75,3 +76,61 @@ def pheno_hcp(
     pheno_dict_perm = pheno_data.set_index('subject').squeeze().to_dict()
 
     return sublist_out, pheno_dict, pheno_dict_perm
+
+
+def cv_extract_data(
+        sublists: dict, features_dir: dict, subjects: list, repeat: int, level: str,
+        embeddings: dict, params: dict, phenotypes: dict, permutation: bool = False,
+        selected_features: Union[list, None] = None,
+        selected_regions: Union[list, None] = None) -> tuple[np.ndarray, ...]:
+    y = np.zeros(len(subjects))
+    x_all = np.zeros(len(subjects))
+
+    for i, subject in enumerate(subjects):
+        dataset = [key for key in sublists if subject in sublists[key]][0]
+        if dataset == 'HCP-A' or 'HCP-D':
+            feature_file = Path(
+                features_dir[dataset], f'{dataset}_{subject}_V1_MR.h5')
+        else:
+            feature_file = Path(
+                features_dir[dataset], f'{dataset}_{subject}.h5')
+
+        rsfc = read_h5(feature_file, f'/rsfc/level{level}')
+        dfc = read_h5(feature_file, f'/dfc/level{level}')
+        strength = read_h5(feature_file, f'/network_stats/strength/level{level}')
+        betweenness = read_h5(feature_file, f'/network_stats/betweenness/level{level}')
+        participation = read_h5(feature_file, f'/network_stats/participation/level{level}')
+        efficiency = read_h5(feature_file, f'/network_stats/efficiency/level{level}')
+        # tfc = read_h5(feature_file, f'/tfc/level{self.inputs.level}')
+        myelin = read_h5(feature_file, f'/myelin/level{level}')
+        gmv = read_h5(feature_file, f'/morphometry/GMV/level{level}')
+        cs = read_h5(feature_file, f'/morphometry/CS/level{level}')
+        ct = read_h5(feature_file, f'/morphometry/CT/level{level}')
+
+        if permutation:
+            gradients = diffusion_mapping_sub(embeddings[f'repeat{repeat}'], rsfc)
+            ac_gmv = score_sub(params[f'repeat{repeat}'], gmv)
+            ac_cs = score_sub(params[f'repeat{repeat}'], cs)
+            ac_ct = score_sub(params[f'repeat{repeat}'], ct)
+        else:
+            gradients = diffusion_mapping_sub(embeddings['embedding'], rsfc)
+            ac_gmv = score_sub(params['params'], gmv)
+            ac_cs = score_sub(params['params'], cs)
+            ac_ct = score_sub(params['params'], ct)
+
+        x = np.vstack((
+            rsfc.mean(axis=2), dfc.mean(axis=2), strength, betweenness, participation, efficiency,
+            # tfc.reshape(tfc.shape[0], tfc.shape[1]*tfc.shape[2]).T,
+            myelin, gmv, np.pad(cs, (0, len(gmv) - len(cs))), np.pad(ct, (0, len(gmv) - len(ct))),
+            gradients, ac_gmv, np.hstack((ac_cs, np.zeros((ac_cs.shape[0], len(gmv) - len(cs))))),
+            np.hstack((ac_ct, np.zeros((ac_cs.shape[0], len(gmv) - len(ct)))))))
+        # TODO: diffusion features
+        x_all = x if i == 0 else np.dstack((x_all.T, x.T)).T
+        y[i] = phenotypes[subjects[i]]
+
+    if selected_regions is not None:
+        x_all = x_all[:, :, selected_regions]
+    if selected_features is not None:
+        x_all = x_all[:, selected_features, :]
+
+    return x_all, y
