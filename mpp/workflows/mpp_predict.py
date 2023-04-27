@@ -145,7 +145,7 @@ def main() -> None:
             ('embeddings', 'embeddings'),
             ('params', 'params'),
             ('level', 'level'),
-            ('reepat', 'repeat'),
+            ('repeat', 'repeat'),
             ('fold', 'fold')]),
         (rw_select, if_model, [('selected', 'selected_regions')]),
         (rw_test, if_model, [('selected', 'selected_features')]),

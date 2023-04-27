@@ -104,7 +104,7 @@ class RegionwiseModel(SimpleInterface):
         r = np.zeros(train_x.shape[2])
         cod = np.zeros(train_x.shape[2])
         for region in range(train_x.shape[2]):
-            r[region], cod[region], _ = elastic_net(
+            r[region], cod[region], _, _ = elastic_net(
                 train_x[:, :, region], train_y, val_x[:, :, region], val_y,
                 int(self.inputs.config['n_alphas']))
         r = np.nan_to_num(r)
