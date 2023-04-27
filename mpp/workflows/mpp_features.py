@@ -190,7 +190,8 @@ def init_d_wf(
         (init_data, hcp_proc_wf, [
             ('dataset_dir', 'inputnode.dataset_dir'),
             ('d_files', 'inputnode.d_files'),
-            ('fs_files', 'inputnode.fs_files')]),
+            ('fs_files', 'inputnode.fs_files'),
+            ('fs_dir', 'inputnode.fs_dir')]),
         (hcp_proc_wf, dtifit, [
             ('outputnode.data', 'dwi'),
             ('outputnode.bval', 'bvals'),

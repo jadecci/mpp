@@ -41,11 +41,10 @@ def fs_files_type(fs_files: dict) -> tuple[Path, ...]:
     orig_file = fs_files['orig']
     lh_thick_file = fs_files['lh_thickness']
     rh_thick_file = fs_files['rh_thickness']
-    subdir = Path(fs_files['orig']).parent.parent.parent
 
     return (
         lh_whitedeform_file, rh_whitedeform_file, eye_file, orig_file, lh_thick_file,
-        rh_thick_file, subdir)
+        rh_thick_file)
 
 
 def fs_files_aparc(fs_files: dict) -> tuple[Path, ...]:

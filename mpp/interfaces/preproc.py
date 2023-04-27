@@ -521,7 +521,8 @@ class HCPMinProc(SimpleInterface):
 
         self._results['hcp_proc_wf'] = pe.Workflow(
             'hcp_min_proc_wf', base_dir=self.inputs.work_dir)
-        inputnode = pe.Node(niu.IdentityInterface(fields=['d_files', 'fs_files']), name='inputnode')
+        inputnode = pe.Node(niu.IdentityInterface(
+            fields=['d_files', 'fs_files', 'fs_dir']), name='inputnode')
         outputnode = pe.Node(
             niu.IdentityInterface(fields=['data', 'bval', 'bvec', 'mask']), name='outputnode')
         split_files = pe.Node(
@@ -703,7 +704,7 @@ class HCPMinProc(SimpleInterface):
         nodif_bias = pe.Node(fsl.ImageMaths(), name='nodif_bias')
         split_fs_files = pe.Node(
             niu.Function(function=fs_files_type, output_names=[
-                'l_whited', 'r_whited', 'eye', 'orig', 'l_thick', 'r_thick', 'subdir']),
+                'l_whited', 'r_whited', 'eye', 'orig', 'l_thick', 'r_thick']),
             name='split_fs_files')
         bbr_epi2t1 = pe.Node(
             freesurfer.BBRegister(
@@ -754,10 +755,9 @@ class HCPMinProc(SimpleInterface):
             (nodif_t1, nodif_bias, [('out_file', 'in_file')]),
             (bias_to_args, nodif_bias, [('out_str', 'args')]),
             (inputnode, split_fs_files, [('fs_files', 'fs_files')]),
+            (inputnode, bbr_epi2t1, [('fs_dir', 'fs_dir')]),
             (nodif_bias, bbr_epi2t1, [('out_file', 'source_file')]),
-            (split_fs_files, bbr_epi2t1, [
-                ('subdir', 'subjects_dir'),
-                ('eye', 'init_reg_file')]),
+            (split_fs_files, bbr_epi2t1, [('eye', 'init_reg_file')]),
             (nodif_bias, tkr_diff2str, [('out_file', 'moving_image')]),
             (bbr_epi2t1, tkr_diff2str, [('out_reg_file', 'reg_file')]),
             (split_t1_files, tkr_diff2str, [('t1', 'target_image')]),
