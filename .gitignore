@@ -6,4 +6,7 @@ __pycache__/
 build/
 
 # vagrant vm
-replication/vm-singularity-ce/.vagrant/
+replication/singularity_files/.vagrant/
+
+# MacOS files
+.DS_Store
