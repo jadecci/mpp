@@ -18,7 +18,8 @@ setup(
         'bctpy>=0.5.2',
         'psutil>=5.0',
         'statsmodels>=0.13.5',
-        'mapalign @ git+https://github.com/satra/mapalign@3e8c7af51355896666e24d49544b1afa47e78364'
+        'mapalign @ git+https://github.com/satra/mapalign@3e8c7af51355896666e24d49544b1afa47e78364',
+        'rdcmpy @ git+https://github.com/jadecci/rDCM_py@v0.1'
     ],
     extras_require={
         'dev': [
