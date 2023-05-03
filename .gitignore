@@ -13,3 +13,6 @@ replication/singularity_files/.vagrant/
 
 # Pycharm
 .idea/
+
+# Pyre
+.pyre/
