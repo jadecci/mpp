@@ -251,7 +251,6 @@ class _IntegratedFeaturesModelInputSpec(BaseInterfaceInputSpec):
     repeat = traits.Int(mandatory=True, desc='current repeat of cross-validation')
     fold = traits.Int(mandatory=True, desc='current fold in the repeat')
 
-    selected_regions = traits.Dict(dtype=list, desc='selected regions for each parcellation level')
     selected_features = traits.Dict(mandatory=True, desc='whether each feature is selected')
     config = traits.Dict(mandatory=True, desc='configuration settings')
 
@@ -269,17 +268,17 @@ class IntegratedFeaturesModel(SimpleInterface):
         all_sub = sum(self.inputs.sublists.values(), [])
         test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
         train_sub = [subject for subject in all_sub if subject not in test_sub]
-        selected_features = list(self.inputs.selected_features.values())[0]
-        selected_regions = self.inputs.selected_regions[f'regions_level{self.inputs.level}']
+        selected_features = np.array(self.inputs.selected_features[
+            f'features_repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'])
 
         train_x, train_y = cv_extract_data(
             self.inputs.sublists, self.inputs.features_dir, train_sub, self.inputs.repeat,
             self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes,
-            selected_features, selected_regions)
+            selected_features=selected_features)
         test_x, test_y = cv_extract_data(
             self.inputs.sublists, self.inputs.features_dir, test_sub, self.inputs.repeat,
             self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes,
-            selected_features, selected_regions)
+            selected_features=selected_features)
 
         r, cod, coef, l1_ratio = elastic_net(
             train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
