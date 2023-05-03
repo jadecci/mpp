@@ -10,3 +10,6 @@ replication/singularity_files/.vagrant/
 
 # MacOS files
 .DS_Store
+
+# Pycharm
+.idea/
