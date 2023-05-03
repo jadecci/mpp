@@ -129,7 +129,7 @@ class RegionwiseModel(SimpleInterface):
         l1_ratios = np.zeros(train_x.shape[2])
         for region in range(train_x.shape[2]):
             if self.inputs.selected[f'regions_level{self.inputs.level}'][region]:
-                r[region], cod[region], coef[region, :], l1_ratios[region, :] = elastic_net(
+                r[region], cod[region], coef[region, :], l1_ratios[region] = elastic_net(
                     train_x[:, :, region], train_y, test_x[:, :, region], test_y,
                     int(self.inputs.config['n_alphas']))
 

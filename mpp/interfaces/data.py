@@ -338,7 +338,8 @@ class InitDiffusionData(SimpleInterface):
 
 class _SaveFeaturesInputSpec(BaseInterfaceInputSpec):
     rsfc = traits.Dict(mandatory=True, dtype=float, desc='resting-state functional connectivity')
-    dfc = traits.Dict(dmandatory=True, dtype=float, desc='dynamic functional connectivity')
+    dfc = traits.Dict(mandatory=True, dtype=float, desc='dynamic functional connectivity')
+    efc = traits.Dict(mandatory=True, dtype=float, desc='effective functional connectivity')
     rs_stats = traits.Dict(mandatory=True, dtype=float, desc='dynamic functional connectivity')
     tfc = traits.Dict({}, dtype=dict, desc='task-based functional connectivity')
     myelin = traits.Dict(mandatory=True, dtype=float, desc='myelin content estimates')
@@ -369,15 +370,20 @@ class SaveFeatures(SimpleInterface):
             data_dfc = self.inputs.dfc[f'level{level+1}']
             write_h5(output_file, ds_dfc, data_dfc, self.inputs.overwrite)
 
+            ds_efc = f'/efc/level{level+1}'
+            data_efc = self.inputs.efc[f'level{level+1}']
+            write_h5(output_file, ds_efc, data_efc, self.inputs.overwrite)
+
             for stats in ['strength', 'betweenness', 'participation', 'efficiency']:
                 ds_stats = f'/network_stats/{stats}/level{level+1}'
                 data_stats = self.inputs.rs_stats[f'level{level+1}_{stats}']
                 write_h5(output_file, ds_stats, data_stats, self.inputs.overwrite)
 
             if self.inputs.tfc:
-                ds_tfc = f'/tfc/level{level+1}'
-                data_tfc = self.inputs.tfc[f'level{level+1}']
-                write_h5(output_file, ds_tfc, data_tfc, self.inputs.overwrite)
+                for key, val in self.inputs.tfc.items():
+                    ds_tfc = f'/tfc/{key}/level{level+1}'
+                    data_tfc = self.inputs.tfc[key][f'level{level+1}']
+                    write_h5(output_file, ds_tfc, data_tfc, self.inputs.overwrite)
 
             for stats in ['GMV', 'CS', 'CT']:
                 ds_morph = f'/morphometry/{stats}/level{level+1}'

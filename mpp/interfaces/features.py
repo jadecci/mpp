@@ -11,7 +11,8 @@ import pandas as pd
 from nipype.interfaces import fsl, freesurfer
 import bct
 
-from mpp.utilities.features import fc, diffusion_mapping, score, add_subdir, atlas_files, add_annot
+from mpp.utilities.features import (
+    parcellate, fc, diffusion_mapping, score, add_subdir, atlas_files, add_annot)
 from mpp.utilities.data import read_h5
 from mpp.utilities.preproc import t1_files_type, fs_files_aparc, combine_4strings
 
@@ -29,6 +30,7 @@ class _RSFCInputSpec(BaseInterfaceInputSpec):
 class _RSFCOutputSpec(TraitedSpec):
     rsfc = traits.Dict(dtype=float, desc='resting-state functional connectivity')
     dfc = traits.Dict(dtype=float, desc='dynamic functional connectivity')
+    efc = traits.Dict(dtype=float, desc='effective functional connectivity')
 
 
 class RSFC(SimpleInterface):
@@ -37,9 +39,8 @@ class RSFC(SimpleInterface):
     output_spec = _RSFCOutputSpec
 
     def _run_interface(self, runtime):
-        self._results['rsfc'] = {}
-        self._results['dfc'] = {}
         n_runs = len(self.inputs.rs_runs) + self.inputs.hcpd_b_runs
+        tavg_dict = {}
         for i in range(n_runs):
             if self.inputs.dataset == 'HCP-D' and i >= 4:
                 run = self.inputs.rs_runs[i-3]
@@ -53,9 +54,14 @@ class RSFC(SimpleInterface):
             if self.inputs.rs_files[key_surf] and self.inputs.rs_files[key_vol]:
                 t_surf = nib.load(self.inputs.rs_files[key_surf]).get_fdata()
                 t_vol = nib.load(self.inputs.rs_files[key_vol]).get_fdata()
-                self._results['rsfc'], self._results['dfc'] = fc(
-                    t_surf, t_vol, self.inputs.dataset, self.inputs.rs_files,
-                    self._results['rsfc'], self._results['dfc'])
+                tavg = parcellate(t_surf, t_vol, self.inputs.dataset, self.inputs.rs_files)
+                for key, val in tavg.items():
+                    if tavg_dict[key].size:
+                        tavg_dict[key] = np.hstack((tavg_dict[key], val))
+                    else:
+                        tavg_dict[key] = val
+
+        self._results['rsfc'], self._results['dfc'], self._results['efc'] = fc(tavg_dict)
 
         return runtime
 
@@ -114,8 +120,8 @@ class TFC(SimpleInterface):
             if self.inputs.t_files[f'{run}_surf'] and self.inputs.t_files[f'{run}_vol']:
                 t_surf = nib.load(self.inputs.t_files[f'{run}_surf']).get_fdata()
                 t_vol = nib.load(self.inputs.t_files[f'{run}_vol']).get_fdata()
-                self._results['tfc'], _ = fc(
-                    t_surf, t_vol, self.inputs.dataset, self.inputs.t_files, self._results['tfc'])
+                tavg = parcellate(t_surf, t_vol, self.inputs.dataset, self.inputs.t_files)
+                self._results['tfc'][run], _, _ = fc(tavg)
 
         return runtime
 

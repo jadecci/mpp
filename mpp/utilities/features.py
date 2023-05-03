@@ -11,6 +11,7 @@ from scipy.ndimage import binary_erosion
 from sklearn.metrics import pairwise_distances
 from mapalign.embed import compute_diffusion_map
 from statsmodels.formula.api import ols
+from rdcmpy import RegressionDCM
 
 from mpp.exceptions import DatasetError
 
@@ -18,9 +19,8 @@ base_dir = Path(__file__).resolve().parent.parent
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
 
-def fc(
-        t_surf: np.ndarray, t_vol: np.ndarray, dataset: str, func_files: dict, sfc_dict: dict,
-        dfc_dict: Union[dict, None] = None) -> tuple[dict, Union[dict, None]]:
+def parcellate(
+        t_surf: np.ndarray, t_vol: np.ndarray, dataset: str, func_files: dict) -> dict:
     if dataset in ['HCP-YA', 'HCP-A', 'HCP-D']:
         conf = nuisance_conf_hcp(t_vol, func_files['atlas_mask'])
     else:
@@ -31,6 +31,7 @@ def fc(
         np.linspace(-1, 1, num=conf.shape[0]).reshape((conf.shape[0], 1))), axis=1)
     t_surf_resid = t_surf - np.dot(regressors, np.linalg.lstsq(regressors, t_surf, rcond=-1)[0])
 
+    tavg_dict = {}
     for level in range(4):
         key = f'level{level+1}'
         parc_sch_file, _, _, parc_mel_file, _ = atlas_files(Path(base_dir, 'data'), level)
@@ -60,32 +61,43 @@ def fc(
                        :, np.where(np.abs(selected.mean(axis=0)) >= sys.float_info.epsilon)[0]]
             parc_vol[parcel-1, :] = selected.mean(axis=1)
 
-        tavg = np.concatenate([parc_surf, parc_vol], axis=0)
+        tavg_dict[key] = np.vstack((parc_surf, parc_vol))
+
+    return tavg_dict
+
+
+def fc(tavg_dict: dict, t_rep: Union[float, None] = None) -> tuple[dict, dict, dict]:
+    sfc_dict = {}
+    dfc_dict = {}
+    efc_dict = {}
+    for level in range(4):
+        key = f'level{level+1}'
+        tavg = tavg_dict[key]
 
         # static FC (Fisher's z excluding diagonals)
-        sfc = np.corrcoef(tavg)
+        sfc = np.corrcoef(tavg_dict[key])
         sfc = (
                 0.5 * (np.log(1 + sfc, where=~np.eye(sfc.shape[0], dtype=bool)) -
                        np.log(1 - sfc, where=~np.eye(sfc.shape[0], dtype=bool))))
         sfc[np.diag_indices_from(sfc)] = 0
-        if sfc_dict[key].size:
-            sfc_dict[key] = np.dstack((sfc_dict[key], sfc))
-        else:
-            sfc_dict[key] = sfc
+        sfc_dict[key] = sfc
 
-        # dynamic FC (optional): 1st order ARR model
+        # dynamic FC: 1st order ARR model
         # see https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/fMRI_dynamics/Liegeois2017_Surrogates/CBIG_RL2017_ar_mls.m # noqa: E501
-        if dfc_dict is not None:
-            y = tavg[:, range(1, tavg.shape[1])]
-            z = np.ones((tavg.shape[0]+1, tavg.shape[1]-1))
-            z[1:(tavg.shape[0]+1), :] = tavg[:, range(tavg.shape[1]-1)]
-            b = np.linalg.lstsq((z @ z.T).T, (y @ z.T).T, rcond=None)[0].T
-            if dfc_dict[key].size:
-                dfc_dict[key] = np.dstack((dfc_dict[key], b[:, range(1, b.shape[1])]))
-            else:
-                dfc_dict[key] = b[:, range(1, b.shape[1])]
+        y = tavg[:, range(1, tavg.shape[1])]
+        z = np.ones((tavg.shape[0] + 1, tavg.shape[1] - 1))
+        z[1:(tavg.shape[0] + 1), :] = tavg[:, range(tavg.shape[1] - 1)]
+        b = np.linalg.lstsq((z @ z.T).T, (y @ z.T).T, rcond=None)[0].T
+        dfc_dict[key] = b[:, range(1, b.shape[1])]
 
-    return sfc_dict, dfc_dict
+        # effective FC: regression DCM
+        if t_rep is not None:
+            rdcm = RegressionDCM(data=tavg.T, t_rep=t_rep)
+            rdcm.estimate()
+            params = rdcm.get_params()
+            efc_dict[key] = params['mu_connectivity']
+
+    return sfc_dict, dfc_dict, efc_dict
 
 
 def nuisance_conf_hcp(t_vol: np.ndarray, atlas_file: Union[Path, str]) -> np.ndarray:
