@@ -284,10 +284,8 @@ class IntegratedFeaturesModel(SimpleInterface):
             train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
 
         key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
-        self._results['results'][f'r_{key}'] = r
-        self._results['results'][f'cod_{key}'] = cod
-        self._results['results'][f'l1ratio_{key}'] = l1_ratio
-        self._results['selected'] = {}
-        self._results['selected'][f'features_{key}'] = list(coef != 0)
+        self._results['results'] = {
+            f'r_{key}': r, f'cod_{key}': cod, f'l1ratio_{key}': l1_ratio,
+            f'features_{key}': list(coef != 0)}
 
         return runtime

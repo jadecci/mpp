@@ -15,13 +15,17 @@ logging.getLogger('datalad').setLevel(logging.WARNING)
 def write_h5(h5_file: Union[Path, str], dataset: str, data: np.ndarray, overwrite: bool) -> None:
     with h5py.File(h5_file, 'a') as f:
         try:
-            ds = f.require_dataset(
-                dataset, shape=data.shape, dtype=data.dtype, data=data, chunks=True,
-                maxshape=(None,)*data.ndim)
+            if data.shape:
+                ds = f.require_dataset(
+                    dataset, shape=data.shape, dtype=data.dtype, data=data, chunks=True,
+                    maxshape=(None,)*data.ndim)
+            else:
+                ds = f.require_dataset(dataset, shape=data.shape, dtype=data.dtype, data=data)
         except TypeError:
             if overwrite:
                 ds = f[dataset]
-                ds.resize(data.shape)
+                if data.shape:
+                    ds.resize(data.shape)
                 ds.write_direct(data)
             else:
                 raise TypeError(
