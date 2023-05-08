@@ -4,9 +4,10 @@ from pathlib import Path
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 import numpy as np
 from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.metrics import r2_score
 from statsmodels.stats.multitest import multipletests
 
-from mpp.utilities.models import elastic_net, permutation_test
+from mpp.utilities.models import elastic_net, kernel_ridge, permutation_test
 from mpp.utilities.data import write_h5, cv_extract_data
 
 
@@ -72,6 +73,7 @@ class _RegionwiseModelInputSpec(BaseInterfaceInputSpec):
 class _RegionwiseModelOutputSpec(TraitedSpec):
     results = traits.Dict(desc='accuracy results')
     selected = traits.Dict(desc='whether each feature is selected')
+    rw_ypred = traits.Dict(desc='Predicted psychometric values')
 
 
 class RegionwiseModel(SimpleInterface):
@@ -104,14 +106,14 @@ class RegionwiseModel(SimpleInterface):
         r = np.zeros(train_x.shape[2])
         cod = np.zeros(train_x.shape[2])
         for region in range(train_x.shape[2]):
-            r[region], cod[region], _, _ = elastic_net(
+            r[region], cod[region], _ = elastic_net(
                 train_x[:, :, region], train_y, val_x[:, :, region], val_y,
                 int(self.inputs.config['n_alphas']))
         r = np.nan_to_num(r)
 
         return r, cod
 
-    def _test(self) -> tuple[np.ndarray, ...]:
+    def _test(self) -> None:
         all_sub = sum(self.inputs.sublists.values(), [])
         test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
         train_sub = [subject for subject in all_sub if subject not in test_sub]
@@ -125,15 +127,27 @@ class RegionwiseModel(SimpleInterface):
 
         r = np.zeros(train_x.shape[2])
         cod = np.zeros(train_x.shape[2])
-        coef = np.zeros((train_x.shape[2], train_x.shape[1]))
+        coef = np.zeros((train_x.shape[2], train_x.shape[1]+1))
         l1_ratios = np.zeros(train_x.shape[2])
+        train_ypred = np.zeros((len(train_y), train_x.shape[2]))
+        test_ypred = np.zeros((len(test_y), train_x.shape[2]))
         for region in range(train_x.shape[2]):
             if self.inputs.selected[f'regions_level{self.inputs.level}'][region]:
-                r[region], cod[region], coef[region, :], l1_ratios[region] = elastic_net(
+                r[region], cod[region], model = elastic_net(
                     train_x[:, :, region], train_y, test_x[:, :, region], test_y,
                     int(self.inputs.config['n_alphas']))
+                coef[region, :] = np.concatenate((model.coef_, [model.intercept_]))
+                l1_ratios[region] = model.l1_ratio_
+                train_ypred[:, region] = model.predict(train_x[:, :, region])
+                test_ypred[:, region] = model.predict(test_x[:, :, region])
 
-        return r, cod, coef, l1_ratios
+        key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
+        self._results['results'][f'r_{key}'] = r
+        self._results['results'][f'cod_{key}'] = cod
+        self._results['results'][f'l1ratio_{key}'] = l1_ratios
+        self._results['results'][f'model_{key}'] = coef
+        self._results['selected'] = {f'features_{key}': list(coef[:, :-1] != 0)}
+        self._results['rw_ypred'] = {'train_ypred': train_ypred, 'test_ypred': test_ypred}
 
     def _run_interface(self, runtime):
         self._results['results'] = {}
@@ -157,19 +171,13 @@ class RegionwiseModel(SimpleInterface):
                 raise ValueError("'n_repeats_perm' must be 10 x 'n_repeats'")
 
         elif self.inputs.mode == 'test':
-            key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
-            r, cod, coef, l1_ratios = self._test()
-            self._results['results'][f'r_{key}'] = r
-            self._results['results'][f'cod_{key}'] = cod
-            self._results['results'][f'l1ratio_{key}'] = l1_ratios
-            self._results['selected'] = {}
-            self._results['selected'][f'features_{key}'] = list(coef != 0)
+            self._test()
 
         return runtime
 
 
 class _RegionSelectInputSpec(BaseInterfaceInputSpec):
-    results = traits.List(dtype=dict, desc='accuracy results')
+    results = traits.List(mandatory=True, dtype=dict, desc='accuracy results')
     levels = traits.List(mandatory=True, desc='parcellation levels (1 to 4)')
     output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
     overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
@@ -185,7 +193,8 @@ class RegionSelect(SimpleInterface):
     input_spec = _RegionSelectInputSpec
     output_spec = _RegionSelectOutputSpec
 
-    def _extract_results(self, results_dict: dict,  permutation: bool = False) -> np.ndarray:
+    def _extract_results(
+            self, results_dict: dict, level: str,  permutation: bool = False) -> np.ndarray:
         if permutation:
             n_repeats = self.inputs.config['n_repeats_perm']
             key = f'{self.inputs.config["features_criteria"]}_perm'
@@ -201,11 +210,10 @@ class RegionSelect(SimpleInterface):
         for repeat in range(int(n_repeats)):
             for fold in range(int(n_folds)):
                 pos = 0
-                for level in self.inputs.levels:
-                    key_curr = f'{key}_repeat{repeat}_fold{fold}_level{level}'
-                    regions = range(pos, pos + n_region_dict[level])
-                    pos = pos + n_region_dict[level]
-                    results[repeat, regions] = results[repeat, regions] + results_dict[key_curr]
+                key_curr = f'{key}_repeat{repeat}_fold{fold}_level{level}'
+                regions = range(pos, pos + n_region_dict[level])
+                pos = pos + n_region_dict[level]
+                results[repeat, regions] = results[repeat, regions] + results_dict[key_curr]
             results[repeat, :] = np.divide(results[repeat, :], int(n_folds))
 
         return results
@@ -217,22 +225,16 @@ class RegionSelect(SimpleInterface):
             write_h5(output_file, f'/{key}', np.array(val), self.inputs.overwrite)
 
     def _run_interface(self, runtime):
-        n_region_dict = {'1': 116, '2': 232, '3': 350, '4': 454}
-
         results_dict = {key: item for d in self.inputs.results for key, item in d.items()}
-        results = self._extract_results(results_dict)
-        results_perm = self._extract_results(results_dict, permutation=True)
-
-        p = permutation_test(results.mean(axis=0), results_perm)
-        selected = multipletests(p, method='fdr_bh')[0]
 
         self._results['selected'] = {}
-        pos = 0
         for level in self.inputs.levels:
-            regions = range(pos, pos + n_region_dict[level])
-            pos = pos + n_region_dict[level]
-            self._results['selected'][f'regions_level{level}'] = selected[regions]
+            results = self._extract_results(results_dict, level)
+            results_perm = self._extract_results(results_dict, level, permutation=True)
 
+            p = permutation_test(results.mean(axis=0), results_perm)
+            selected = multipletests(p, method='fdr_bh')[0]
+            self._results['selected'][f'regions_level{level}'] = selected
         self._save_results()
 
         return runtime
@@ -251,6 +253,7 @@ class _IntegratedFeaturesModelInputSpec(BaseInterfaceInputSpec):
     repeat = traits.Int(mandatory=True, desc='current repeat of cross-validation')
     fold = traits.Int(mandatory=True, desc='current fold in the repeat')
 
+    rw_ypred = traits.Dict(mandatory=True, desc='Predicted psychometric values')
     selected_features = traits.Dict(mandatory=True, desc='whether each feature is selected')
     config = traits.Dict(mandatory=True, desc='configuration settings')
 
@@ -264,12 +267,50 @@ class IntegratedFeaturesModel(SimpleInterface):
     input_spec = _IntegratedFeaturesModelInputSpec
     output_spec = _IntegratedFeaturesModelOutputSpec
 
+    def _en(
+            self, train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray,
+            test_y: np.ndarray, key: str) -> dict:
+        r, cod, model = elastic_net(
+            train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
+        results = {
+            f'en_r_{key}': r, f'en_cod_{key}': cod, f'en_l1ratio_{key}': model.l1_ratio_,
+            f'en_model_{key}': np.concatenate((model.coef_, model.intercept_))}
+
+        return results
+
+    def _en_stack(self, train_y: np.ndarray, test_y: np.ndarray, key: str) -> dict:
+        r, cod, model = elastic_net(
+            self.inputs.rw_ypred['train_ypred'], train_y, self.inputs.rw_ypred['test_ypred'],
+            test_y, int(self.inputs.config['n_alphas']))
+        results = {
+            f'enstack_r_{key}': r, f'enstack_cod_{key}': cod,
+            f'enstack_l1ratio_{key}': model.l1_ratio_,
+            f'enstack_model_{key}': np.concatenate((model.coef_, model.intercept_))}
+        return results
+
+    @staticmethod
+    def _kr(
+            train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
+            key: str) -> dict:
+        r, cod, model = kernel_ridge(train_x, train_y, test_x, test_y)
+        results = {f'kr_r_{key}': r, f'kr_cod_{key}': cod, f'kr_model_{key}': model.dual_coef_}
+
+        return results
+
+    def _voting(self, test_y: np.ndarray, key: str) -> dict:
+        ypred = self.inputs.rw_ypred['test_ypred'].mean(axis=1)
+        results = {
+            f'voting_r_{key}': np.corrcoef(test_y, ypred)[0, 1],
+            f'voting_cod_{key}': r2_score(test_y, ypred)}
+        return results
+
     def _run_interface(self, runtime):
         all_sub = sum(self.inputs.sublists.values(), [])
         test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
         train_sub = [subject for subject in all_sub if subject not in test_sub]
         selected_features = np.array(self.inputs.selected_features[
             f'features_repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'])
+        key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
 
         train_x, train_y = cv_extract_data(
             self.inputs.sublists, self.inputs.features_dir, train_sub, self.inputs.repeat,
@@ -280,12 +321,10 @@ class IntegratedFeaturesModel(SimpleInterface):
             self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes,
             selected_features=selected_features)
 
-        r, cod, coef, l1_ratio = elastic_net(
-            train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
-
-        key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
-        self._results['results'] = {
-            f'r_{key}': r, f'cod_{key}': cod, f'l1ratio_{key}': l1_ratio,
-            f'features_{key}': list(coef != 0)}
+        en = self._en(train_x, train_y, test_x, test_y, key)
+        en_stack = self._en_stack(train_y, test_y, key)
+        kr = self._kr(train_x, train_y, test_x, test_y, key)
+        voting = self._voting(test_y, key)
+        self._results['results'] = en | en_stack | kr | voting
 
         return runtime

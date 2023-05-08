@@ -125,9 +125,7 @@ def main() -> None:
             ('repeat', 'repeat'),
             ('fold', 'fold')]),
         (rw_select, rw_test, [('selected', 'selected')]),
-        (rw_test, rw_save, [
-            ('results', 'results'),
-            ('selected', 'selected_features')])])
+        (rw_test, rw_save, [('results', 'results')])])
 
     # Integrated features model
     if_model = pe.Node(
@@ -147,7 +145,9 @@ def main() -> None:
             ('level', 'level'),
             ('repeat', 'repeat'),
             ('fold', 'fold')]),
-        (rw_test, if_model, [('selected', 'selected_features')]),
+        (rw_test, if_model, [
+            ('selected', 'selected_features'),
+            ('rw_ypred', 'rw_ypred')]),
         (if_model, if_save, [('results', 'results')])])
 
     mp_wf.config['execution']['try_hard_link_datasink'] = 'false'

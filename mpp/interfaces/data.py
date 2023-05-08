@@ -478,7 +478,6 @@ class InitFeatures(SimpleInterface):
 
 class _RegionwiseSaveInputSpec(BaseInterfaceInputSpec):
     results = traits.List(dtype=dict, desc='accuracy results')
-    selected_features = traits.List(dtype=dict, desc='whether each feature is selected or not')
     output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
     overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
 
@@ -492,11 +491,8 @@ class RegionwiseSave(SimpleInterface):
         output_file = Path(self.inputs.output_dir, 'regionwise_results.h5')
 
         results = {key: item for d in self.inputs.results for key, item in d.items()}
-        features = {key: item for d in self.inputs.selected_features for key, item in d.items()}
-
-        for dict_data in results, features:
-            for key, val in dict_data.items():
-                write_h5(output_file, f'/{key}', np.array(val), self.inputs.overwrite)
+        for key, val in results.items():
+            write_h5(output_file, f'/{key}', np.array(val), self.inputs.overwrite)
 
         return runtime
 
