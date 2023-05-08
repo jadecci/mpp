@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Union
 import argparse
 import logging
 
@@ -26,14 +27,19 @@ def main() -> None:
     parser.add_argument(
         '--workdir', type=Path, dest='work_dir', default=Path.cwd(), help='Work directory')
     parser.add_argument(
-        '--output_dir', type=Path, dest='output_dir', default=Path.cwd(), help='output directory')
+        '--output_dir', type=Path, dest='output_dir', default=Path.cwd(), help='Output directory')
     parser.add_argument(
-        '--overwrite', dest='overwrite', action="store_true", help='overwrite existing results')
+        '--simg', type=Union[Path, None], dest='simg', default=None,
+        help='singularity image to use for command line functions from FSL / FreeSurfer / '
+             'Connectome Workbench / MRTrix3. Note that singularity version (2 / 3) used to build '
+             'the image should match your installed singularity')
+    parser.add_argument(
+        '--overwrite', dest='overwrite', action="store_true", help='Overwrite existing results')
     parser.add_argument(
         '--condordag', dest='condordag', action='store_true',
-        help='submit graph workflow to HTCondor')
+        help='Submit graph workflow to HTCondor')
     parser.add_argument(
-        '--wrapper', type=str, dest='wrapper', default='', help='wrapper script for HTCondor')
+        '--wrapper', type=str, dest='wrapper', default='', help='Wrapper script for HTCondor')
     args = parser.parse_args()
 
     sublist = pd.read_csv(args.sublist, header=None).squeeze()
