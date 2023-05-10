@@ -98,7 +98,7 @@ def main() -> None:
         RegionwiseModel(mode='test', config=config, features_dir=features_dir), name='rw_test')
     rw_save = pe.JoinNode(
         RegionwiseSave(output_dir=args.output_dir, overwrite=args.overwrite), name='rw_save',
-        joinfield=['results', 'selected_features'], joinsource='features', synchronize=True)
+        joinfield=['results'], joinsource='features', synchronize=True)
 
     mp_wf.connect([
         (init_data, rw_validate, [
