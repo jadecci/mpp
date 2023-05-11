@@ -274,7 +274,7 @@ class IntegratedFeaturesModel(SimpleInterface):
             train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
         results = {
             f'en_r_{key}': r, f'en_cod_{key}': cod, f'en_l1ratio_{key}': model.l1_ratio_,
-            f'en_model_{key}': np.concatenate((model.coef_, model.intercept_))}
+            f'en_model_{key}': np.concatenate((model.coef_, [model.intercept_]))}
 
         return results
 
@@ -285,7 +285,7 @@ class IntegratedFeaturesModel(SimpleInterface):
         results = {
             f'enstack_r_{key}': r, f'enstack_cod_{key}': cod,
             f'enstack_l1ratio_{key}': model.l1_ratio_,
-            f'enstack_model_{key}': np.concatenate((model.coef_, model.intercept_))}
+            f'enstack_model_{key}': np.concatenate((model.coef_, [model.intercept_]))}
         return results
 
     @staticmethod

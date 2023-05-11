@@ -22,7 +22,7 @@ def elastic_net(
 def kernel_ridge(
         train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray,
         test_y: np.ndarray) -> tuple[float, float, KernelRidge()]:
-    kr = KernelRidge(kernel='cosine_similarity')
+    kr = KernelRidge(kernel='cosine')
     kr.fit(train_x, train_y)
 
     test_ybar = kr.predict(test_x)
