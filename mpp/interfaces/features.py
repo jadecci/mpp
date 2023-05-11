@@ -56,7 +56,7 @@ class RSFC(SimpleInterface):
                 t_vol = nib.load(self.inputs.rs_files[key_vol]).get_fdata()
                 tavg = parcellate(t_surf, t_vol, self.inputs.dataset, self.inputs.rs_files)
                 for key, val in tavg.items():
-                    if tavg_dict[key].size:
+                    if key in tavg_dict.keys():
                         tavg_dict[key] = np.hstack((tavg_dict[key], val))
                     else:
                         tavg_dict[key] = val
@@ -192,7 +192,7 @@ class Morphometry(SimpleInterface):
     def _run_interface(self, runtime):
         self._results['morph'] = {}
         for level in range(4):
-            stats_surf = pd.DataFrame()
+            stats_surf = None
             for hemi in ['lh', 'rh']:
                 annot_file = Path(
                     base_dir, 'data', 'label',
@@ -205,7 +205,10 @@ class Morphometry(SimpleInterface):
                 hemi_stats = pd.read_table(
                     hemi_table, header=0, skiprows=np.arange(51), delim_whitespace=True)
                 hemi_stats.drop([0], inplace=True)  # exclude medial wall
-                stats_surf = stats_surf.append(hemi_stats)
+                if stats_surf is None:
+                    stats_surf = hemi_stats
+                else:
+                    stats_surf = pd.concat([stats_surf, hemi_stats])
             self._results['morph'][f'level{level+1}_CS'] = stats_surf['SurfArea'].values
             self._results['morph'][f'level{level+1}_CT'] = stats_surf['ThickAvg'].values
 
