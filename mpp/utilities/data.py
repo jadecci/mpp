@@ -84,8 +84,8 @@ def pheno_hcp(
 
 def cv_extract_data(
         sublists: dict, features_dir: dict, subjects: list, repeat: int, level: str,
-        embeddings: dict, params: dict, phenotypes: dict, permutation: bool = False,
-        selected_features: Union[np.ndarray, None] = None) -> tuple[np.ndarray, ...]:
+        embeddings: dict, params: dict, phenotypes: dict,
+        permutation: bool = False) -> tuple[np.ndarray, ...]:
     y = np.zeros(len(subjects))
     x_all = np.zeros(len(subjects))
 
@@ -130,16 +130,5 @@ def cv_extract_data(
         # TODO: diffusion features
         x_all = x if i == 0 else np.dstack((x_all.T, x.T)).T  # N x F x R
         y[i] = phenotypes[subjects[i]]
-
-    if selected_features is not None:
-        x_old = x_all
-        x_all = None
-        for region in range(selected_features.shape[0]):
-            if selected_features[region, :].sum() != 0:
-                x_region = x_old[:, selected_features[region, :], region]
-                if x_all is None:
-                    x_all = x_region
-                else:
-                    x_all = np.hstack((x_all, x_region))
 
     return x_all, y

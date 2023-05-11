@@ -254,7 +254,8 @@ class _IntegratedFeaturesModelInputSpec(BaseInterfaceInputSpec):
     fold = traits.Int(mandatory=True, desc='current fold in the repeat')
 
     rw_ypred = traits.Dict(mandatory=True, desc='Predicted psychometric values')
-    selected_features = traits.Dict(mandatory=True, desc='whether each feature is selected')
+    selected_regions = traits.Dict(
+        mandatory=True, dtype=list, desc='selected regions for each parcellation level')
     config = traits.Dict(mandatory=True, desc='configuration settings')
 
 
@@ -308,20 +309,18 @@ class IntegratedFeaturesModel(SimpleInterface):
         all_sub = sum(self.inputs.sublists.values(), [])
         test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
         train_sub = [subject for subject in all_sub if subject not in test_sub]
-        selected_features = np.array(self.inputs.selected_features[
-            f'features_repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'])
+        selected_regions = self.inputs.selected_regions[f'regions_level{self.inputs.level}']
         key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
 
         train_x, train_y = cv_extract_data(
             self.inputs.sublists, self.inputs.features_dir, train_sub, self.inputs.repeat,
-            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes,
-            selected_features=selected_features)
+            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes)
         test_x, test_y = cv_extract_data(
             self.inputs.sublists, self.inputs.features_dir, test_sub, self.inputs.repeat,
-            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes,
-            selected_features=selected_features)
+            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes)
 
-        en = self._en(train_x, train_y, test_x, test_y, key)
+        en = self._en(
+            train_x[:, :, selected_regions], train_y, test_x[:, :, selected_regions], test_y, key)
         en_stack = self._en_stack(train_y, test_y, key)
         kr = self._kr(train_x, train_y, test_x, test_y, key)
         voting = self._voting(test_y, key)
