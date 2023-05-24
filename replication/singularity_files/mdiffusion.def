@@ -7,8 +7,9 @@ From: debian:11
 
 %post -c /bin/bash
     apt-get update
-    apt-get install python3 python2 curl unzip -y
+    apt-get install python3 python3-pip python-is-python3 python2 curl unzip tcsh -y
     apt-get install git clang libeigen3-dev zlib1g-dev libqt5opengl5-dev libqt5svg5-dev libgl1-mesa-dev libfftw3-dev libtiff5-dev libpng-dev -y
+    apt-get install libxmu6 -y
 
     mkdir -p /usr/local/freesurfer
     curl -fL --retry 5 ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.3.2/freesurfer-linux-centos8_x86_64-7.3.2.tar.gz | tar -xz -C /usr/local/freesurfer --strip-components 1
@@ -17,9 +18,9 @@ From: debian:11
     curl -fL --retry 5 https://www.humanconnectome.org/storage/app/media/workbench/workbench-rh_linux64-v1.5.0.zip -o workbench.zip
     unzip workbench.zip -d /usr/local
 
-    git clone https://github.com/MRtrix3/mrtrix3.git /usr/local/mrtrix3
+    git clone --depth 1 --branch 3.0.4 https://github.com/MRtrix3/mrtrix3.git /usr/local/mrtrix3
     cd /usr/local/mrtrix3
-    ./configure
+    ./configure -nogui
     ./build
     cd /root
 
@@ -28,16 +29,16 @@ From: debian:11
 %environment
     export FREESURFER_HOME=/usr/local/freesurfer
     source $FREESURFER_HOME/SetUpFreeSurfer.sh
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/freesurfer/freesurfer/lib/tktools
 
-    export PATH=/usr/local/workbench/bin_rh_linux64:${PATH}
+    export PATH=${PATH}:/usr/local/workbench/bin_rh_linux64
 
-    export PATH=/usr/local/mrtrix3/bin:${PATH}
+    export PATH=${PATH}:/usr/local/mrtrix3/bin
 
-    FSLDIR=/usr/local/fsl
-    PATH=${FSLDIR}/share/fsl/bin:${PATH}
-    export FSLDIR PATH
+    export FSLDIR=/usr/local/fsl
+    export PATH=${PATH}:${FSLDIR}/share/fsl/bin
     source ${FSLDIR}/etc/fslconf/fsl.sh
 
 %runscript
     #!/bin/bash
-    exec $@
+    exec "$@"
