@@ -178,6 +178,7 @@ class _MorphometryInputSpec(BaseInterfaceInputSpec):
     anat_dir = traits.Str(mandatory=True, desc='absolute path to installed subject T1w directory')
     anat_files = traits.Dict(mandatory=True, dtype=Path, desc='filenames of anatomical data')
     subject = traits.Str(mandatory=True, desc='subject ID')
+    simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
 class _MorphometryOutputSpec(TraitedSpec):
@@ -199,8 +200,8 @@ class Morphometry(SimpleInterface):
                     f'{hemi}.Schaefer2018_{level+1}00Parcels_17Networks_order.annot')
                 hemi_table = f'{hemi}.fs_stats'
                 subprocess.run([
-                    'mris_anatomical_stats', '-a', annot_file, '-noglobal', '-f', hemi_table,
-                    self.inputs.subject, hemi],
+                    self.inputs.simg_cmd.run_cmd('mris_anatomical_stats'), '-a', annot_file,
+                    '-noglobal', '-f', hemi_table, self.inputs.subject, hemi],
                     env=dict(environ, **{'SUBJECTS_DIR': self.inputs.anat_dir}))
                 hemi_stats = pd.read_table(
                     hemi_table, header=0, skiprows=np.arange(51), delim_whitespace=True)
@@ -215,12 +216,14 @@ class Morphometry(SimpleInterface):
             seg_file = Path(base_dir, 'data', 'atlas', f'Tian_Subcortex_S{level+1}_3T.nii.gz')
             seg_up_file = f'S{level}_upsampled.nii.gz'
             flt = fsl.FLIRT(
+                command=self.inputs.simg_cmd.run_cmd(cmd='flirt'),
                 in_file=seg_file, reference=self.inputs.anat_files['t1_vol'], out_file=seg_up_file,
                 apply_isoxfm=0.8, interp='nearestneighbour')
             flt.run()
 
             sub_table = 'subcortex.stats'
             ss = freesurfer.SegStats(
+                command=self.inputs.simg_cmd.run_cmd('mri_segstats'),
                 segmentation_file=seg_up_file, in_file=self.inputs.anat_files['t1_vol'],
                 summary_file=sub_table, subjects_dir=self.inputs.anat_dir)
             ss.run()
@@ -377,6 +380,7 @@ class _SCInputSpec(BaseInterfaceInputSpec):
     tck_file = traits.File(mandatory=True, exists=True, desc='tracks file')
     work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
     level = traits.Int(mandatory=True, desc='parcellation level (0 to 3)')
+    simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
 class _SCOutputSpec(TraitedSpec):
@@ -393,7 +397,7 @@ class SC(SimpleInterface):
         self._results['count_file'] = Path(
             self.inputs.work_dir, f'sc_count_level{self.inputs.level}.csv')
         sc_count = [
-            'tck2connectome', '-assignment_radial_search', '2', '-symmetric', '-nthreads', '0',
+            self.inputs.simg_cmd.run_cmd('tck2connectome'), '-assignment_radial_search', '2', '-symmetric', '-nthreads', '0',
             str(self.inputs.tck_file), str(self.inputs.atlas_file),
             str(self._results['count_file'])]
         if not self._results['count_file'].is_file():
@@ -402,7 +406,7 @@ class SC(SimpleInterface):
         self._results['length_file'] = Path(
             self.inputs.work_dir, f'sc_length_level{self.inputs.level}.csv')
         sc_length = [
-            'tck2connectome', '-assignment_radial_search', '2', '-scale_length',
+            self.inputs.simg_cmd.run_cmd('tck2connectome'), '-assignment_radial_search', '2', '-scale_length',
             '-stat_edge', 'mean', '-symmetric', '-nthreads', '0',
             str(self.inputs.tck_file), str(self.inputs.atlas_file),
             str(self._results['length_file'])]
@@ -415,6 +419,7 @@ class SC(SimpleInterface):
 class _SCWFInputSpec(BaseInterfaceInputSpec):
     subject = traits.Str(mandatory=True, desc='subject ID')
     work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
+    simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
 class _SCWFOutputSpec(TraitedSpec):
@@ -456,15 +461,21 @@ class SCWF(SimpleInterface):
             iterables=[('level', [0, 1, 2, 3])], name='split_atlas')
         split_atlas.inputs.data_dir = Path(base_dir, 'data')
 
-        std2t1 = pe.Node(fsl.InvWarp(), name='std2t1')
-        subcort_t1 = pe.Node(fsl.ApplyWarp(interp='nn', relwarp=True), name='subcort_t1')
+        std2t1 = pe.Node(
+            fsl.InvWarp(command=self.inputs.simg_cmd.run_cmd('invwarp')), name='std2t1')
+        subcort_t1 = pe.Node(
+            fsl.ApplyWarp(
+                command=self.inputs.simg_cmd.run_cmd('applywarp'), interp='nn', relwarp=True),
+            name='subcort_t1')
         lh_cort_sub = pe.Node(
-            freesurfer.SurfaceTransform(hemi='lh', source_subject='fsaverage',
-                                        target_subject=self.inputs.subject),
+            freesurfer.SurfaceTransform(
+                command=self.inputs.simg_cmd.run_cmd('mri_surf2surf'), hemi='lh',
+                source_subject='fsaverage', target_subject=self.inputs.subject),
             name='lh_cort_sub')
         rh_cort_sub = pe.Node(
-            freesurfer.SurfaceTransform(hemi='rh', source_subject='fsaverage',
-                                        target_subject=self.inputs.subject),
+            freesurfer.SurfaceTransform(
+                command=self.inputs.simg_cmd.run_cmd('mri_surf2surf'), hemi='rh',
+                source_subject='fsaverage', target_subject=self.inputs.subject),
             name='rh_cort_sub')
         copy_annot = pe.Node(
             niu.Function(function=add_annot, output_names=['annot_args']), name='copy_annot')
@@ -475,11 +486,15 @@ class SCWF(SimpleInterface):
         aseg_out.inputs.str2 = '/aparc2aseg_'
         aseg_out.inputs.str4 = '.nii.gz'
         cort_aseg = pe.Node(
-            freesurfer.Aparc2Aseg(subject_id=self.inputs.subject), name='cort_aseg')
-        cort_t1 = pe.Node(fsl.FLIRT(interp='nearestneighbour'), name='cort_t1')
+            freesurfer.Aparc2Aseg(
+                command=self.inputs.simg_cmd.run_cmd('mri_aparc2aseg'),
+                subject_id=self.inputs.subject), name='cort_aseg')
+        cort_t1 = pe.Node(
+            fsl.FLIRT(command=self.inputs.simg_cmd.run_cmd('flirt'), interp='nearestneighbour'),
+            name='cort_t1')
         combine_atlas = pe.Node(CombineAtlas(work_dir=tmp_dir), name='combine_atlas')
 
-        sc = pe.Node(SC(work_dir=tmp_dir), name='sc')
+        sc = pe.Node(SC(work_dir=tmp_dir, simg_cmd=self.inputs.simg_cmd), name='sc')
         outputnode = pe.JoinNode(
             niu.IdentityInterface(fields=['count_files', 'length_files']), name='outputnode',
             joinfield=['count_files', 'length_files'], joinsource='split_atlas')

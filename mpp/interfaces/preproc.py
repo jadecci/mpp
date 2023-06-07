@@ -29,6 +29,7 @@ class _ExtractB0InputSpec(BaseInterfaceInputSpec):
     dwi_file = traits.File(mandatory=True, desc='absolute path to the DWI file')
     work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
     rescale = traits.Bool(False, desc='if b0dist should be applied on rescaled data')
+    simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
 class _ExtractB0OutputSpec(TraitedSpec):
@@ -61,11 +62,13 @@ class ExtractB0(SimpleInterface):
                 self.inputs.work_dir, f'roi{vol_count}_{Path(self.inputs.dwi_file).name}')
             if b < b0maxbval and b0dist is None:
                 roi = fsl.ExtractROI(
+                    command=self.inputs.simg_cmd.run_cmd('fslroi'),
                     in_file=self.inputs.dwi_file, t_min=dist_count, t_size=1, roi_file=roi_file)
                 roi.run()
                 roi_files.append(roi_file)
             elif b < b0maxbval and vol_count < dim4 and dist_count > b0dist:
                 roi = fsl.ExtractROI(
+                    command=self.inputs.simg_cmd.run_cmd('fslroi'),
                     in_file=self.inputs.dwi_file, t_min=vol_count, t_size=1, roi_file=roi_file)
                 roi.run()
                 roi_files.append(roi_file)
@@ -101,6 +104,7 @@ class _RescaleInputSpec(BaseInterfaceInputSpec):
         mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
     scale_files = traits.List(mandatory=True, dtype=str, desc='filenames of scale files')
     d_files = traits.Dict(mandatory=True, dtype=Path, desc='filenames of diffusion data')
+    simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
 class _RescaleOutputSpec(TraitedSpec):
@@ -128,7 +132,9 @@ class Rescale(SimpleInterface):
             scale_file = [s_file for s_file in self.inputs.scale_files if key in s_file]
             scale = pd.read_csv(scale_file[0], header=None).squeeze()
             d_file = [self.inputs.d_files[d_key] for d_key in self.inputs.d_files if key in d_key]
-            maths = fsl.ImageMaths(in_file=d_file[0], args=f'-mul {rescale} -div {scale}')
+            maths = fsl.ImageMaths(
+                command=self.inputs.simg_cmd.run_cmd('fslmaths'),
+                in_file=d_file[0], args=f'-mul {rescale} -div {scale}')
             maths.run()
             self._results['rescaled_files'].append(maths.aggregate_outputs().out_file)
 
@@ -302,6 +308,7 @@ class _EddyPostProcInputSpec(BaseInterfaceInputSpec):
     rescaled_files = traits.List(
         mandatory=True, dtype=Path, desc='filenames of rescaled DWI images')
     work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
+    simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
 class _EddyPostProcOutputSpec(TraitedSpec):
@@ -342,7 +349,9 @@ class EddyPostProc(SimpleInterface):
         pd.DataFrame(corrvols).to_csv(corrvols_file, sep='\t', header=False, index=False)
 
         bval_tsize = bvals.shape[1]
-        extract_roi = fsl.ExtractROI(in_file=self.inputs.eddy_corrected_file, t_size=bval_tsize)
+        extract_roi = fsl.ExtractROI(
+            command=self.inputs.simg_cmd.run_cmd('fslroi'), in_file=self.inputs.eddy_corrected_file,
+            t_size=bval_tsize)
         if dirs == 'pos':
             extract_roi.inputs.t_min = 0
         elif dirs == 'neg':
@@ -403,8 +412,9 @@ class EddyPostProc(SimpleInterface):
             neg_keys, 'neg')
 
         subprocess.run(
-            ['eddy_combine', pos_dwi, pos_bval, pos_bvec, pos_corrvols, neg_dwi, neg_bval, neg_bvec,
-             neg_corrvols, self.inputs.work_dir, '1'], check=True)
+            [self.inputs.simg_cmd.run_cmd('eddy_combine'), pos_dwi, pos_bval, pos_bvec,
+             pos_corrvols, neg_dwi, neg_bval, neg_bvec, neg_corrvols, self.inputs.work_dir, '1'],
+            check=True)
         self._results['combined_dwi_file'] = Path(self.inputs.work_dir, 'data.nii.gz')
         self._rotate_b(pos_tsize, neg_tsize, pos_bvals, neg_bvals)
 
@@ -415,6 +425,7 @@ class _WBDilateInputSpec(BaseInterfaceInputSpec):
     data_file = traits.File(mandatory=True, exists=True, desc='filename of input data')
     res = traits.Int(mandatory=True, desc='dilate resolution')
     work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
+    simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
 class _WBDilateOutputSpec(TraitedSpec):
@@ -431,7 +442,7 @@ class WBDilate(SimpleInterface):
         args = (
             f'-volume-dilate {self.inputs.data_file} {self.inputs.res * 4} NEAREST '
             f'{self._results["out_file"]}')
-        wb = workbench.base.WBCommand(command='wb_command', args=args)
+        wb = workbench.base.WBCommand(command=self.inputs.simg_cmd.run_cmd('wb_command'), args=args)
         wb.run()
 
         return runtime
@@ -439,6 +450,7 @@ class WBDilate(SimpleInterface):
 
 class _DilateMaskInputSpec(BaseInterfaceInputSpec):
     mask_file = traits.File(mandatory=True, exists=True, desc='filename of input mask')
+    simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
 class _DilateMaskOutputSpec(TraitedSpec):
@@ -454,13 +466,16 @@ class DilateMask(SimpleInterface):
     def _run_interface(self, runtime):
         args = '-kernel 3D -dilM'
 
-        resamp_start = fsl.ImageMaths(in_file=self.inputs.mask_file, args=args)
+        resamp_start = fsl.ImageMaths(
+            command=self.inputs.simg_cmd.run_cmd('fslmaths'), in_file=self.inputs.mask_file,
+            args=args)
         resamp_start.run()
         self._results['dil0_file'] = resamp_start.aggregate_outputs().out_file
         mask_prev = self._results['dil0_file']
 
         for _ in range(6):
-            resamp_curr = fsl.ImageMaths(in_file=mask_prev, args=args)
+            resamp_curr = fsl.ImageMaths(
+                command=self.inputs.simg_cmd.run_cmd('fslmaths'), in_file=mask_prev, args=args)
             resamp_curr.run()
             mask_prev = resamp_curr.aggregate_outputs().out_file
 
@@ -499,6 +514,7 @@ class _HCPMinProcInputSpec(BaseInterfaceInputSpec):
     dataset = traits.Str(mandatory=True, desc='name of dataset (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
     subject = traits.Str(mandatory=True, desc='subject ID')
     work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
+    simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
 class _HCPMinProcOutputSpec(TraitedSpec):
@@ -532,15 +548,24 @@ class HCPMinProc(SimpleInterface):
 
         # 1. PreEddy
         # 1.1. normalize intensity
-        mean_dwi = pe.Node(fsl.ImageMaths(args='-Xmean -Ymean -Zmean'), name='mean_dwi')
+        mean_dwi = pe.Node(
+            fsl.ImageMaths(
+                command=self.inputs.simg_cmd.run_cmd('fslmaths'), args='-Xmean -Ymean -Zmean'),
+            name='mean_dwi')
         extract_b0s = pe.Node(
-            ExtractB0(dataset=self.inputs.dataset, work_dir=tmp_dir), name='extract_b0s')
-        merge_b0s = pe.Node(fsl.Merge(dimension='t'), name='merge_b0s')
-        mean_b0 = pe.Node(fsl.ImageMaths(args='-Tmean'), name='mean_b0')
-        scale = pe.Node(fsl.ImageMeants(), name='scale')
+            ExtractB0(dataset=self.inputs.dataset, work_dir=tmp_dir, simg_cmd=self.inputs.simg_cmd),
+            name='extract_b0s')
+        merge_b0s = pe.Node(
+            fsl.Merge(command=self.inputs.simg_cmd.run_cmd('fslmerge'), dimension='t'),
+            name='merge_b0s')
+        mean_b0 = pe.Node(
+            fsl.ImageMaths(command=self.inputs.simg_cmd.run_cmd('fslmaths'), args='-Tmean'),
+            name='mean_b0')
+        scale = pe.Node(
+            fsl.ImageMeants(command=self.inputs.simg_cmd.run_cmd('fslmeants')), name='scale')
         rescale = pe.JoinNode(
-            Rescale(dataset=self.inputs.dataset), name='rescale', joinfield=['scale_files'],
-            joinsource='split_files')
+            Rescale(dataset=self.inputs.dataset, simg_cmd=self.inputs.simg_cmd), name='rescale',
+            joinfield=['scale_files'], joinsource='split_files')
 
         self._results['hcp_proc_wf'].connect([
             (split_files, mean_dwi, [('image', 'in_file')]),
@@ -560,7 +585,9 @@ class HCPMinProc(SimpleInterface):
             niu.Function(function=d_files_dirsphase, output_names=['image', 'bval', 'bvec']),
             name='split_rescaled', iterables=dirs_phases)
         rescaled_b0s = pe.Node(
-            ExtractB0(dataset=self.inputs.dataset, work_dir=tmp_dir, rescale=True),
+            ExtractB0(
+                dataset=self.inputs.dataset, work_dir=tmp_dir, rescale=True,
+                simg_cmd=self.inputs.simg_cmd),
             name='rescaled_b0s')
         b0_list = pe.JoinNode(
             niu.Function(function=flatten_list, output_names=['out_list']), name='b0_list',
@@ -571,9 +598,15 @@ class HCPMinProc(SimpleInterface):
         neg_b0_list = pe.JoinNode(
             niu.Function(function=flatten_list, output_names=['out_list']), name='neg_b0_list',
             joinfield='in_list', joinsource='split_rescaled')
-        merge_rescaled_b0s = pe.Node(fsl.Merge(dimension='t'), name='merge_rescaled_b0s')
-        merge_pos_b0s = pe.Node(fsl.Merge(dimension='t'), name='merge_pos_b0s')
-        merge_neg_b0s = pe.Node(fsl.Merge(dimension='t'), name='merge_neg_b0s')
+        merge_rescaled_b0s = pe.Node(
+            fsl.Merge(command=self.inputs.simg_cmd.run_cmd('fslmerge'), dimension='t'),
+            name='merge_rescaled_b0s')
+        merge_pos_b0s = pe.Node(
+            fsl.Merge(command=self.inputs.simg_cmd.run_cmd('fslmerge'), dimension='t'),
+            name='merge_pos_b0s')
+        merge_neg_b0s = pe.Node(
+            fsl.Merge(command=self.inputs.simg_cmd.run_cmd('fslmerge'), dimension='t'),
+            name='merge_neg_b0s')
 
         self._results['hcp_proc_wf'].connect([
             (inputnode, update_rescaled, [('d_files', 'd_files')]),
@@ -596,13 +629,23 @@ class HCPMinProc(SimpleInterface):
                 'git@github.com:Washington-University/HCPpipelines.git',
                 path=Path(tmp_dir, 'HCP_pipeline'))
         prepare_topup = pe.Node(PrepareTopup(dataset=self.inputs.dataset), name='prepare_topup')
-        estimate_topup = pe.Node(fsl.TOPUP(config=str(topup_config_file)), name='estimate_topup')
-        pos_b01 = pe.Node(fsl.ExtractROI(t_min=0, t_size=1), name='pos_b01')
-        neg_b01 = pe.Node(fsl.ExtractROI(t_min=0, t_size=1), name='neg_b01')
+        estimate_topup = pe.Node(
+            fsl.TOPUP(command=self.inputs.simg_cmd.run_cmd('topup'), config=str(topup_config_file)),
+            name='estimate_topup')
+        pos_b01 = pe.Node(
+            fsl.ExtractROI(command=self.inputs.simg_cmd.run_cmd('fslroi'), t_min=0, t_size=1),
+            name='pos_b01')
+        neg_b01 = pe.Node(
+            fsl.ExtractROI(command=self.inputs.simg_cmd.run_cmd('fslroi'), t_min=0, t_size=1),
+            name='neg_b01')
         b01_files = pe.Node(
             niu.Function(function=create_2item_list, output_names=['out_list']), name='b01_files')
-        apply_topup = pe.Node(fsl.ApplyTOPUP(method='jac'), name='apply_topup')
-        nodif_brainmask = pe.Node(fsl.BET(mask=True, frac=0.2), name='nodif_brainmask')
+        apply_topup = pe.Node(
+            fsl.ApplyTOPUP(command=self.inputs.simg_cmd.run_cmd('applytopup'), method='jac'),
+            name='apply_topup')
+        nodif_brainmask = pe.Node(
+            fsl.BET(command=self.inputs.simg_cmd.run_cmd('bet'), mask=True, frac=0.2),
+            name='nodif_brainmask')
 
         self._results['hcp_proc_wf'].connect([
             (update_rescaled, prepare_topup, [('d_files', 'd_files')]),
@@ -630,10 +673,13 @@ class HCPMinProc(SimpleInterface):
             name='split_files_type')
         merge_bfiles = pe.Node(
             MergeBFiles(dataset=self.inputs.dataset, work_dir=tmp_dir), name='merge_bfiles')
-        merge_rescaled_dwi = pe.Node(fsl.Merge(dimension='t'), name='merge_rescaled_dwi')
+        merge_rescaled_dwi = pe.Node(
+            fsl.Merge(command=self.inputs.simg_cmd.run_cmd('fslmerge'), dimension='t'),
+            name='merge_rescaled_dwi')
         eddy_index = pe.Node(
             EddyIndex(dataset=self.inputs.dataset, work_dir=tmp_dir), name='eddy_index')
-        eddy = pe.Node(fsl.Eddy(fwhm=0, args='-v'), name='eddy')
+        eddy = pe.Node(
+            fsl.Eddy(command=self.inputs.simg_cmd.run_cmd('eddy'), fwhm=0, args='-v'), name='eddy')
 
         self._results['hcp_proc_wf'].connect([
             (update_rescaled, split_files_type, [('d_files', 'd_files')]),
@@ -657,13 +703,20 @@ class HCPMinProc(SimpleInterface):
         # 3. PostEddy
         # 3.1. postproc
         eddy_postproc = pe.Node(
-            EddyPostProc(dataset=self.inputs.dataset, work_dir=tmp_dir), name='eddy_postproc')
-        fov_mask = pe.Node(fsl.ImageMaths(args='-abs -Tmin -bin -fillh'), name='fov_mask')
+            EddyPostProc(dataset=self.inputs.dataset, work_dir=tmp_dir,
+                         simg_cmd=self.inputs.simg_cmd), name='eddy_postproc')
+        fov_mask = pe.Node(
+            fsl.ImageMaths(
+                command=self.inputs.simg_cmd.run_cmd('fslmaths'), args='-abs -Tmin -bin -fillh'),
+            name='fov_mask')
         mask_to_args = pe.Node(
             niu.Function(function=combine_2strings, output_names=['out_str']), name='mask_to_args')
         mask_to_args.inputs.str1 = '-mas '
-        mask_data = pe.Node(fsl.ImageMaths(), name='mask_data')
-        thresh_data = pe.Node(fsl.ImageMaths(args='-thr 0'), name='thresh_data')
+        mask_data = pe.Node(
+            fsl.ImageMaths(command=self.inputs.simg_cmd.run_cmd('fslmaths')), name='mask_data')
+        thresh_data = pe.Node(
+            fsl.ImageMaths(command=self.inputs.simg_cmd.run_cmd('fslmaths'), args='-thr 0'),
+            name='thresh_data')
 
         self._results['hcp_proc_wf'].connect([
             (split_files_type, eddy_postproc, [
@@ -682,58 +735,92 @@ class HCPMinProc(SimpleInterface):
         ])
 
         # 3.2. DiffusionToStructural
-        nodif_brain = pe.Node(fsl.ExtractROI(t_min=0, t_size=1), name='nodif_brain')
+        nodif_brain = pe.Node(
+            fsl.ExtractROI(command=self.inputs.simg_cmd.run_cmd('fslroi'), t_min=0, t_size=1),
+            name='nodif_brain')
         split_t1_files = pe.Node(
             niu.Function(function=t1_files_type, output_names=[
                 't1', 't1_restore', 't1_restore_brain', 'bias', 'fs_mask', 'xfm']),
             name='split_t1_file')
-        wm_seg = pe.Node(fsl.FAST(), name='wm_seg')
+        wm_seg = pe.Node(fsl.FAST(command=self.inputs.simg_cmd.run_cmd('fast')), name='wm_seg')
         pve_file = pe.Node(
             niu.Function(
                 function=last_list_item, input_names=['in_list'], output_names=['out_item']),
             name='pve_file')
-        wm_thresh = pe.Node(fsl.ImageMaths(args='-thr 0.5 -bin'), name='wm_thresh')
-        flirt_init = pe.Node(fsl.FLIRT(dof=6), name='flirt_init')
+        wm_thresh = pe.Node(
+            fsl.ImageMaths(command=self.inputs.simg_cmd.run_cmd('fslmaths'), args='-thr 0.5 -bin'),
+            name='wm_thresh')
+        flirt_init = pe.Node(
+            fsl.FLIRT(command=self.inputs.simg_cmd.run_cmd('flirt'), dof=6), name='flirt_init')
         schedule_file = Path(getenv('FSLDIR'), 'etc', 'flirtsch', 'bbr.sch')
         flirt_nodif2t1 = pe.Node(
-            fsl.FLIRT(dof=6, cost='bbr', schedule=schedule_file), name='flirt_nodif2t1')
-        nodif_t1 = pe.Node(fsl.ApplyWarp(interp='spline', relwarp=True), name='nodif_t1')
+            fsl.FLIRT(command=self.inputs.simg_cmd.run_cmd('flirt'), dof=6, cost='bbr',
+                      schedule=schedule_file), name='flirt_nodif2t1')
+        nodif_t1 = pe.Node(
+            fsl.ApplyWarp(command=self.inputs.simg_cmd.run_cmd('applywarp'), interp='spline',
+                          relwarp=True), name='nodif_t1')
         bias_to_args = pe.Node(
             niu.Function(function=combine_2strings, output_names=['out_str']), name='bias_to_args')
         bias_to_args.inputs.str1 = '-div '
-        nodif_bias = pe.Node(fsl.ImageMaths(), name='nodif_bias')
+        nodif_bias = pe.Node(
+            fsl.ImageMaths(command=self.inputs.simg_cmd.run_cmd('fslmaths')), name='nodif_bias')
         split_fs_files = pe.Node(
             niu.Function(function=fs_files_type, output_names=[
                 'l_whited', 'r_whited', 'eye', 'orig', 'l_thick', 'r_thick']),
             name='split_fs_files')
         bbr_epi2t1 = pe.Node(
             freesurfer.BBRegister(
+                command=self.inputs.simg_cmd.run_cmd('bbregister'),
                 contrast_type='bold', dof=6, args='--surf white.deformed',
                 subject_id=self.inputs.subject),
             name='bbr_epi2t1')
-        tkr_diff2str = pe.Node(freesurfer.Tkregister2(noedit=True), name='tkr_diff2str')
-        diff2str = pe.Node(fsl.ConvertXFM(concat_xfm=True), name='diff2str')
+        tkr_diff2str = pe.Node(
+            freesurfer.Tkregister2(command=self.inputs.simg_cmd.run_cmd('tkregister2'),
+                                   noedit=True), name='tkr_diff2str')
+        diff2str = pe.Node(
+            fsl.ConvertXFM(command=self.inputs.simg_cmd.run_cmd('convert_xfm'), concat_xfm=True),
+            name='diff2str')
         res = pe.Node(niu.Function(function=diff_res, output_names=['res', 'dilate']), name='res')
-        flirt_resamp = pe.Node(fsl.FLIRT(), name='flirt_resampe')
-        t1_resamp = pe.Node(fsl.ApplyWarp(interp='spline', relwarp=True), name='t1_resamp')
-        dilate_data = pe.Node(WBDilate(work_dir=tmp_dir), name='dilate_data')
-        resamp_data = pe.Node(fsl.FLIRT(apply_xfm=True, interp='spline'), name='resamp_data')
-        mask_resamp = pe.Node(fsl.FLIRT(interp='nearestneighbour'), name='mask_resamp')
-        mask_dilate = pe.Node(DilateMask(), name='mask_dilate')
-        fmask_t1 = pe.Node(fsl.FLIRT(apply_xfm=True, interp='trilinear'), name='fmask_resamp')
-        fmask_thresh = pe.Node(fsl.ImageMaths(args='-thr 0.999 -bin'), name='fmask_thresh')
+        flirt_resamp = pe.Node(
+            fsl.FLIRT(command=self.inputs.simg_cmd.run_cmd('flirt')), name='flirt_resampe')
+        t1_resamp = pe.Node(
+            fsl.ApplyWarp(command=self.inputs.simg_cmd.run_cmd('applywarp'), interp='spline',
+                          relwarp=True), name='t1_resamp')
+        dilate_data = pe.Node(
+            WBDilate(work_dir=tmp_dir, simg_cmd=self.inputs.simg_cmd), name='dilate_data')
+        resamp_data = pe.Node(
+            fsl.FLIRT(command=self.inputs.simg_cmd.run_cmd('flirt'), apply_xfm=True,
+                      interp='spline'), name='resamp_data')
+        mask_resamp = pe.Node(
+            fsl.FLIRT(command=self.inputs.simg_cmd.run_cmd('flirt'), interp='nearestneighbour'),
+            name='mask_resamp')
+        mask_dilate = pe.Node(DilateMask(simg_cmd=self.inputs.simg_cmd), name='mask_dilate')
+        fmask_t1 = pe.Node(
+            fsl.FLIRT(command=self.inputs.simg_cmd.run_cmd('flirt'), apply_xfm=True,
+                      interp='trilinear'), name='fmask_resamp')
+        fmask_thresh = pe.Node(
+            fsl.ImageMaths(command=self.inputs.simg_cmd.run_cmd('fslmaths'),
+                           args='-thr 0.999 -bin'),
+            name='fmask_thresh')
         masks_to_args = pe.Node(
             niu.Function(function=combine_4strings, output_names=['out_str']), name='masks_to_args')
         masks_to_args.inputs.str1 = '-mas '
         masks_to_args.inputs.str3 = ' -mas '
-        fmask_data = pe.Node(fsl.ImageMaths(), name='fmask_data')
-        nonneg_data = pe.Node(fsl.ImageMaths(args='-thr 0'), name='nonneg_data')
-        mask_mean = pe.Node(fsl.ImageMaths(args='-Tmean'), name='mask_mean')
+        fmask_data = pe.Node(
+            fsl.ImageMaths(command=self.inputs.simg_cmd.run_cmd('fslmaths')), name='fmask_data')
+        nonneg_data = pe.Node(
+            fsl.ImageMaths(command=self.inputs.simg_cmd.run_cmd('fslmaths'), args='-thr 0'),
+            name='nonneg_data')
+        mask_mean = pe.Node(
+            fsl.ImageMaths(command=self.inputs.simg_cmd.run_cmd('fslmaths'), args='-Tmean'),
+            name='mask_mean')
         mean_to_args = pe.Node(
             niu.Function(function=combine_2strings, output_names=['out_str']), name='mean_to_args')
         mean_to_args.inputs.str1 = '-mas '
-        mask_mask = pe.Node(fsl.ImageMaths(), name='mask_mask')
-        rot_matrix = pe.Node(fsl.AvScale(), name='rot_matrix')
+        mask_mask = pe.Node(
+            fsl.ImageMaths(command=self.inputs.simg_cmd.run_cmd('fslmaths')), name='mask_mask')
+        rot_matrix = pe.Node(
+            fsl.AvScale(command=self.inputs.simg_cmd.run_cmd('avscale')), name='rot_matrix')
         rotate_bvec = pe.Node(RotateBVec2Str(work_dir=tmp_dir), name='rotate_bvec')
 
         self._results['hcp_proc_wf'].connect([
@@ -811,6 +898,7 @@ class _CSDInputSpec(BaseInterfaceInputSpec):
     dataset = traits.Str(
         mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
     work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
+    simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
 class _CSDOutputSpec(TraitedSpec):
@@ -832,8 +920,8 @@ class CSD(SimpleInterface):
         res_gm_file = Path(self.inputs.work_dir, 'gm.txt')
         res_csf_file = Path(self.inputs.work_dir, 'csf.txt')
         subprocess.run(
-            ['dwi2response', 'dhollander', '-shells', shells, '-nthreads', '0', '-force',
-             '-mask', str(self.inputs.mask),
+            [self.inputs.simg_cmd.run_cmd('dwi2response'), 'dhollander', '-shells', shells,
+             '-nthreads', '0', '-force', '-mask', str(self.inputs.mask),
              '-fslgrad', str(self.inputs.bvec), str(self.inputs.bval), str(self.inputs.data),
              str(res_wm_file), str(res_gm_file), str(res_csf_file)], check=True)
 
@@ -841,8 +929,8 @@ class CSD(SimpleInterface):
         fod_gm_file = Path(self.inputs.work_dir, 'fod_gm.mif')
         fod_csf_file = Path(self.inputs.work_dir, 'fod_csf.mif')
         fod = [
-            'dwi2fod', 'msmt_csd', '-shells', shells, '-nthreads', '0',
-            '-mask', str(self.inputs.mask),
+            self.inputs.simg_cmd.run_cmd('dwi2fod'), 'msmt_csd', '-shells', shells,
+            '-nthreads', '0', '-mask', str(self.inputs.mask),
             '-fslgrad', str(self.inputs.bvec), str(self.inputs.bval), str(self.inputs.data),
             str(res_wm_file), str(self._results['fod_wm_file']),
             str(res_gm_file), str(fod_gm_file),
@@ -859,6 +947,7 @@ class _TCKInputSpec(BaseInterfaceInputSpec):
     bval = traits.File(mandatory=True, exists=True, desc='b value file')
     bvec = traits.File(mandatory=True, exists=True, desc='b vector files')
     work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
+    simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
 class _TCKOutputSpec(TraitedSpec):
@@ -888,14 +977,16 @@ class TCK(SimpleInterface):
         power = '0.25'
 
         ftt_file = Path(self.inputs.work_dir, 'ftt.nii.gz')
-        ftt = ['5ttgen', 'hsvs', str(self.inputs.fs_dir), str(ftt_file)]
+        ftt = [
+            self.inputs.simg_cmd.run_cmd('5ttgen'), 'hsvs', str(self.inputs.fs_dir),str(ftt_file)]
         if not ftt_file.is_file():
             subprocess.run(ftt, check=True)
 
         seed_file = Path(self.inputs.work_dir, 'WBT_10M_seeds_ctx.txt')
         self._results['tck_file'] = Path(self.inputs.work_dir, 'WBT_10M_ctx.tck')
         tck = [
-            'tckgen', '-algorithm', algorithm, '-select', tract_schaefer,
+            self.inputs.simg_cmd.run_cmd('tckgen'),
+            '-algorithm', algorithm, '-select', tract_schaefer,
             '-step', step, '-angle', angle, '-minlength', minlength, '-maxlength', maxlength,
             '-cutoff', cutoff, '-trials', trials, '-downsample', downsample,
             '-seed_dynamic', str(self.inputs.fod_wm_file),

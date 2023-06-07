@@ -11,6 +11,7 @@ from nipype.interfaces import fsl
 from mpp.interfaces.data import InitData, SaveFeatures, InitDiffusionData, SaveDFeatures
 from mpp.interfaces.features import RSFC, NetworkStats, TFC, MyelinEstimate, Morphometry, SCWF
 from mpp.interfaces.preproc import HCPMinProc, CSD, TCK
+from mpp.utilities.utilities import SimgCmd
 
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
@@ -31,8 +32,7 @@ def main() -> None:
     parser.add_argument(
         '--simg', type=Union[Path, None], dest='simg', default=None,
         help='singularity image to use for command line functions from FSL / FreeSurfer / '
-             'Connectome Workbench / MRTrix3. Note that singularity version (2 / 3) used to build '
-             'the image should match your installed singularity')
+             'Connectome Workbench / MRTrix3.')
     parser.add_argument(
         '--overwrite', dest='overwrite', action="store_true", help='Overwrite existing results')
     parser.add_argument(
@@ -42,16 +42,20 @@ def main() -> None:
         '--wrapper', type=str, dest='wrapper', default='', help='Wrapper script for HTCondor')
     args = parser.parse_args()
 
+    simg_cmd = SimgCmd(simg=args.simg, work_dir=args.work_dir)
+
     sublist = pd.read_csv(args.sublist, header=None).squeeze()
     for subject in sublist:
         output_file = Path(args.output_dir, f'{args.dataset}_{subject}.h5')
         if not output_file.is_file() or args.overwrite:
             if args.diffusion:
                 subject_wf = init_d_wf(
-                    args.dataset, subject, args.work_dir, args.output_dir, args.overwrite)
+                    args.dataset, subject, args.work_dir, args.output_dir, simg_cmd,
+                    args.overwrite)
             else:
                 subject_wf = init_subject_wf(
-                    args.dataset, subject, args.work_dir, args.output_dir, args.overwrite)
+                    args.dataset, subject, args.work_dir, args.output_dir, simg_cmd,
+                    args.overwrite)
 
             subject_wf.config['execution']['try_hard_link_datasink'] = 'false'
             subject_wf.config['execution']['crashfile_format'] = 'txt'
@@ -69,18 +73,20 @@ def main() -> None:
 
 
 def init_subject_wf(
-        dataset: str, subject: str, work_dir: Path, output_dir: Path,
+        dataset: str, subject: str, work_dir: Path, output_dir: Path, simg_cmd: SimgCmd,
         overwrite: bool) -> pe.Workflow:
     subject_wf = pe.Workflow(f'subject_{subject}_wf', base_dir=work_dir)
     init_data = pe.Node(
-        InitData(dataset=dataset, work_dir=work_dir, subject=subject, output_dir=output_dir),
+        InitData(
+            dataset=dataset, work_dir=work_dir, subject=subject, output_dir=output_dir,
+            simg_cmd=simg_cmd),
         name='init_data')
     save_features = pe.Node(
         SaveFeatures(output_dir=output_dir, dataset=dataset, subject=subject, overwrite=overwrite),
         name='save_features')
 
     rs_wf = init_rs_wf(dataset, subject)
-    anat_wf = init_anat_wf(subject)
+    anat_wf = init_anat_wf(subject, simg_cmd)
 
     subject_wf.connect([
         (init_data, rs_wf, [
@@ -149,11 +155,11 @@ def init_t_wf(dataset: str, subject: str) -> pe.Workflow:
     return t_wf
 
 
-def init_anat_wf(subject: str) -> pe.Workflow:
+def init_anat_wf(subject: str, simg_cmd: SimgCmd) -> pe.Workflow:
     anat_wf = pe.Workflow(f'subject_{subject}_anat_wf')
     inputnode = pe.Node(niu.IdentityInterface(fields=['anat_dir', 'anat_files']), name='inputnode')
     myelin = pe.Node(MyelinEstimate(), name='myelin')
-    morphometry = pe.Node(Morphometry(subject=subject), name='morphometry')
+    morphometry = pe.Node(Morphometry(subject=subject, simg_cmd=simg_cmd), name='morphometry')
     outputnode = pe.Node(niu.IdentityInterface(fields=['myelin', 'morph']), name='outputnode')
 
     anat_wf.connect([
@@ -168,7 +174,7 @@ def init_anat_wf(subject: str) -> pe.Workflow:
 
 
 def init_d_wf(
-        dataset: str, subject: str, work_dir: Path, output_dir: Path,
+        dataset: str, subject: str, work_dir: Path, output_dir: Path, simg_cmd: SimgCmd,
         overwrite: bool) -> pe.Workflow:
     d_wf = pe.Workflow(f'subject_{subject}_diffusion_wf', base_dir=work_dir)
     init_data = pe.Node(
@@ -176,16 +182,17 @@ def init_d_wf(
             dataset=dataset, work_dir=work_dir, subject=subject, output_dir=output_dir),
         name='init_data')
 
-    hcp_proc = HCPMinProc(dataset=dataset, work_dir=work_dir, subject=subject).run()
+    hcp_proc = HCPMinProc(
+        dataset=dataset, work_dir=work_dir, subject=subject, simg_cmd=simg_cmd).run()
     hcp_proc_wf = hcp_proc.outputs.hcp_proc_wf
 
     tmp_dir = Path(work_dir, 'intermediate_tmp')
     tmp_dir.mkdir(parents=True, exist_ok=True)
-    dtifit = pe.Node(fsl.DTIFit(), name='dtifit')
-    csd = pe.Node(CSD(dataset=dataset, work_dir=tmp_dir), name='csd')
-    tck = pe.Node(TCK(work_dir=tmp_dir), name='tck')
+    dtifit = pe.Node(fsl.DTIFit(command=simg_cmd.run_cmd('dtifit')), name='dtifit')
+    csd = pe.Node(CSD(dataset=dataset, work_dir=tmp_dir, simg_cmd=simg_cmd), name='csd')
+    tck = pe.Node(TCK(work_dir=tmp_dir, simg_cmd=simg_cmd), name='tck')
 
-    sc = SCWF(subject=subject, work_dir=work_dir).run()
+    sc = SCWF(subject=subject, work_dir=work_dir, simg_cmd=simg_cmd).run()
     sc_wf = sc.outputs.sc_wf
 
     save_features = pe.Node(

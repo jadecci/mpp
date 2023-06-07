@@ -2,7 +2,7 @@
 ```bash
 python3 -m venv ~/.venvs/dev-multipred
 source ~/.venvs/dev-multipred/bin/activate
-python3 -m pip install git+https://github.com/jadecci/mpp.git@v1.0
+python3 -m pip install git+https://github.com/jadecci/mpp.git@v3.0
 ```
 
 ### 1.1. HCP-YA, HCP-A and HCP-D
@@ -44,8 +44,7 @@ To create a singularity container for diffusion processing (done in macOS Ventur
 
 ```bash
 cd singularity-files
-#vagrant init sylabs/singularity-ce-3.9-ubuntu-bionic64 
-vagrant init sylabs/singularity-2.6-ubuntu-bionic64
+vagrant init sylabs/singularity-ce-3.9-ubuntu-bionic64
 # if plugin not installed yet
 vagrant plugin install vagrant-disksize 
 # then add to Vagrantfile: 
@@ -60,5 +59,5 @@ sudo pvresize /dev/sda1
 sudo lvextend -r -l +100%FREE /dev/mapper/vagrant--vg-root
 # build singularity image
 sudo singularity build mdiffusion.simg /vagrant/mdiffusion.def
-cp mdiffusion.simg /vagrant/mdiffusion.simg
+mv mdiffusion.simg /vagrant/mdiffusion.simg
 ```

@@ -36,6 +36,7 @@ class _InitDataInputSpec(BaseInterfaceInputSpec):
     work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
     subject = traits.Str(mandatory=True, desc='subject ID')
     output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
+    simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
 class _InitDataOutputSpec(TraitedSpec):
@@ -192,9 +193,9 @@ class InitData(SimpleInterface):
                 dl.get(
                     path=hcpad_astats, dataset=self._results['anat_dir'], source=source,
                     on_failure='stop')
-                subprocess.run(
-                    ['python2', f'{getenv("FREESURFER_HOME")}/bin/asegstats2table', '--meas',
-                     'volume', '--tablefile', astats_table, '--inputs', hcpad_astats], check=True)
+                subprocess.run([
+                    self.inputs.simg_cmd.run_cmd('asegstats2table'), '--meas', 'volume',
+                    '--tablefile', astats_table, '--inputs', hcpad_astats], check=True)
 
         else:
             raise DatasetError()
