@@ -10,6 +10,7 @@ import nibabel as nib
 import pandas as pd
 from nipype.interfaces import fsl, freesurfer
 import bct
+import datalad.api as dl
 
 from mpp.utilities.features import (
     parcellate, fc, diffusion_mapping, score, add_subdir, atlas_files, add_annot)
@@ -17,6 +18,8 @@ from mpp.utilities.data import read_h5
 from mpp.utilities.preproc import t1_files_type, fs_files_aparc, combine_4strings
 
 base_dir = Path(__file__).resolve().parent.parent
+
+tr_dataset = {'HCP-YA': 0.72, 'HCP-A': 0.8, 'HCP-D': 0.8, 'ABCD': 0.8, 'UKB': 0.735}
 
 
 class _RSFCInputSpec(BaseInterfaceInputSpec):
@@ -61,7 +64,8 @@ class RSFC(SimpleInterface):
                     else:
                         tavg_dict[key] = val
 
-        self._results['rsfc'], self._results['dfc'], self._results['efc'] = fc(tavg_dict)
+        self._results['rsfc'], self._results['dfc'], self._results['efc'] = fc(
+            tavg_dict, t_rep=tr_dataset[self.inputs.dataset])
 
         return runtime
 
@@ -83,7 +87,7 @@ class NetworkStats(SimpleInterface):
     def _run_interface(self, runtime):
         self._results['rs_stats'] = {}
         for level in range(4):
-            rsfc = self.inputs.rsfc[f'level{level+1}'].mean(axis=2)
+            rsfc = self.inputs.rsfc[f'level{level+1}']
             strength = bct.strengths_und(rsfc)
             betweenness = bct.betweenness_wei(rsfc)
             participation = bct.participation_coef(
@@ -178,6 +182,7 @@ class _MorphometryInputSpec(BaseInterfaceInputSpec):
     anat_dir = traits.Str(mandatory=True, desc='absolute path to installed subject T1w directory')
     anat_files = traits.Dict(mandatory=True, dtype=Path, desc='filenames of anatomical data')
     subject = traits.Str(mandatory=True, desc='subject ID')
+    work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
     simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
@@ -191,18 +196,38 @@ class Morphometry(SimpleInterface):
     output_spec = _MorphometryOutputSpec
 
     def _run_interface(self, runtime):
+        tmp_dir = Path(self.inputs.work_dir, 'morph_tmp')
+        tmp_dir.mkdir(parents=True, exist_ok=True)
+
         self._results['morph'] = {}
         for level in range(4):
             stats_surf = None
             for hemi in ['lh', 'rh']:
-                annot_file = Path(
+                annot_fs = Path(
                     base_dir, 'data', 'label',
                     f'{hemi}.Schaefer2018_{level+1}00Parcels_17Networks_order.annot')
+                dl.unlock(annot_fs, dataset=base_dir.parent, on_failure='stop')
+                annot_sub = Path(tmp_dir, f'{hemi}.Schaefer{level+1}00Parcels.annot')
+
+                add_subdir(
+                    str(tmp_dir), self.inputs.subject,
+                    str(Path(self.inputs.anat_dir, self.inputs.subject)))
+                annot_fs2sub = freesurfer.SurfaceTransform(
+                    command=self.inputs.simg_cmd.run_cmd(
+                        'mri_surf2surf', options=f'--env SUBJECTS_DIR={tmp_dir}'),
+                    source_annot_file=annot_fs, out_file=annot_sub,
+                    hemi=hemi, source_subject='fsaverage',
+                    target_subject=self.inputs.subject, subjects_dir=tmp_dir)
+                annot_fs2sub.run()
+
                 hemi_table = f'{hemi}.fs_stats'
-                subprocess.run([
-                    self.inputs.simg_cmd.run_cmd('mris_anatomical_stats'), '-a', annot_file,
-                    '-noglobal', '-f', hemi_table, self.inputs.subject, hemi],
-                    env=dict(environ, **{'SUBJECTS_DIR': self.inputs.anat_dir}))
+                subprocess.run(
+                    self.inputs.simg_cmd.run_cmd(
+                        'mris_anatomical_stats',
+                        options=f'--env SUBJECTS_DIR={self.inputs.anat_dir}').split() + ['-a',
+                    str(annot_sub), '-noglobal', '-f', hemi_table, self.inputs.subject, hemi],
+                    env=dict(environ, **{'SUBJECTS_DIR': self.inputs.anat_dir}), check=True)
+
                 hemi_stats = pd.read_table(
                     hemi_table, header=0, skiprows=np.arange(51), delim_whitespace=True)
                 hemi_stats.drop([0], inplace=True)  # exclude medial wall
@@ -214,7 +239,7 @@ class Morphometry(SimpleInterface):
             self._results['morph'][f'level{level+1}_CT'] = stats_surf['ThickAvg'].values
 
             seg_file = Path(base_dir, 'data', 'atlas', f'Tian_Subcortex_S{level+1}_3T.nii.gz')
-            seg_up_file = f'S{level}_upsampled.nii.gz'
+            seg_up_file = Path(tmp_dir, f'S{level}_upsampled.nii.gz')
             flt = fsl.FLIRT(
                 command=self.inputs.simg_cmd.run_cmd(cmd='flirt'),
                 in_file=seg_file, reference=self.inputs.anat_files['t1_vol'], out_file=seg_up_file,
@@ -223,7 +248,8 @@ class Morphometry(SimpleInterface):
 
             sub_table = 'subcortex.stats'
             ss = freesurfer.SegStats(
-                command=self.inputs.simg_cmd.run_cmd('mri_segstats'),
+                command=self.inputs.simg_cmd.run_cmd(
+                    'mri_segstats', options=f'--env SUBJECTS_DIR={self.inputs.anat_dir}'),
                 segmentation_file=seg_up_file, in_file=self.inputs.anat_files['t1_vol'],
                 summary_file=sub_table, subjects_dir=self.inputs.anat_dir)
             ss.run()
@@ -396,8 +422,8 @@ class SC(SimpleInterface):
     def _run_interface(self, runtime):
         self._results['count_file'] = Path(
             self.inputs.work_dir, f'sc_count_level{self.inputs.level}.csv')
-        sc_count = [
-            self.inputs.simg_cmd.run_cmd('tck2connectome'), '-assignment_radial_search', '2', '-symmetric', '-nthreads', '0',
+        sc_count = self.inputs.simg_cmd.run_cmd('tck2connectome').split() + [
+            '-assignment_radial_search', '2', '-symmetric', '-nthreads', '0',
             str(self.inputs.tck_file), str(self.inputs.atlas_file),
             str(self._results['count_file'])]
         if not self._results['count_file'].is_file():
@@ -405,8 +431,8 @@ class SC(SimpleInterface):
 
         self._results['length_file'] = Path(
             self.inputs.work_dir, f'sc_length_level{self.inputs.level}.csv')
-        sc_length = [
-            self.inputs.simg_cmd.run_cmd('tck2connectome'), '-assignment_radial_search', '2', '-scale_length',
+        sc_length = self.inputs.simg_cmd.run_cmd('tck2connectome').split() + [
+            '-assignment_radial_search', '2', '-scale_length',
             '-stat_edge', 'mean', '-symmetric', '-nthreads', '0',
             str(self.inputs.tck_file), str(self.inputs.atlas_file),
             str(self._results['length_file'])]
@@ -441,7 +467,7 @@ class SCWF(SimpleInterface):
             name='inputnode')
         sub_dir = pe.Node(
             niu.Function(function=add_subdir, output_names=['sub_dir']), name='sub_dir')
-        sub_dir.inputs.sub_dir = tmp_dir
+        sub_dir.inputs.sub_dir = str(tmp_dir)
         sub_dir.inputs.subject = self.inputs.subject
         split_t1_files = pe.Node(
             niu.Function(
@@ -459,7 +485,7 @@ class SCWF(SimpleInterface):
                 function=atlas_files, output_names=[
                     'cort_atlas', 'lh_cort_annot', 'rh_cort_annot', 'subcort_atlas', 'level']),
             iterables=[('level', [0, 1, 2, 3])], name='split_atlas')
-        split_atlas.inputs.data_dir = Path(base_dir, 'data')
+        split_atlas.inputs.data_dir = str(Path(base_dir, 'data'))
 
         std2t1 = pe.Node(
             fsl.InvWarp(command=self.inputs.simg_cmd.run_cmd('invwarp')), name='std2t1')
@@ -469,12 +495,14 @@ class SCWF(SimpleInterface):
             name='subcort_t1')
         lh_cort_sub = pe.Node(
             freesurfer.SurfaceTransform(
-                command=self.inputs.simg_cmd.run_cmd('mri_surf2surf'), hemi='lh',
+                command=self.inputs.simg_cmd.run_cmd(
+                    'mri_surf2surf', options=f'--env SUBJECTS_DIR={tmp_dir}'), hemi='lh',
                 source_subject='fsaverage', target_subject=self.inputs.subject),
             name='lh_cort_sub')
         rh_cort_sub = pe.Node(
             freesurfer.SurfaceTransform(
-                command=self.inputs.simg_cmd.run_cmd('mri_surf2surf'), hemi='rh',
+                command=self.inputs.simg_cmd.run_cmd(
+                    'mri_surf2surf', options=f'--env SUBJECTS_DIR={tmp_dir}'), hemi='rh',
                 source_subject='fsaverage', target_subject=self.inputs.subject),
             name='rh_cort_sub')
         copy_annot = pe.Node(
@@ -487,7 +515,8 @@ class SCWF(SimpleInterface):
         aseg_out.inputs.str4 = '.nii.gz'
         cort_aseg = pe.Node(
             freesurfer.Aparc2Aseg(
-                command=self.inputs.simg_cmd.run_cmd('mri_aparc2aseg'),
+                command=self.inputs.simg_cmd.run_cmd(
+                    'mri_aparc2aseg', options=f'--env SUBJECTS_DIR={tmp_dir}'),
                 subject_id=self.inputs.subject), name='cort_aseg')
         cort_t1 = pe.Node(
             fsl.FLIRT(command=self.inputs.simg_cmd.run_cmd('flirt'), interp='nearestneighbour'),

@@ -159,7 +159,8 @@ def main() -> None:
         mp_wf.run(
             plugin='CondorDAGMan',
             plugin_args={'dagman_args': f'-outfile_dir {args.work_dir}',
-                         'wrapper_cmd': args.wrapper})
+                         'wrapper_cmd': args.wrapper,
+                         'dagman_args': '-import_env'})
     else:
         mp_wf.run()
 

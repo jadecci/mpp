@@ -30,7 +30,7 @@ def main() -> None:
     parser.add_argument(
         '--output_dir', type=Path, dest='output_dir', default=Path.cwd(), help='Output directory')
     parser.add_argument(
-        '--simg', type=Union[Path, None], dest='simg', default=None,
+        '--simg', type=Path, dest='simg', default=None,
         help='singularity image to use for command line functions from FSL / FreeSurfer / '
              'Connectome Workbench / MRTrix3.')
     parser.add_argument(
@@ -42,9 +42,10 @@ def main() -> None:
         '--wrapper', type=str, dest='wrapper', default='', help='Wrapper script for HTCondor')
     args = parser.parse_args()
 
-    simg_cmd = SimgCmd(simg=args.simg, work_dir=args.work_dir)
+    simg_cmd = SimgCmd(
+        simg=args.simg, work_dir=args.work_dir, out_dir=args.output_dir)
 
-    sublist = pd.read_csv(args.sublist, header=None).squeeze()
+    sublist = pd.read_csv(args.sublist, header=None).squeeze('columns')
     for subject in sublist:
         output_file = Path(args.output_dir, f'{args.dataset}_{subject}.h5')
         if not output_file.is_file() or args.overwrite:
@@ -67,7 +68,8 @@ def main() -> None:
                 subject_wf.run(
                     plugin='CondorDAGMan',
                     plugin_args={'dagman_args': f'-outfile_dir {args.work_dir}',
-                                 'wrapper_cmd': args.wrapper})
+                                 'wrapper_cmd': args.wrapper,
+                                 'dagman_args': '-import_env'})
             else:
                 subject_wf.run()
 
@@ -86,7 +88,7 @@ def init_subject_wf(
         name='save_features')
 
     rs_wf = init_rs_wf(dataset, subject)
-    anat_wf = init_anat_wf(subject, simg_cmd)
+    anat_wf = init_anat_wf(subject, work_dir, simg_cmd)
 
     subject_wf.connect([
         (init_data, rs_wf, [
@@ -100,6 +102,7 @@ def init_subject_wf(
         (rs_wf, save_features, [
             ('outputnode.rsfc', 'rsfc'),
             ('outputnode.dfc', 'dfc'),
+            ('outputnode.efc', 'efc'),
             ('outputnode.rs_stats', 'rs_stats')]),
         (anat_wf, save_features, [
             ('outputnode.myelin', 'myelin'),
@@ -124,7 +127,7 @@ def init_rs_wf(dataset: str, subject: str) -> pe.Workflow:
     rsfc = pe.Node(RSFC(dataset=dataset), name='rsfc')
     network_stats = pe.Node(NetworkStats(), name='network_stats')
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=['rsfc', 'dfc', 'rs_stats']), name='outputnode')
+        niu.IdentityInterface(fields=['rsfc', 'dfc', 'efc', 'rs_stats']), name='outputnode')
 
     rs_wf.connect([
         (inputnode, rsfc, [
@@ -134,7 +137,8 @@ def init_rs_wf(dataset: str, subject: str) -> pe.Workflow:
         (rsfc, network_stats, [('rsfc', 'rsfc')]),
         (rsfc, outputnode, [
             ('rsfc', 'rsfc'),
-            ('dfc', 'dfc')]),
+            ('dfc', 'dfc'),
+            ('efc', 'efc')]),
         (network_stats, outputnode, [('rs_stats', 'rs_stats')])])
 
     return rs_wf
@@ -155,11 +159,12 @@ def init_t_wf(dataset: str, subject: str) -> pe.Workflow:
     return t_wf
 
 
-def init_anat_wf(subject: str, simg_cmd: SimgCmd) -> pe.Workflow:
+def init_anat_wf(subject: str, work_dir: Path, simg_cmd: SimgCmd) -> pe.Workflow:
     anat_wf = pe.Workflow(f'subject_{subject}_anat_wf')
     inputnode = pe.Node(niu.IdentityInterface(fields=['anat_dir', 'anat_files']), name='inputnode')
     myelin = pe.Node(MyelinEstimate(), name='myelin')
-    morphometry = pe.Node(Morphometry(subject=subject, simg_cmd=simg_cmd), name='morphometry')
+    morphometry = pe.Node(
+        Morphometry(subject=subject, work_dir=work_dir, simg_cmd=simg_cmd), name='morphometry')
     outputnode = pe.Node(niu.IdentityInterface(fields=['myelin', 'morph']), name='outputnode')
 
     anat_wf.connect([
@@ -201,8 +206,8 @@ def init_d_wf(
 
     d_wf.connect([
         (init_data, hcp_proc_wf, [
-            ('dataset_dir', 'inputnode.dataset_dir'),
             ('d_files', 'inputnode.d_files'),
+            ('t1_files', 'inputnode.t1_files'),
             ('fs_files', 'inputnode.fs_files'),
             ('fs_dir', 'inputnode.fs_dir')]),
         (hcp_proc_wf, dtifit, [
@@ -221,7 +226,7 @@ def init_d_wf(
             ('outputnode.bvec', 'bvec')]),
         (csd, tck, [('fod_wm_file', 'fod_wm_file')]),
         (init_data, sc_wf, [
-            ('t1_file', 'inputnode.t1_file'),
+            ('t1_files', 'inputnode.t1_files'),
             ('fs_files', 'inputnode.fs_files'),
             ('fs_dir', 'inputnode.fs_dir')]),
         (tck, sc_wf, [('tck_file', 'inputnode.tck_file')]),

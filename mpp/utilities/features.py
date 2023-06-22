@@ -257,40 +257,38 @@ def score_sub(params: pd.DataFrame, sub_features: np.ndarray) -> np.ndarray:
     return ac
 
 
-def add_subdir(
-        sub_dir: Union[Path, str], subject: str, fs_dir: Union[Path, str]) -> Union[Path, str]:
+def add_subdir(sub_dir: str, subject: str, fs_dir: str) -> str:
     from pathlib import Path
-    from os import symlink, getenv
+    from os import getenv, symlink
+    from shutil import copytree
 
     Path(sub_dir).mkdir(parents=True, exist_ok=True)
     if not Path(sub_dir, subject).is_symlink():
         symlink(fs_dir, Path(sub_dir, subject))
-    if not Path(sub_dir, 'fsaverage').is_symlink():
-        symlink(
-            Path(getenv('FREESURFER_HOME'), 'subjects', 'fsaverage'), Path(sub_dir, 'fsaverage'))
+    if not Path(sub_dir, 'fsaverage').is_dir():
+        copytree(
+            Path(getenv('FREESURFER_HOME'), 'subjects', 'fsaverage'),
+            Path(sub_dir, 'fsaverage'),
+            dirs_exist_ok=True)
 
     return sub_dir
 
 
-def atlas_files(
-        data_dir: Union[Path, str],
-        level: Union[str, int]) -> tuple[Path, Path, Path, Path, Union[str, int]]:
+def atlas_files(data_dir: str, level: int) -> tuple[str, str, str, str, int]:
     from pathlib import Path
 
     parc_sch = Path(
-        data_dir, 'atlas', f'Schaefer2018_{int(level)+1}00Parcels_17Networks_order.dlabel.nii')
+        data_dir, 'atlas', f'Schaefer2018_{level+1}00Parcels_17Networks_order.dlabel.nii')
     lh_annot_sch = Path(
-        data_dir, 'label', f'lh.Schaefer2018_{int(level)+1}00Parcels_17Networks_order.annot')
+        data_dir, 'label', f'lh.Schaefer2018_{level+1}00Parcels_17Networks_order.annot')
     rh_annot_sch = Path(
-        data_dir, 'label', f'rh.Schaefer2018_{int(level)+1}00Parcels_17Networks_order.annot')
-    parc_mel = Path(data_dir, 'atlas', f'Tian_Subcortex_S{int(level)+1}_3T.nii.gz')
+        data_dir, 'label', f'rh.Schaefer2018_{level+1}00Parcels_17Networks_order.annot')
+    parc_mel = Path(data_dir, 'atlas', f'Tian_Subcortex_S{level+1}_3T.nii.gz')
 
-    return parc_sch, lh_annot_sch, rh_annot_sch, parc_mel, level
+    return str(parc_sch), str(lh_annot_sch), str(rh_annot_sch), str(parc_mel), level
 
 
-def add_annot(
-        sub_dir: Union[Path, str], subject: str, lh_annot: Union[Path, str],
-        rh_annot: Union[Path, str]) -> str:
+def add_annot(sub_dir: str, subject: str, lh_annot: str, rh_annot: str) -> str:
     import shutil
     from pathlib import Path
 
