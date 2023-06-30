@@ -300,8 +300,9 @@ class InitDiffusionData(SimpleInterface):
                 'lh_ribbon': Path(fs_dir, 'mri', 'lh.ribbon.mgz'),
                 'rh_ribbon': Path(fs_dir, 'mri', 'rh.ribbon.mgz'),
                 'ribbon': Path(fs_dir, 'mri', 'ribbon.mgz'),
-                'aseg': Path(fs_dir, 'mri', 'aseg.mgz')
-,                'orig': Path(fs_dir, 'mri', 'orig.mgz'),
+                'aseg': Path(fs_dir, 'mri', 'aseg.mgz'),
+                'aparc_aseg': Path(fs_dir, 'mri', 'aparc+aseg.mgz'),
+                'orig': Path(fs_dir, 'mri', 'orig.mgz'),
                 'eye': Path(fs_dir, 'mri', 'transforms', 'eye.dat'),
                 'lh_thickness': Path(fs_dir, 'surf', 'lh.thickness'),
                 'rh_thickness': Path(fs_dir, 'surf', 'rh.thickness')}
