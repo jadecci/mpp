@@ -147,7 +147,27 @@ class RegionwiseModel(SimpleInterface):
         self._results['results'][f'l1ratio_{key}'] = l1_ratios
         self._results['results'][f'model_{key}'] = coef
         self._results['selected'] = {f'features_{key}': list(coef[:, :-1] != 0)}
-        self._results['rw_ypred'] = {'train_ypred': train_ypred, 'test_ypred': test_ypred}
+        # self._results['rw_ypred'] = {'train_ypred': train_ypred, 'test_ypred': test_ypred}
+
+        kr_r = np.zeros(train_x.shape[2])
+        kr_cod = np.zeros(train_x.shape[2])
+        kr_coef = np.zeros((train_x.shape[2], train_x.shape[1]))
+        kr_train_ypred = np.zeros((len(train_y), train_x.shape[2]))
+        kr_test_ypred = np.zeros((len(test_y), train_x.shape[2]))
+        for region in range(train_x.shape[2]):
+            if self.inputs.selected[f'regions_level{self.inputs.level}'][region]:
+                kr_r[region], kr_cod[region], model = kernel_ridge(
+                    train_x[:, :, region], train_y, test_x[:, :, region], test_y)
+                kr_coef[region, :] = model.dual_coef_
+                kr_train_ypred[:, region] = model.predict(train_x[:, :, region])
+                kr_test_ypred[:, region] = model.predict(test_x[:, :, region])
+
+        self._results['results'][f'kr_r_{key}'] = kr_r
+        self._results['results'][f'kr_cod_{key}'] = kr_cod
+        self._results['results'][f'kr_model_{key}'] = kr_coef
+        self._results['rw_ypred'] = {
+            'train_ypred': train_ypred, 'test_ypred': test_ypred,
+            'kr_train_ypred': kr_train_ypred, 'kr_test_ypred': kr_test_ypred}
 
     def _run_interface(self, runtime):
         self._results['results'] = {}
@@ -279,10 +299,13 @@ class IntegratedFeaturesModel(SimpleInterface):
 
         return results
 
-    def _en_stack(self, train_y: np.ndarray, test_y: np.ndarray, key: str) -> dict:
+    def _en_stack(
+            self, train_y: np.ndarray, test_y: np.ndarray, key: str,
+            selected_regions: list) -> dict:
         r, cod, model = elastic_net(
-            self.inputs.rw_ypred['train_ypred'], train_y, self.inputs.rw_ypred['test_ypred'],
-            test_y, int(self.inputs.config['n_alphas']))
+            self.inputs.rw_ypred['train_ypred'][:, selected_regions], train_y,
+            self.inputs.rw_ypred['test_ypred'][:, selected_regions], test_y,
+            int(self.inputs.config['n_alphas']))
         results = {
             f'enstack_r_{key}': r, f'enstack_cod_{key}': cod,
             f'enstack_l1ratio_{key}': model.l1_ratio_,
@@ -298,8 +321,8 @@ class IntegratedFeaturesModel(SimpleInterface):
 
         return results
 
-    def _voting(self, test_y: np.ndarray, key: str) -> dict:
-        ypred = self.inputs.rw_ypred['test_ypred'].mean(axis=1)
+    def _voting(self, test_y: np.ndarray, key: str, selected_regions: list) -> dict:
+        ypred = self.inputs.rw_ypred['test_ypred'][:, selected_regions].mean(axis=1)
         results = {
             f'voting_r_{key}': np.corrcoef(test_y, ypred)[0, 1],
             f'voting_cod_{key}': r2_score(test_y, ypred)}
@@ -321,9 +344,10 @@ class IntegratedFeaturesModel(SimpleInterface):
 
         en = self._en(
             train_x[:, :, selected_regions], train_y, test_x[:, :, selected_regions], test_y, key)
-        en_stack = self._en_stack(train_y, test_y, key)
-        kr = self._kr(train_x, train_y, test_x, test_y, key)
-        voting = self._voting(test_y, key)
+        en_stack = self._en_stack(train_y, test_y, key, selected_regions)
+        kr = self._kr(
+            train_x[:, :, selected_regions], train_y, test_x[:, :, selected_regions], test_y, key)
+        voting = self._voting(test_y, key, selected_regions)
         self._results['results'] = en | en_stack | kr | voting
 
         return runtime
