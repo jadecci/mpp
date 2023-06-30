@@ -207,7 +207,8 @@ class Morphometry(SimpleInterface):
                     base_dir, 'data', 'label',
                     f'{hemi}.Schaefer2018_{level+1}00Parcels_17Networks_order.annot')
                 dl.unlock(annot_fs, dataset=base_dir.parent, on_failure='stop')
-                annot_sub = Path(tmp_dir, f'{hemi}.Schaefer{level+1}00Parcels.annot')
+                annot_sub = Path(
+                    tmp_dir, f'{hemi}.Schaefer{level+1}00Parcels_{self.inputs.subject}.annot')
 
                 add_subdir(
                     str(tmp_dir), self.inputs.subject,
@@ -220,12 +221,12 @@ class Morphometry(SimpleInterface):
                     target_subject=self.inputs.subject, subjects_dir=tmp_dir)
                 annot_fs2sub.run()
 
-                hemi_table = f'{hemi}.fs_stats'
+                hemi_table = Path(tmp_dir, f'{hemi}.fs_stats')
                 subprocess.run(
                     self.inputs.simg_cmd.run_cmd(
                         'mris_anatomical_stats',
                         options=f'--env SUBJECTS_DIR={self.inputs.anat_dir}').split() + ['-a',
-                    str(annot_sub), '-noglobal', '-f', hemi_table, self.inputs.subject, hemi],
+                    str(annot_sub), '-noglobal', '-f', str(hemi_table), self.inputs.subject, hemi],
                     env=dict(environ, **{'SUBJECTS_DIR': self.inputs.anat_dir}), check=True)
 
                 hemi_stats = pd.read_table(

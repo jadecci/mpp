@@ -796,9 +796,11 @@ class HCPMinProc(SimpleInterface):
                 contrast_type='bold', dof=6, args='--surf white.deformed',
                 subject_id=self.inputs.subject),
             name='bbr_epi2t1')
+        # Due to a nipype bug, fsl_out must be supplied with a file for now
+        fsl_file = Path(tmp_dir, 'tkr_diff2str.mat')
         tkr_diff2str = pe.Node(
             freesurfer.Tkregister2(command=self.inputs.simg_cmd.run_cmd('tkregister2'),
-                                   noedit=True), name='tkr_diff2str')
+                                   noedit=True, fsl_out=fsl_file), name='tkr_diff2str')
         diff2str = pe.Node(
             fsl.ConvertXFM(command=self.inputs.simg_cmd.run_cmd('convert_xfm'), concat_xfm=True),
             name='diff2str')
