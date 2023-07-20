@@ -8,7 +8,7 @@ import nipype.pipeline as pe
 from mpp.interfaces.data import InitFeatures, RegionwiseSave, IntegratedFeaturesSave
 from mpp.interfaces.crossval import (
     CrossValSplit, RegionwiseModel, RegionSelect, IntegratedFeaturesModel)
-from mpp.interfaces.features import GradientAC
+from mpp.interfaces.features import CVFeatures
 
 base_dir = Path(__file__).resolve().parent.parent
 logging.getLogger('datalad').setLevel(logging.WARNING)
@@ -76,7 +76,7 @@ def main() -> None:
         ('fold', list(range(int(config['n_folds'])))),
         ('level', args.levels)]
     features = pe.Node(
-        GradientAC(config=config, features_dir=features_dir),
+        CVFeatures(config=config, features_dir=features_dir),
         name='features', iterables=features_iterables)
 
     mp_wf.connect([
@@ -159,7 +159,8 @@ def main() -> None:
         mp_wf.run(
             plugin='CondorDAGMan',
             plugin_args={'dagman_args': f'-outfile_dir {args.work_dir}',
-                         'wrapper_cmd': args.wrapper})
+                         'wrapper_cmd': args.wrapper,
+                         'dagman_args': '-import_env'})
     else:
         mp_wf.run()
 

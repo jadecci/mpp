@@ -165,6 +165,8 @@ class InitData(SimpleInterface):
                 'white_r': Path(anat_dir, 'surf', 'rh.white'),
                 'pial_l': Path(anat_dir, 'surf', 'lh.pial'),
                 'pial_r': Path(anat_dir, 'surf', 'rh.pial'),
+                'lh_reg': Path(anat_dir, 'surf', 'lh.sphere.reg'),
+                'rh_reg': Path(anat_dir, 'surf', 'rh.sphere.reg'),
                 'ct_l': Path(anat_dir, 'surf', 'lh.thickness'),
                 'ct_r': Path(anat_dir, 'surf', 'rh.thickness'),
                 'label_l': Path(anat_dir, 'label', 'lh.cortex.label'),
@@ -173,15 +175,12 @@ class InitData(SimpleInterface):
 
             self._results['anat_files'] = anat_files.copy()
             for key, val in anat_files.items():
-                if val.is_symlink():
-                    if key == 't1_vol' or key == 'myelin_l' or key == 'myelin_r':
-                        dl.get(path=val, dataset=rs_dir, source=source, on_failure='stop')
-                    else:
-                        dl.get(
-                            path=val, dataset=self._results['anat_dir'], source=source,
-                            on_failure='stop')
+                if key == 't1_vol' or key == 'myelin_l' or key == 'myelin_r':
+                    dl.get(path=val, dataset=rs_dir, source=source, on_failure='stop')
                 else:
-                    self._results['anat_files'][key] = ''
+                    dl.get(
+                        path=val, dataset=self._results['anat_dir'],
+                        source=source, on_failure='stop')
 
             # get aseg stats table for HCP-A and HCP-D
             if self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
@@ -193,9 +192,10 @@ class InitData(SimpleInterface):
                 dl.get(
                     path=hcpad_astats, dataset=self._results['anat_dir'], source=source,
                     on_failure='stop')
-                subprocess.run([
-                    self.inputs.simg_cmd.run_cmd('asegstats2table'), '--meas', 'volume',
-                    '--tablefile', astats_table, '--inputs', hcpad_astats], check=True)
+                subprocess.run(
+                    self.inputs.simg_cmd.run_cmd('asegstats2table').split()
+                    + ['--meas', 'volume', '--tablefile', str(astats_table),
+                       '--inputs', str(hcpad_astats)], check=True)
 
         else:
             raise DatasetError()
@@ -295,9 +295,13 @@ class InitDiffusionData(SimpleInterface):
                 'rh_white_deformed': Path(fs_dir, 'surf', 'rh.white.deformed'),
                 'lh_reg': Path(fs_dir, 'surf', 'lh.sphere.reg'),
                 'rh_reg': Path(fs_dir, 'surf', 'rh.sphere.reg'),
+                'lh_cort_label': Path(fs_dir, 'label', 'lh.cortex.label'),
+                'rh_cort_label': Path(fs_dir, 'label', 'rh.cortex.label'),
                 'lh_ribbon': Path(fs_dir, 'mri', 'lh.ribbon.mgz'),
                 'rh_ribbon': Path(fs_dir, 'mri', 'rh.ribbon.mgz'),
                 'ribbon': Path(fs_dir, 'mri', 'ribbon.mgz'),
+                'aseg': Path(fs_dir, 'mri', 'aseg.mgz'),
+                'aparc_aseg': Path(fs_dir, 'mri', 'aparc+aseg.mgz'),
                 'orig': Path(fs_dir, 'mri', 'orig.mgz'),
                 'eye': Path(fs_dir, 'mri', 'transforms', 'eye.dat'),
                 'lh_thickness': Path(fs_dir, 'surf', 'lh.thickness'),
@@ -381,7 +385,7 @@ class SaveFeatures(SimpleInterface):
                 write_h5(output_file, ds_stats, data_stats, self.inputs.overwrite)
 
             if self.inputs.tfc:
-                for key, val in self.inputs.tfc.items():
+                for key, _ in self.inputs.tfc.items():
                     ds_tfc = f'/tfc/{key}/level{level+1}'
                     data_tfc = self.inputs.tfc[key][f'level{level+1}']
                     write_h5(output_file, ds_tfc, data_tfc, self.inputs.overwrite)

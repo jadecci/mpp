@@ -11,6 +11,15 @@ from mpp.utilities.features import diffusion_mapping_sub, score_sub
 
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
+task_runs = {
+    'HCP-YA': ['tfMRI_EMOTION_LR', 'tfMRI_EMOTION_RL', 'tfMRI_GAMBLING_LR', 'tfMRI_GAMBLING_RL',
+               'tfMRI_LANGUAGE_LR', 'tfMRI_LANGUAGE_RL', 'tfMRI_MOTOR_LR', 'tfMRI_MOTOR_RL',
+               'tfMRI_RELATIONAL_LR', 'tfMRI_RELATIONAL_RL', 'tfMRI_SOCIAL_LR', 'tfMRI_SOCIAL_RL',
+               'tfMRI_WM_LR', 'tfMRI_WM_RL'],
+    'HCP-A': ['tfMRI_CARIT_PA', 'tfMRI_FACENAME_PA', 'tfMRI_VISMOTOR_PA'],
+    'HCP-D': ['tfMRI_CARIT_AP', 'tfMRI_CARIT_PA', 'tfMRI_EMOTION_PA', 'tfMRI_GUESSING_AP',
+              'tfMRI_GUESSING_PA']}
+
 
 def write_h5(h5_file: Union[Path, str], dataset: str, data: np.ndarray, overwrite: bool) -> None:
     with h5py.File(h5_file, 'a') as f:
@@ -33,10 +42,20 @@ def write_h5(h5_file: Union[Path, str], dataset: str, data: np.ndarray, overwrit
                     'Use overwrite=True to overwrite existing data.')
 
 
-def read_h5(h5_file: Union[Path, str], dataset: str) -> np.ndarray:
+def read_h5(
+        h5_file: Union[Path, str], dataset: str, impute: bool = False,
+        impute_shape: Union[tuple, None] = None, impute_val: float = 0) -> np.ndarray:
     with h5py.File(h5_file, 'r') as f:
-        ds = f[dataset]
-        data = ds[()]
+        try:
+            ds = f[dataset]
+            data = ds[()]
+        except KeyError:
+            if impute and impute_shape is not None:
+                data = np.ones(impute_shape) * impute_val
+            elif impute_shape is None:
+                raise TypeError("'impute_shape' must be a tuple (not None) if impute is True")
+            else:
+                raise KeyError
 
     if not isinstance(data, (dict, np.ndarray)):
         raise TypeError("'read_h5' expects dict or np.ndarray data")
@@ -48,7 +67,9 @@ def pheno_hcp(
         dataset: str, pheno_dir: Union[Path, str], pheno_name: str,
         sublist: list) -> tuple[list, dict, dict]:
     if dataset == 'HCP-YA':
-        col_names = {'totalcogcomp': 'CogTotalComp_AgeAdj'}
+        col_names = {
+            'totalcogcomp': 'CogTotalComp_AgeAdj', 'fluidcogcomp': 'CogFluidComp_AgeAdj',
+            'crycogcomp': 'CogCrystalComp_AgeAdj'}
         unres_file = sorted(Path(pheno_dir).glob('unrestricted_*.csv'))[0]
         pheno_data = pd.read_csv(
             unres_file, usecols=['Subject', col_names[pheno_name]],
@@ -56,9 +77,15 @@ def pheno_hcp(
                 'Subject', col_names[pheno_name]]]
 
     elif dataset == 'HCP-A' or dataset == 'HCP-D':
+        if dataset == 'HCP-A':
+            pheno_cols = {'totalcogcomp': 30, 'fluidcogcomp': 14, 'crycogcomp': 18}
+        else:
+            pheno_cols = {'totalcogcomp': 18, 'fluidcogcomp': 9, 'crycogcomp': 12}
         pheno_file = {'totalcogcomp': 'cogcomp01.txt'}
-        pheno_cols = {'totalcogcomp': 30}
-        col_names = {'totalcogcomp': 'nih_totalcogcomp_ageadjusted'}
+        col_names = {
+            'totalcogcomp': 'nih_totalcogcomp_ageadjusted',
+            'fluidcogcomp': 'nih_fluidcogcomp_ageadjusted',
+            'crycogcomp': 'nih_crycogcomp_ageadjusted'}
 
         pheno_data = pd.read_table(
             Path(pheno_dir, pheno_file[pheno_name]), sep='\t', header=0, skiprows=[1],
@@ -100,15 +127,20 @@ def cv_extract_data(
 
         rsfc = read_h5(feature_file, f'/rsfc/level{level}')
         dfc = read_h5(feature_file, f'/dfc/level{level}')
+        efc = read_h5(feature_file, f'/efc/level{level}')
         strength = read_h5(feature_file, f'/network_stats/strength/level{level}')
         betweenness = read_h5(feature_file, f'/network_stats/betweenness/level{level}')
         participation = read_h5(feature_file, f'/network_stats/participation/level{level}')
         efficiency = read_h5(feature_file, f'/network_stats/efficiency/level{level}')
-        # tfc = read_h5(feature_file, f'/tfc/level{self.inputs.level}')
         myelin = read_h5(feature_file, f'/myelin/level{level}')
         gmv = read_h5(feature_file, f'/morphometry/GMV/level{level}')
         cs = read_h5(feature_file, f'/morphometry/CS/level{level}')
         ct = read_h5(feature_file, f'/morphometry/CT/level{level}')
+
+        tfc = np.zeros((rsfc.shape[0], rsfc.shape[1], len(task_runs[dataset])))
+        for run, task in enumerate(task_runs[dataset]):
+            tfc[:, :, run] = read_h5(feature_file, f'/tfc/{task}/level{level}')
+            #    feature_file, f'/tfc/{task}/level{level}', impute=True, impute_shape=rsfc.shape)
 
         if permutation:
             gradients = diffusion_mapping_sub(embeddings[f'repeat{repeat}'], rsfc)
@@ -122,8 +154,8 @@ def cv_extract_data(
             ac_ct = score_sub(params['params'], ct)
 
         x = np.vstack((
-            rsfc.mean(axis=2), dfc.mean(axis=2), strength, betweenness, participation, efficiency,
-            # tfc.reshape(tfc.shape[0], tfc.shape[1]*tfc.shape[2]).T,
+            rsfc, dfc, efc, tfc.reshape(tfc.shape[0], tfc.shape[1]*tfc.shape[2]).T,
+            strength, betweenness, participation, efficiency,
             myelin, gmv, np.pad(cs, (0, len(gmv) - len(cs))), np.pad(ct, (0, len(gmv) - len(ct))),
             gradients, ac_gmv, np.hstack((ac_cs, np.zeros((ac_cs.shape[0], len(gmv) - len(cs))))),
             np.hstack((ac_ct, np.zeros((ac_cs.shape[0], len(gmv) - len(ct)))))))

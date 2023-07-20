@@ -16,7 +16,8 @@ import nibabel as nib
 from mpp.utilities.preproc import (
     d_files_dirsphase, d_files_type, t1_files_type, fs_files_type, update_d_files,
     flatten_list, create_2item_list, last_list_item,
-    combine_2strings, combine_4strings, diff_res)
+    combine_2strings, combine_4strings, diff_res,
+    flirt_bbr_sch, bet_nodif_mask)
 from mpp.exceptions import DatasetError
 
 logging.getLogger('datalad').setLevel(logging.WARNING)
@@ -412,7 +413,7 @@ class EddyPostProc(SimpleInterface):
             neg_keys, 'neg')
 
         subprocess.run(
-            [self.inputs.simg_cmd.run_cmd('eddy_combine'), pos_dwi, pos_bval, pos_bvec,
+            self.inputs.simg_cmd.run_cmd('eddy_combine').split() + [pos_dwi, pos_bval, pos_bvec,
              pos_corrvols, neg_dwi, neg_bval, neg_bvec, neg_corrvols, self.inputs.work_dir, '1'],
             check=True)
         self._results['combined_dwi_file'] = Path(self.inputs.work_dir, 'data.nii.gz')
@@ -527,18 +528,25 @@ class HCPMinProc(SimpleInterface):
     output_spec = _HCPMinProcOutputSpec
 
     def _run_interface(self, runtime):
-        if self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
+        if self.inputs.dataset == 'HCP-A':
             dirs_phases = [('dirs', [98, 99]), ('phase', ['AP', 'PA'])]
+            ds_folder = 'hcp_aging'
+        elif self.inputs.dataset == 'HCP-D':
+            dirs_phases = [('dirs', [98, 99]), ('phase', ['AP', 'PA'])]
+            ds_folder = 'hcp_development'
         else:
             raise DatasetError()
 
         tmp_dir = Path(self.inputs.work_dir, 'hcp_proc_tmp')
         tmp_dir.mkdir(parents=True, exist_ok=True)
+        fs_dir_guess = Path(
+            self.inputs.work_dir, self.inputs.subject, 'original', 'hcp', ds_folder,
+            self.inputs.subject, 'T1w')
 
         self._results['hcp_proc_wf'] = pe.Workflow(
             'hcp_min_proc_wf', base_dir=self.inputs.work_dir)
         inputnode = pe.Node(niu.IdentityInterface(
-            fields=['d_files', 'fs_files', 'fs_dir']), name='inputnode')
+            fields=['d_files', 't1_files', 'fs_files', 'fs_dir']), name='inputnode')
         outputnode = pe.Node(
             niu.IdentityInterface(fields=['data', 'bval', 'bvec', 'mask']), name='outputnode')
         split_files = pe.Node(
@@ -644,8 +652,12 @@ class HCPMinProc(SimpleInterface):
             fsl.ApplyTOPUP(command=self.inputs.simg_cmd.run_cmd('applytopup'), method='jac'),
             name='apply_topup')
         nodif_brainmask = pe.Node(
-            fsl.BET(command=self.inputs.simg_cmd.run_cmd('bet'), mask=True, frac=0.2),
+            niu.Function(function=bet_nodif_mask, output_names=['mask_file']),
             name='nodif_brainmask')
+        nodif_brainmask.inputs.run_cmd = self.inputs.simg_cmd.run_cmd('bet')
+        #nodif_brainmask.inputs.work_dir = str(Path(
+        #    self.inputs.work_dir, 'hcp_min_proc_wf', 'nodif_brainmask'))
+        nodif_brainmask.inputs.work_dir = str(tmp_dir)
 
         self._results['hcp_proc_wf'].connect([
             (update_rescaled, prepare_topup, [('d_files', 'd_files')]),
@@ -742,7 +754,9 @@ class HCPMinProc(SimpleInterface):
             niu.Function(function=t1_files_type, output_names=[
                 't1', 't1_restore', 't1_restore_brain', 'bias', 'fs_mask', 'xfm']),
             name='split_t1_file')
-        wm_seg = pe.Node(fsl.FAST(command=self.inputs.simg_cmd.run_cmd('fast')), name='wm_seg')
+        wm_seg = pe.Node(
+            fsl.FAST(command=self.inputs.simg_cmd.run_cmd('fast'), output_type='NIFTI_GZ'),
+            name='wm_seg')
         pve_file = pe.Node(
             niu.Function(
                 function=last_list_item, input_names=['in_list'], output_names=['out_item']),
@@ -752,10 +766,17 @@ class HCPMinProc(SimpleInterface):
             name='wm_thresh')
         flirt_init = pe.Node(
             fsl.FLIRT(command=self.inputs.simg_cmd.run_cmd('flirt'), dof=6), name='flirt_init')
-        schedule_file = Path(getenv('FSLDIR'), 'etc', 'flirtsch', 'bbr.sch')
+        if self.inputs.simg_cmd.cmd is None:
+            schedule_file = Path(getenv('FSLDIR'), 'etc', 'flirtsch', 'bbr.sch')
+        else: # guess path in the container
+            schedule_file = '/usr/local/fsl/etc/flirtsch/bbr.sch'
         flirt_nodif2t1 = pe.Node(
-            fsl.FLIRT(command=self.inputs.simg_cmd.run_cmd('flirt'), dof=6, cost='bbr',
-                      schedule=schedule_file), name='flirt_nodif2t1')
+            niu.Function(function=flirt_bbr_sch, output_names=['out_matrix_file']),
+            name='flirt_nodif2t1')
+        flirt_nodif2t1.inputs.run_cmd = self.inputs.simg_cmd.run_cmd('flirt')
+        flirt_nodif2t1.inputs.sch_file = str(schedule_file)
+        flirt_nodif2t1.inputs.out_dir = str(tmp_dir)
+        flirt_nodif2t1.inputs.out_prefix = 'nodif2t1'
         nodif_t1 = pe.Node(
             fsl.ApplyWarp(command=self.inputs.simg_cmd.run_cmd('applywarp'), interp='spline',
                           relwarp=True), name='nodif_t1')
@@ -770,13 +791,16 @@ class HCPMinProc(SimpleInterface):
             name='split_fs_files')
         bbr_epi2t1 = pe.Node(
             freesurfer.BBRegister(
-                command=self.inputs.simg_cmd.run_cmd('bbregister'),
+                command=self.inputs.simg_cmd.run_cmd(
+                    'bbregister', options=f'--env SUBJECTS_DIR={fs_dir_guess}'),
                 contrast_type='bold', dof=6, args='--surf white.deformed',
                 subject_id=self.inputs.subject),
             name='bbr_epi2t1')
+        # Due to a nipype bug, fsl_out must be supplied with a file for now
+        fsl_file = Path(tmp_dir, 'tkr_diff2str.mat')
         tkr_diff2str = pe.Node(
             freesurfer.Tkregister2(command=self.inputs.simg_cmd.run_cmd('tkregister2'),
-                                   noedit=True), name='tkr_diff2str')
+                                   noedit=True, fsl_out=fsl_file), name='tkr_diff2str')
         diff2str = pe.Node(
             fsl.ConvertXFM(command=self.inputs.simg_cmd.run_cmd('convert_xfm'), concat_xfm=True),
             name='diff2str')
@@ -842,7 +866,7 @@ class HCPMinProc(SimpleInterface):
             (nodif_t1, nodif_bias, [('out_file', 'in_file')]),
             (bias_to_args, nodif_bias, [('out_str', 'args')]),
             (inputnode, split_fs_files, [('fs_files', 'fs_files')]),
-            (inputnode, bbr_epi2t1, [('fs_dir', 'fs_dir')]),
+            (inputnode, bbr_epi2t1, [('fs_dir', 'subjects_dir')]),
             (nodif_bias, bbr_epi2t1, [('out_file', 'source_file')]),
             (split_fs_files, bbr_epi2t1, [('eye', 'init_reg_file')]),
             (nodif_bias, tkr_diff2str, [('out_file', 'moving_image')]),
@@ -920,7 +944,7 @@ class CSD(SimpleInterface):
         res_gm_file = Path(self.inputs.work_dir, 'gm.txt')
         res_csf_file = Path(self.inputs.work_dir, 'csf.txt')
         subprocess.run(
-            [self.inputs.simg_cmd.run_cmd('dwi2response'), 'dhollander', '-shells', shells,
+            self.inputs.simg_cmd.run_cmd('dwi2response').split() + ['dhollander', '-shells', shells,
              '-nthreads', '0', '-force', '-mask', str(self.inputs.mask),
              '-fslgrad', str(self.inputs.bvec), str(self.inputs.bval), str(self.inputs.data),
              str(res_wm_file), str(res_gm_file), str(res_csf_file)], check=True)
@@ -928,8 +952,8 @@ class CSD(SimpleInterface):
         self._results['fod_wm_file'] = Path(self.inputs.work_dir, 'fod_wm.mif')
         fod_gm_file = Path(self.inputs.work_dir, 'fod_gm.mif')
         fod_csf_file = Path(self.inputs.work_dir, 'fod_csf.mif')
-        fod = [
-            self.inputs.simg_cmd.run_cmd('dwi2fod'), 'msmt_csd', '-shells', shells,
+        fod = self.inputs.simg_cmd.run_cmd('dwi2fod').split() + [
+            'msmt_csd', '-shells', shells,
             '-nthreads', '0', '-mask', str(self.inputs.mask),
             '-fslgrad', str(self.inputs.bvec), str(self.inputs.bval), str(self.inputs.data),
             str(res_wm_file), str(self._results['fod_wm_file']),
@@ -977,15 +1001,14 @@ class TCK(SimpleInterface):
         power = '0.25'
 
         ftt_file = Path(self.inputs.work_dir, 'ftt.nii.gz')
-        ftt = [
-            self.inputs.simg_cmd.run_cmd('5ttgen'), 'hsvs', str(self.inputs.fs_dir),str(ftt_file)]
+        ftt = self.inputs.simg_cmd.run_cmd('5ttgen').split() + [
+            'hsvs', str(self.inputs.fs_dir),str(ftt_file)]
         if not ftt_file.is_file():
             subprocess.run(ftt, check=True)
 
         seed_file = Path(self.inputs.work_dir, 'WBT_10M_seeds_ctx.txt')
         self._results['tck_file'] = Path(self.inputs.work_dir, 'WBT_10M_ctx.tck')
-        tck = [
-            self.inputs.simg_cmd.run_cmd('tckgen'),
+        tck = self.inputs.simg_cmd.run_cmd('tckgen').split() + [
             '-algorithm', algorithm, '-select', tract_schaefer,
             '-step', step, '-angle', angle, '-minlength', minlength, '-maxlength', maxlength,
             '-cutoff', cutoff, '-trials', trials, '-downsample', downsample,
