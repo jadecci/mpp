@@ -303,6 +303,9 @@ class InitDiffusionData(SimpleInterface):
                 'aseg': Path(fs_dir, 'mri', 'aseg.mgz'),
                 'aparc_aseg': Path(fs_dir, 'mri', 'aparc+aseg.mgz'),
                 'orig': Path(fs_dir, 'mri', 'orig.mgz'),
+                'brain_mask': Path(fs_dir, 'mri', 'brainmask.mgz'),
+                'talaraich_xfm': Path(fs_dir, 'mri', 'transforms', 'talairach.xfm'),
+                'norm': Path(fs_dir, 'mri', 'norm.mgz'),
                 'eye': Path(fs_dir, 'mri', 'transforms', 'eye.dat'),
                 'lh_thickness': Path(fs_dir, 'surf', 'lh.thickness'),
                 'rh_thickness': Path(fs_dir, 'surf', 'rh.thickness')}
