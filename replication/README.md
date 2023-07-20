@@ -1,8 +1,11 @@
 ## 1. Preparation & Featrues Extraction
+Clone and install from GIN repository to get all the replication data files and the container
 ```bash
-python3 -m venv ~/.venvs/dev-multipred
-source ~/.venvs/dev-multipred/bin/activate
-python3 -m pip install git+https://github.com/jadecci/mpp.git@v3.0
+python3 -m venv ~/.venvs/mpp-features
+source ~/.venvs/mpp-features/bin/activate
+datalad clone git@gin.g-node.org:/jadecci/MPP.git
+cd MPP && datalad get -r *
+python3 -m pip install .
 ```
 
 ### 1.1. HCP-YA, HCP-A and HCP-D
