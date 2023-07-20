@@ -18,8 +18,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description='Multimodal psychometric prediction',
         formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog, width=100))
-    parser.add_argument('datasets', nargs='+', help='Datasets for cross-validation')
-    parser.add_argument('target', type=str, help='Phenotype to use as prediction target')
+    parser.add_argument(
+        '--datasets', nargs='+', dest='datasets', required=True,
+        help='Datasets for cross-validation')
+    parser.add_argument(
+        '--target', type=str, dest='target', required=True,
+        help='Phenotype to use as prediction target')
     parser.add_argument(
         '--levels', nargs='+', dest='levels', default=['1', '2', '3', '4'],
         help='parcellation levels')
@@ -97,8 +101,8 @@ def main() -> None:
     rw_test = pe.Node(
         RegionwiseModel(mode='test', config=config, features_dir=features_dir), name='rw_test')
     rw_save = pe.JoinNode(
-        RegionwiseSave(output_dir=args.output_dir, overwrite=args.overwrite), name='rw_save',
-        joinfield=['results'], joinsource='features', synchronize=True)
+        RegionwiseSave(output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target),
+        name='rw_save', joinfield=['results'], joinsource='features', synchronize=True)
 
     mp_wf.connect([
         (init_data, rw_validate, [
@@ -131,7 +135,8 @@ def main() -> None:
     if_model = pe.Node(
         IntegratedFeaturesModel(config=config, features_dir=features_dir), name='if_model')
     if_save = pe.JoinNode(
-        IntegratedFeaturesSave(output_dir=args.output_dir, overwrite=args.overwrite),
+        IntegratedFeaturesSave(
+            output_dir=args.output_dir, overwrite=args.overwrite,phenotype=args.target),
         name='if_save', joinfield=['results'], joinsource='features')
 
     mp_wf.connect([
@@ -158,9 +163,10 @@ def main() -> None:
     if args.condordag:
         mp_wf.run(
             plugin='CondorDAGMan',
-            plugin_args={'dagman_args': f'-outfile_dir {args.work_dir}',
-                         'wrapper_cmd': args.wrapper,
-                         'dagman_args': '-import_env'})
+            plugin_args={
+                'wrapper_cmd': args.wrapper,
+                'dagman_args': f'-outfile_dir {args.work_dir} -import_env',
+                'override_specs': 'requirements=(Machine!="cpu43.htc.inm7.de")'}) # do not use cpu43 for now
     else:
         mp_wf.run()
 

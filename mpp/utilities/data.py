@@ -81,7 +81,9 @@ def pheno_hcp(
             pheno_cols = {'totalcogcomp': 30, 'fluidcogcomp': 14, 'crycogcomp': 18}
         else:
             pheno_cols = {'totalcogcomp': 18, 'fluidcogcomp': 9, 'crycogcomp': 12}
-        pheno_file = {'totalcogcomp': 'cogcomp01.txt'}
+        pheno_file = {
+            'totalcogcomp': 'cogcomp01.txt', 'fluidcogcomp': 'cogcomp01.txt',
+            'crycogcomp': 'cogcomp01.txt'}
         col_names = {
             'totalcogcomp': 'nih_totalcogcomp_ageadjusted',
             'fluidcogcomp': 'nih_fluidcogcomp_ageadjusted',
@@ -97,8 +99,8 @@ def pheno_hcp(
         raise DatasetError()
 
     pheno_data.columns = ['subject', pheno_name]
-    pheno_data = pheno_data.dropna().drop_duplicates(subset='subject').reset_index(drop=True)
-    pheno_data = pheno_data[pheno_data['subject'].isin(sublist)]
+    pheno_data = pheno_data.dropna().drop_duplicates(subset='subject')
+    pheno_data = pheno_data[pheno_data['subject'].isin(sublist)].reset_index(drop=True)
 
     sublist_out = pheno_data['subject'].to_list()
     pheno_dict = pheno_data.set_index('subject').squeeze().to_dict()
