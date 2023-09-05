@@ -216,7 +216,7 @@ def diffusion_mapping(image_features: dict, sublist: list, input_key: str) -> np
 
 
 def diffusion_mapping_sub(embed: np.ndarray, sub_rsfc: np.ndarray) -> np.ndarray:
-    return embed.T @ sub_rsfc.mean(axis=2)
+    return embed.T @ sub_rsfc
 
 
 def score(

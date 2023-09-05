@@ -72,7 +72,6 @@ class _RegionwiseModelInputSpec(BaseInterfaceInputSpec):
 
 class _RegionwiseModelOutputSpec(TraitedSpec):
     results = traits.Dict(desc='accuracy results')
-    selected = traits.Dict(desc='whether each feature is selected')
     rw_ypred = traits.Dict(desc='Predicted psychometric values')
 
 
@@ -146,25 +145,22 @@ class RegionwiseModel(SimpleInterface):
         self._results['results'][f'cod_{key}'] = cod
         self._results['results'][f'l1ratio_{key}'] = l1_ratios
         self._results['results'][f'model_{key}'] = coef
-        self._results['selected'] = {f'features_{key}': list(coef[:, :-1] != 0)}
+        self._results['results'][f'features_{key}'] = list(coef[:, :-1] != 0)
         # self._results['rw_ypred'] = {'train_ypred': train_ypred, 'test_ypred': test_ypred}
 
         kr_r = np.zeros(train_x.shape[2])
         kr_cod = np.zeros(train_x.shape[2])
-        kr_coef = np.zeros((train_x.shape[2], train_x.shape[1]))
         kr_train_ypred = np.zeros((len(train_y), train_x.shape[2]))
         kr_test_ypred = np.zeros((len(test_y), train_x.shape[2]))
         for region in range(train_x.shape[2]):
             if self.inputs.selected[f'regions_level{self.inputs.level}'][region]:
                 kr_r[region], kr_cod[region], model = kernel_ridge(
                     train_x[:, :, region], train_y, test_x[:, :, region], test_y)
-                kr_coef[region, :] = model.dual_coef_
                 kr_train_ypred[:, region] = model.predict(train_x[:, :, region])
                 kr_test_ypred[:, region] = model.predict(test_x[:, :, region])
 
         self._results['results'][f'kr_r_{key}'] = kr_r
         self._results['results'][f'kr_cod_{key}'] = kr_cod
-        self._results['results'][f'kr_model_{key}'] = kr_coef
         self._results['rw_ypred'] = {
             'train_ypred': train_ypred, 'test_ypred': test_ypred,
             'kr_train_ypred': kr_train_ypred, 'kr_test_ypred': kr_test_ypred}
@@ -224,16 +220,12 @@ class RegionSelect(SimpleInterface):
         n_folds = self.inputs.config['n_folds']
 
         n_region_dict = {'1': 116, '2': 232, '3': 350, '4': 454}
-        n_regions = [n_region_dict[level] for level in self.inputs.levels]
 
-        results = np.zeros((int(n_repeats), sum(n_regions)))
+        results = np.zeros((int(n_repeats), n_region_dict[level]))
         for repeat in range(int(n_repeats)):
             for fold in range(int(n_folds)):
-                pos = 0
                 key_curr = f'{key}_repeat{repeat}_fold{fold}_level{level}'
-                regions = range(pos, pos + n_region_dict[level])
-                pos = pos + n_region_dict[level]
-                results[repeat, regions] = results[repeat, regions] + results_dict[key_curr]
+                results[repeat, :] = results[repeat, :] + results_dict[key_curr]
             results[repeat, :] = np.divide(results[repeat, :], int(n_folds))
 
         return results
@@ -342,11 +334,15 @@ class IntegratedFeaturesModel(SimpleInterface):
             self.inputs.sublists, self.inputs.features_dir, test_sub, self.inputs.repeat,
             self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes)
 
+        train_x_selected = train_x[:, :, selected_regions].reshape(
+            train_x.shape[0], train_x.shape[1]*selected_regions.sum())
+        test_x_selected = test_x[:, :, selected_regions].reshape(
+            test_x.shape[0], test_x.shape[1]*selected_regions.sum())
         en = self._en(
-            train_x[:, :, selected_regions], train_y, test_x[:, :, selected_regions], test_y, key)
+            train_x_selected, train_y, test_x_selected, test_y, key)
         en_stack = self._en_stack(train_y, test_y, key, selected_regions)
         kr = self._kr(
-            train_x[:, :, selected_regions], train_y, test_x[:, :, selected_regions], test_y, key)
+            train_x_selected, train_y, test_x_selected, test_y, key)
         voting = self._voting(test_y, key, selected_regions)
         self._results['results'] = en | en_stack | kr | voting
 

@@ -472,11 +472,11 @@ class InitFeatures(SimpleInterface):
                 sublist = [str(file)[-19:-9] for file in features_files]
             else:
                 sublist = [str(file)[-9:-3] for file in features_files]
-            sublist, pheno, pheno_perm = pheno_hcp(
-                dataset, self.inputs.phenotypes_dir[dataset], self.inputs.phenotype, sublist)
             sublist, self._results['confounds'] = pheno_conf_hcp(
                 dataset, self.inputs.phenotypes_dir[dataset], self.inputs.features_dir[dataset],
                 sublist)
+            sublist, pheno, pheno_perm = pheno_hcp(
+                dataset, self.inputs.phenotypes_dir[dataset], self.inputs.phenotype, sublist)
             self._results['phenotypes'] = pheno
             self._results['phenotypes_perm'] = pheno_perm
             self._results['sublists'][dataset] = sublist
@@ -488,6 +488,7 @@ class _RegionwiseSaveInputSpec(BaseInterfaceInputSpec):
     results = traits.List(dtype=dict, desc='accuracy results')
     output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
     overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
+    phenotype = traits.Str(mandatory=True, desc='phenotype to use as prediction target')
 
 
 class RegionwiseSave(SimpleInterface):
@@ -496,7 +497,7 @@ class RegionwiseSave(SimpleInterface):
 
     def _run_interface(self, runtime):
         Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
-        output_file = Path(self.inputs.output_dir, 'regionwise_results.h5')
+        output_file = Path(self.inputs.output_dir, f'regionwise_results_{self.inputs.phenotype}.h5')
 
         results = {key: item for d in self.inputs.results for key, item in d.items()}
         for key, val in results.items():
@@ -509,6 +510,7 @@ class _IntegratedFeaturesSaveInputSpec(BaseInterfaceInputSpec):
     results = traits.List(dtype=dict, desc='accuracy results')
     output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
     overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
+    phenotype = traits.Str(mandatory=True, desc='phenotype to use as prediction target')
 
 
 class IntegratedFeaturesSave(SimpleInterface):
@@ -517,7 +519,8 @@ class IntegratedFeaturesSave(SimpleInterface):
 
     def _run_interface(self, runtime):
         Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
-        output_file = Path(self.inputs.output_dir, 'integratedfeatures_results.h5')
+        output_file = Path(
+            self.inputs.output_dir, f'integratedfeatures_results_{self.inputs.phenotype}.h5')
 
         results = {key: item for d in self.inputs.results for key, item in d.items()}
         for key, val in results.items():
