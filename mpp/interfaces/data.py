@@ -59,7 +59,7 @@ class InitData(SimpleInterface):
     def _run_interface(self, runtime):
         self._results['dataset_dir'] = Path(self.inputs.work_dir, self.inputs.subject)
         dataset_dirs = {
-            'HCP-YA': Path(self._results['dataset_dir'], 'HCP1200'),
+            'HCP-YA': Path(self._results['dataset_dir']),
             'HCP-A': Path(self._results['dataset_dir'], 'original', 'hcp', 'hcp_aging'),
             'HCP-D': Path(self._results['dataset_dir'], 'original', 'hcp', 'hcp_development'),
             'ABCD': Path(self._results['dataset_dir'], 'original', 'abcd', 'abcd-hcp-pipeline')}
@@ -77,7 +77,10 @@ class InitData(SimpleInterface):
         dl.get(
             path=dataset_dir, dataset=self._results['dataset_dir'], get_data=False, source=source,
             on_failure='stop')
-        subject_dir = Path(dataset_dir, self.inputs.subject)
+        if self.inputs.dataset == 'HCP-YA':
+            subject_dir = Path(dataset_dir, 'HCP1200', self.inputs.subject)
+        else:
+            subject_dir = Path(dataset_dir, self.inputs.subject)
         dl.get(
             path=subject_dir, dataset=dataset_dir, get_data=False, source=source, on_failure='stop')
 
