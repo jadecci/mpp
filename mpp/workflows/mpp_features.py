@@ -53,11 +53,11 @@ def main() -> None:
         if not output_file.is_file() or args.overwrite:
             if args.diffusion:
                 subject_wf = init_d_wf(
-                    args.dataset, subject, args.work_dir, args.output_dir, simg_cmd,
+                    args.dataset, str(subject), args.work_dir, args.output_dir, simg_cmd,
                     args.overwrite)
             else:
                 subject_wf = init_subject_wf(
-                    args.dataset, subject, args.work_dir, args.output_dir, simg_cmd,
+                    args.dataset, str(subject), args.work_dir, args.output_dir, simg_cmd,
                     args.overwrite)
 
             subject_wf.config['execution']['try_hard_link_datasink'] = 'false'
