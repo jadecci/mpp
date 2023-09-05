@@ -102,12 +102,12 @@ class InitData(SimpleInterface):
             rs_files = {
                 'atlas_mask': Path(subject_dir, 'MNINonLinear', 'ROIs', 'Atlas_wmparc.2.nii.gz')}
 
+            clean_prefix = {'HCP-YA': 'clean', 'HCP-A': 'hp0_clean', 'HCP-D': 'hp0_clean'}
             for i, run in enumerate(runs[self.inputs.dataset]):
-                run = runs[self.inputs.dataset][i]
                 run_dir = Path(subject_dir, 'MNINonLinear', 'Results', run)
                 rs_files[f'{run}_surf'] = Path(
-                    run_dir, f'{run}_Atlas_MSMAll_hp0_clean.dtseries.nii')
-                rs_files[f'{run}_vol'] = Path(run_dir, f'{run}_hp0_clean.nii.gz')
+                    run_dir, f'{run}_Atlas_MSMAll_{clean_prefix}.dtseries.nii')
+                rs_files[f'{run}_vol'] = Path(run_dir, f'{run}_{clean_prefix}.nii.gz')
 
             self._results['rs_files'] = rs_files.copy()
             self._results['hcpd_b_runs'] = 0
