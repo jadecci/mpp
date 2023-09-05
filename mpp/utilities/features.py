@@ -201,7 +201,7 @@ def diffusion_mapping(image_features: dict, sublist: list, input_key: str) -> np
     n_parcels = image_features[sublist[0]][input_key].shape[0]
     rsfc = np.zeros((n_parcels, n_parcels, len(sublist)))
     for i in range(len(sublist)):
-        rsfc[:, :, i] = image_features[sublist[i]][input_key].mean(axis=2)
+        rsfc[:, :, i] = image_features[sublist[i]][input_key]
 
     # transform by tanh and threshold RSFC at 90th percentile
     rsfc_thresh = np.tanh(rsfc.mean(axis=2))

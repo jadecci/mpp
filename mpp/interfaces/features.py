@@ -265,7 +265,7 @@ class Morphometry(SimpleInterface):
         return runtime
 
 
-class _GradientACInputSpec(BaseInterfaceInputSpec):
+class _CVFeaturesInputSpec(BaseInterfaceInputSpec):
     features_dir = traits.Dict(
         mandatory=True, dtype=str, desc='absolute path to extracted features for each dataset')
     sublists = traits.Dict(
@@ -279,7 +279,7 @@ class _GradientACInputSpec(BaseInterfaceInputSpec):
     config = traits.Dict({}, desc='configuration settings')
 
 
-class _GradientACOutputSpec(TraitedSpec):
+class _CVFeaturesOutputSpec(TraitedSpec):
     embeddings = traits.Dict(desc='embeddings for gradients')
     params = traits.Dict(desc='parameters for anatomical connectivity')
     repeat = traits.Int(desc='current repeat of cross-validation')
@@ -287,11 +287,11 @@ class _GradientACOutputSpec(TraitedSpec):
     level = traits.Str(desc='parcellation level')
 
 
-class GradientAC(SimpleInterface):
+class CVFeatures(SimpleInterface):
     """Compute gradient embedding (diffusion mapping) and
     anatomical connectivity (structural co-registration)"""
-    input_spec = _GradientACInputSpec
-    output_spec = _GradientACOutputSpec
+    input_spec = _CVFeaturesInputSpec
+    output_spec = _CVFeaturesOutputSpec
 
     def _extract_features(self) -> dict:
         all_sub = sum(self.inputs.sublists.values(), [])
