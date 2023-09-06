@@ -533,9 +533,7 @@ class SCWF(SimpleInterface):
             (inputnode, sub_dir, [('fs_dir', 'fs_dir')]),
             (inputnode, split_t1_files, [('t1_files', 't1_files')]),
             (inputnode, split_fs_files, [('fs_files', 'fs_files')]),
-            (split_t1_files, std2t1, [
-                ('xfm', 'warp'),
-                ('t1_restore_brain', 'reference')]),
+            (split_t1_files, std2t1, [('xfm', 'warp'), ('t1_restore_brain', 'reference')]),
             (split_t1_files, subcort_t1, [('t1_restore_brain', 'ref_file')]),
             (std2t1, subcort_t1, [('inverse_warp', 'field_file')]),
             (split_atlas, subcort_t1, [('subcort_atlas', 'in_file')]),
@@ -549,14 +547,9 @@ class SCWF(SimpleInterface):
             (split_atlas, aseg_out, [('level', 'str3')]),
             (sub_dir, cort_aseg, [('sub_dir', 'subjects_dir')]),
             (split_fs_files, cort_aseg, [
-                ('lh_aparc', 'lh_annotation'),
-                ('rh_aparc', 'rh_annotation'),
-                ('lh_pial', 'lh_pial'),
-                ('rh_pial', 'rh_pial'),
-                ('lh_ribbon', 'lh_ribbon'),
-                ('rh_ribbon', 'rh_ribbon'),
-                ('lh_white', 'lh_white'),
-                ('rh_white', 'rh_white'),
+                ('lh_aparc', 'lh_annotation'), ('rh_aparc', 'rh_annotation'),
+                ('lh_pial', 'lh_pial'), ('rh_pial', 'rh_pial'), ('lh_ribbon', 'lh_ribbon'),
+                ('rh_ribbon', 'rh_ribbon'), ('lh_white', 'lh_white'), ('rh_white', 'rh_white'),
                 ('ribbon', 'ribbon')]),
             (copy_annot, cort_aseg, [('annot_args', 'args')]),
             (aseg_out, cort_aseg, [('str_out', 'out_file')]),
@@ -568,8 +561,6 @@ class SCWF(SimpleInterface):
             (inputnode, sc, [('tck_file', 'tck_file')]),
             (split_atlas, sc, [('level', 'level')]),
             (combine_atlas, sc, [('combined_file', 'atlas_file')]),
-            (sc, outputnode, [
-                ('count_file', 'count_files'),
-                ('length_file', 'length_files')])])
+            (sc, outputnode, [('count_file', 'count_files'), ('length_file', 'length_files')])])
 
         return runtime
