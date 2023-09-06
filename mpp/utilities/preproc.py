@@ -134,3 +134,6 @@ def bet_nodif_mask(in_file: str, run_cmd: str, work_dir: str) -> str:
 
     return str(mask_file)
 
+
+def d_files_hcpya(d_files: dict) -> tuple[str, ...]:
+    return d_files['data'], d_files['bval'], d_files['bvec'], d_files['mask']
