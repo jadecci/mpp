@@ -620,9 +620,7 @@ class HCPMinProc(SimpleInterface):
             (inputnode, update_rescaled, [('d_files', 'd_files')]),
             (rescale, update_rescaled, [('rescaled_files', 'dwi_replacements')]),
             (update_rescaled, split_rescaled, [('d_files', 'd_files')]),
-            (split_rescaled, rescaled_b0s, [
-                ('bval', 'bval_file'),
-                ('image', 'dwi_file')]),
+            (split_rescaled, rescaled_b0s, [('bval', 'bval_file'), ('image', 'dwi_file')]),
             (rescaled_b0s, b0_list, [('roi_files', 'in_list')]),
             (rescaled_b0s, pos_b0_list, [('pos_files', 'in_list')]),
             (rescaled_b0s, neg_b0_list, [('neg_files', 'in_list')]),
@@ -665,16 +663,14 @@ class HCPMinProc(SimpleInterface):
             (merge_pos_b0s, prepare_topup, [('merged_file', 'pos_b0_file')]),
             (merge_rescaled_b0s, estimate_topup, [('merged_file', 'in_file')]),
             (prepare_topup, estimate_topup, [
-                ('enc_dir', 'encoding_direction'),
-                ('ro_time', 'readout_times')]),
+                ('enc_dir', 'encoding_direction'), ('ro_time', 'readout_times')]),
             (merge_pos_b0s, pos_b01, [('merged_file', 'in_file')]),
             (merge_neg_b0s, neg_b01, [('merged_file', 'in_file')]),
             (pos_b01, b01_files, [('roi_file', 'item1')]),
             (neg_b01, b01_files, [('roi_file', 'item2')]),
             (prepare_topup, apply_topup, [('indices_t', 'in_index')]),
             (estimate_topup, apply_topup, [
-                ('out_enc_file', 'encoding_file'),
-                ('out_fieldcoef', 'in_topup_fieldcoef'),
+                ('out_enc_file', 'encoding_file'), ('out_fieldcoef', 'in_topup_fieldcoef'),
                 ('out_movpar', 'in_topup_movpar')]),
             (b01_files, apply_topup, [('out_list', 'in_files')]),
             (apply_topup, nodif_brainmask, [('out_corrected', 'in_file')])])
@@ -695,22 +691,17 @@ class HCPMinProc(SimpleInterface):
 
         self._results['hcp_proc_wf'].connect([
             (update_rescaled, split_files_type, [('d_files', 'd_files')]),
-            (split_files_type, merge_bfiles, [
-                ('bval', 'bval_files'),
-                ('bvec', 'bvec_files')]),
+            (split_files_type, merge_bfiles, [('bval', 'bval_files'), ('bvec', 'bvec_files')]),
             (split_files_type, merge_rescaled_dwi, [('image', 'in_files')]),
             (b0_list, eddy_index, [('out_list', 'roi_files')]),
             (split_files_type, eddy_index, [('image', 'dwi_files')]),
             (merge_rescaled_dwi, eddy, [('merged_file', 'in_file')]),
-            (merge_bfiles, eddy, [
-                ('bval_merged', 'in_bval'),
-                ('bvec_merged', 'in_bvec')]),
+            (merge_bfiles, eddy, [('bval_merged', 'in_bval'), ('bvec_merged', 'in_bvec')]),
             (estimate_topup, eddy, [('out_enc_file', 'in_acqp')]),
             (eddy_index, eddy, [('index_file', 'in_index')]),
             (nodif_brainmask, eddy, [('mask_file', 'in_mask')]),
             (estimate_topup, eddy, [
-                ('out_fieldcoef', 'in_topup_fieldcoef'),
-                ('out_movpar', 'in_topup_movpar')])])
+                ('out_fieldcoef', 'in_topup_fieldcoef'), ('out_movpar', 'in_topup_movpar')])])
 
         # 3. PostEddy
         # 3.1. postproc
@@ -732,9 +723,7 @@ class HCPMinProc(SimpleInterface):
 
         self._results['hcp_proc_wf'].connect([
             (split_files_type, eddy_postproc, [
-                ('bval', 'bval_files'),
-                ('bvec', 'bvec_files'),
-                ('image', 'rescaled_files')]),
+                ('bval', 'bval_files'), ('bvec', 'bvec_files'), ('image', 'rescaled_files')]),
             (eddy, eddy_postproc, [
                 ('out_corrected', 'eddy_corrected_file'),
                 ('out_rotated_bvecs', 'eddy_bvecs_file')]),
@@ -876,8 +865,7 @@ class HCPMinProc(SimpleInterface):
             (tkr_diff2str, diff2str, [('fsl_file', 'in_file2')]),
             (thresh_data, res, [('out_file', 'data_file')]),
             (split_t1_files, flirt_resamp, [
-                ('t1_restore', 'in_file'),
-                ('t1_restore', 'reference')]),
+                ('t1_restore', 'in_file'), ('t1_restore', 'reference')]),
             (res, flirt_resamp, [('res', 'apply_isoxfm')]),
             (split_t1_files, t1_resamp, [('t1_restore', 'in_file')]),
             (flirt_resamp, t1_resamp, [('out_file', 'ref_file')]),
@@ -886,9 +874,7 @@ class HCPMinProc(SimpleInterface):
             (dilate_data, resamp_data, [('out_file', 'in_file')]),
             (t1_resamp, resamp_data, [('out_file', 'reference')]),
             (diff2str, resamp_data, [('out_file', 'in_matrix_file')]),
-            (split_t1_files, mask_resamp, [
-                ('fs_mask', 'in_file'),
-                ('fs_mask', 'reference')]),
+            (split_t1_files, mask_resamp, [('fs_mask', 'in_file'), ('fs_mask', 'reference')]),
             (res, mask_resamp, [('res', 'apply_isoxfm')]),
             (mask_resamp, mask_dilate, [('out_file', 'mask_file')]),
             (fov_mask, fmask_t1, [('out_file', 'in_file')]),

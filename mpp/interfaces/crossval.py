@@ -7,7 +7,8 @@ from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.metrics import r2_score
 from statsmodels.stats.multitest import multipletests
 
-from mpp.utilities.models import elastic_net, kernel_ridge, permutation_test
+from mpp.utilities.models import (
+    elastic_net, kernel_ridge, linear_svr, kernel_ridge_corr_CV, permutation_test)
 from mpp.utilities.data import write_h5, cv_extract_data
 
 
@@ -39,7 +40,7 @@ class CrossValSplit(SimpleInterface):
         n_folds = int(self.inputs.config['n_folds'])
         rskf = RepeatedStratifiedKFold(
             n_splits=n_folds, n_repeats=n_repeats, random_state=int(self.inputs.config['cv_seed']))
-        for fold, (_, test_ind) in enumerate(rskf.split(subjects, datasets)):
+        for fold, (_, test_ind) in enumerate(rskf.split(subjects, groups=datasets)):
             key = f'repeat{int(np.floor(fold/n_folds))}_fold{int(fold%n_folds)}'
             self._results['cv_split'][key] = np.array(subjects)[test_ind]
 
@@ -198,6 +199,7 @@ class _RegionSelectInputSpec(BaseInterfaceInputSpec):
     output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
     overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
     config = traits.Dict(mandatory=True, desc='configuration settings')
+    phenotype = traits.Str(mandatory=True, desc='phenotype to use as prediction target')
 
 
 class _RegionSelectOutputSpec(TraitedSpec):
@@ -232,7 +234,7 @@ class RegionSelect(SimpleInterface):
 
     def _save_results(self) -> None:
         Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
-        output_file = Path(self.inputs.output_dir, 'regionwise_results.h5')
+        output_file = Path(self.inputs.output_dir, f'regionwise_results_{self.inputs.phenotype}.h5')
         for key, val in self._results['selected'].items():
             write_h5(output_file, f'/{key}', np.array(val), self.inputs.overwrite)
 
@@ -313,6 +315,26 @@ class IntegratedFeaturesModel(SimpleInterface):
 
         return results
 
+    @staticmethod
+    def _lsvr(
+            train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
+            key: str) -> dict:
+        r, cod, model = linear_svr(train_x, train_y, test_x, test_y)
+        results = {
+            f'lsvr_r_{key}': r, f'lsvr_cod_{key}': cod,
+            f'lsvr_model_{key}': np.concatenate((model.coef_, [model.intercept_]))}
+
+        return results
+
+    @staticmethod
+    def _kr_corr(
+            train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
+            key: str) -> dict:
+        r = kernel_ridge_corr_CV(train_x, train_y, test_x, test_y)
+        results = {f'krcorr_r_{key}': r}
+
+        return results
+
     def _voting(self, test_y: np.ndarray, key: str, selected_regions: list) -> dict:
         ypred = self.inputs.rw_ypred['test_ypred'][:, selected_regions].mean(axis=1)
         results = {
@@ -338,12 +360,12 @@ class IntegratedFeaturesModel(SimpleInterface):
             train_x.shape[0], train_x.shape[1]*selected_regions.sum())
         test_x_selected = test_x[:, :, selected_regions].reshape(
             test_x.shape[0], test_x.shape[1]*selected_regions.sum())
-        en = self._en(
-            train_x_selected, train_y, test_x_selected, test_y, key)
+        en = self._en(train_x_selected, train_y, test_x_selected, test_y, key)
         en_stack = self._en_stack(train_y, test_y, key, selected_regions)
-        kr = self._kr(
-            train_x_selected, train_y, test_x_selected, test_y, key)
+        kr = self._kr(train_x_selected, train_y, test_x_selected, test_y, key)
+        lsvr = self._lsvr(train_x_selected, train_y, test_x_selected, test_y, key)
+        kr_corr = self._kr_corr(train_x_selected, train_y, test_x_selected, test_y, key)
         voting = self._voting(test_y, key, selected_regions)
-        self._results['results'] = en | en_stack | kr | voting
+        self._results['results'] = en | en_stack | kr | lsvr | kr_corr | voting
 
         return runtime

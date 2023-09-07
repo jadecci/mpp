@@ -12,6 +12,7 @@ from mpp.interfaces.data import InitData, SaveFeatures, InitDiffusionData, SaveD
 from mpp.interfaces.features import RSFC, NetworkStats, TFC, MyelinEstimate, Morphometry, SCWF
 from mpp.interfaces.preproc import HCPMinProc, CSD, TCK
 from mpp.utilities.utilities import SimgCmd
+from mpp.utilities.preproc import d_files_hcpya
 
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
@@ -97,29 +98,21 @@ def init_subject_wf(
 
     subject_wf.connect([
         (init_data, rs_wf, [
-            ('rs_runs', 'inputnode.rs_runs'),
-            ('rs_files', 'inputnode.rs_files'),
+            ('rs_runs', 'inputnode.rs_runs'), ('rs_files', 'inputnode.rs_files'),
             ('hcpd_b_runs', 'inputnode.hcpd_b_runs')]),
         (init_data, anat_wf, [
-            ('anat_dir', 'inputnode.anat_dir'),
-            ('anat_files', 'inputnode.anat_files')]),
+            ('anat_dir', 'inputnode.anat_dir'), ('anat_files', 'inputnode.anat_files')]),
         (init_data, save_features, [('dataset_dir', 'dataset_dir')]),
         (rs_wf, save_features, [
-            ('outputnode.rsfc', 'rsfc'),
-            ('outputnode.dfc', 'dfc'),
-            ('outputnode.efc', 'efc'),
+            ('outputnode.rsfc', 'rsfc'), ('outputnode.dfc', 'dfc'), ('outputnode.efc', 'efc'),
             ('outputnode.rs_stats', 'rs_stats')]),
-        (anat_wf, save_features, [
-            ('outputnode.myelin', 'myelin'),
-            ('outputnode.morph', 'morph')])])
+        (anat_wf, save_features, [('outputnode.myelin', 'myelin'), ('outputnode.morph', 'morph')])])
 
     # task features are only extracted for HCP subjects
     if 'HCP' in dataset:
         t_wf = init_t_wf(dataset, subject)
         subject_wf.connect([
-            (init_data, t_wf, [
-                ('t_runs', 'inputnode.t_runs'),
-                ('t_files', 'inputnode.t_files')]),
+            (init_data, t_wf, [('t_runs', 'inputnode.t_runs'), ('t_files', 'inputnode.t_files')]),
             (t_wf, save_features, [('outputnode.tfc', 'tfc')])])
 
     return subject_wf
@@ -136,14 +129,9 @@ def init_rs_wf(dataset: str, subject: str) -> pe.Workflow:
 
     rs_wf.connect([
         (inputnode, rsfc, [
-            ('rs_runs', 'rs_runs'),
-            ('rs_files', 'rs_files'),
-            ('hcpd_b_runs', 'hcpd_b_runs')]),
+            ('rs_runs', 'rs_runs'), ('rs_files', 'rs_files'), ('hcpd_b_runs', 'hcpd_b_runs')]),
         (rsfc, network_stats, [('rsfc', 'rsfc')]),
-        (rsfc, outputnode, [
-            ('rsfc', 'rsfc'),
-            ('dfc', 'dfc'),
-            ('efc', 'efc')]),
+        (rsfc, outputnode, [('rsfc', 'rsfc'), ('dfc', 'dfc'), ('efc', 'efc')]),
         (network_stats, outputnode, [('rs_stats', 'rs_stats')])])
 
     return rs_wf
@@ -156,9 +144,7 @@ def init_t_wf(dataset: str, subject: str) -> pe.Workflow:
     outputnode = pe.Node(niu.IdentityInterface(fields=['tfc']), name='outputnode')
 
     t_wf.connect([
-        (inputnode, tfc, [
-            ('t_runs', 't_runs'),
-            ('t_files', 't_files')]),
+        (inputnode, tfc, [('t_runs', 't_runs'), ('t_files', 't_files')]),
         (tfc, outputnode, [('tfc', 'tfc')])])
 
     return t_wf
@@ -175,9 +161,7 @@ def init_anat_wf(dataset: str, subject: str, work_dir: Path, simg_cmd: SimgCmd) 
     outputnode = pe.Node(niu.IdentityInterface(fields=['myelin', 'morph']), name='outputnode')
 
     anat_wf.connect([
-        (inputnode, morphometry, [
-            ('anat_dir', 'anat_dir'),
-            ('anat_files', 'anat_files')]),
+        (inputnode, morphometry, [('anat_dir', 'anat_dir'), ('anat_files', 'anat_files')]),
         (inputnode, myelin, [('anat_files', 'anat_files')]),
         (myelin, outputnode, [('myelin', 'myelin')]),
         (morphometry, outputnode, [('morph', 'morph')])])
@@ -195,10 +179,6 @@ def init_d_wf(
             dataset=dataset, work_dir=work_curr, subject=subject, output_dir=output_dir),
         name='init_data')
 
-    hcp_proc = HCPMinProc(
-        dataset=dataset, work_dir=work_curr, subject=subject, simg_cmd=simg_cmd).run()
-    hcp_proc_wf = hcp_proc.outputs.hcp_proc_wf
-
     tmp_dir = Path(work_curr, 'intermediate_tmp')
     tmp_dir.mkdir(parents=True, exist_ok=True)
     dtifit = pe.Node(fsl.DTIFit(command=simg_cmd.run_cmd('dtifit')), name='dtifit')
@@ -212,30 +192,39 @@ def init_d_wf(
         SaveDFeatures(output_dir=output_dir, dataset=dataset, subject=subject, overwrite=overwrite),
         name='save_features')
 
+    if dataset == 'HCP-A' or dataset == 'HCP-D':
+        hcp_proc = HCPMinProc(
+            dataset=dataset, work_dir=work_curr, subject=subject, simg_cmd=simg_cmd).run()
+        hcp_proc_wf = hcp_proc.outputs.hcp_proc_wf
+        d_wf.connect([
+            (init_data, hcp_proc_wf, [
+                ('d_files', 'inputnode.d_files'), ('t1_files', 'inputnode.t1_files'),
+                ('fs_files', 'inputnode.fs_files'), ('fs_dir', 'inputnode.fs_dir')]),
+            (hcp_proc_wf, dtifit, [
+                ('outputnode.data', 'dwi'), ('outputnode.bval', 'bvals'),
+                ('outputnode.bvec', 'bvecs'), ('outputnode.mask', 'mask')]),
+            (hcp_proc_wf, csd, [
+                ('outputnode.data', 'data'), ('outputnode.bval', 'bval'),
+                ('outputnode.bvec', 'bvec'), ('outputnode.mask', 'mask')]),
+            (hcp_proc_wf, tck, [('outputnode.bval', 'bval'), ('outputnode.bvec', 'bvec')])])
+
+    elif dataset == 'HCP-YA':
+        split_files = pe.Node(
+            niu.Function(function=d_files_hcpya, output_names=['data', 'bval', 'bvec', 'mask']),
+            name='split_files')
+        d_wf.connect([
+            (init_data, split_files, [('d_files', 'd_files')]),
+            (split_files, dtifit, [
+                ('data', 'dwi'), ('bval', 'bval'), ('bvec', 'bvec'), ('mask', 'mask')]),
+            (split_files, csd, [
+                ('data', 'dwi'), ('bval', 'bval'), ('bvec', 'bvec'), ('mask', 'mask')]),
+            (split_files, tck, [('bval', 'bval'), ('bvec', 'bvec')])])
+
     d_wf.connect([
-        (init_data, hcp_proc_wf, [
-            ('d_files', 'inputnode.d_files'),
-            ('t1_files', 'inputnode.t1_files'),
-            ('fs_files', 'inputnode.fs_files'),
-            ('fs_dir', 'inputnode.fs_dir')]),
-        (hcp_proc_wf, dtifit, [
-            ('outputnode.data', 'dwi'),
-            ('outputnode.bval', 'bvals'),
-            ('outputnode.bvec', 'bvecs'),
-            ('outputnode.mask', 'mask')]),
-        (hcp_proc_wf, csd, [
-            ('outputnode.data', 'data'),
-            ('outputnode.bval', 'bval'),
-            ('outputnode.bvec', 'bvec'),
-            ('outputnode.mask', 'mask')]),
         (init_data, tck, [('fs_dir', 'fs_dir')]),
-        (hcp_proc_wf, tck, [
-            ('outputnode.bval', 'bval'),
-            ('outputnode.bvec', 'bvec')]),
         (csd, tck, [('fod_wm_file', 'fod_wm_file')]),
         (init_data, sc_wf, [
-            ('t1_files', 'inputnode.t1_files'),
-            ('fs_files', 'inputnode.fs_files'),
+            ('t1_files', 'inputnode.t1_files'), ('fs_files', 'inputnode.fs_files'),
             ('fs_dir', 'inputnode.fs_dir')]),
         (tck, sc_wf, [('tck_file', 'inputnode.tck_file')]),
         (init_data, save_features, [('dataset_dir', 'dataset_dir')]),
