@@ -179,6 +179,8 @@ class MyelinEstimate(SimpleInterface):
 
 
 class _MorphometryInputSpec(BaseInterfaceInputSpec):
+    dataset = traits.Str(
+        mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
     anat_dir = traits.Str(mandatory=True, desc='absolute path to installed subject T1w directory')
     anat_files = traits.Dict(mandatory=True, dtype=Path, desc='filenames of anatomical data')
     subject = traits.Str(mandatory=True, desc='subject ID')
@@ -241,10 +243,11 @@ class Morphometry(SimpleInterface):
 
             seg_file = Path(base_dir, 'data', 'atlas', f'Tian_Subcortex_S{level+1}_3T.nii.gz')
             seg_up_file = Path(tmp_dir, f'S{level}_upsampled.nii.gz')
+            resos = {'HCP-YA': 0.7, 'HCP-A': 0.8, 'HCP-D': 0.8}
             flt = fsl.FLIRT(
                 command=self.inputs.simg_cmd.run_cmd(cmd='flirt'),
                 in_file=seg_file, reference=self.inputs.anat_files['t1_vol'], out_file=seg_up_file,
-                apply_isoxfm=0.8, interp='nearestneighbour')
+                apply_isoxfm=resos[self.inputs.dataset], interp='nearestneighbour')
             flt.run()
 
             sub_table = 'subcortex.stats'

@@ -93,7 +93,7 @@ def init_subject_wf(
         name='save_features')
 
     rs_wf = init_rs_wf(dataset, subject)
-    anat_wf = init_anat_wf(subject, work_curr, simg_cmd)
+    anat_wf = init_anat_wf(dataset, subject, work_curr, simg_cmd)
 
     subject_wf.connect([
         (init_data, rs_wf, [
@@ -164,13 +164,14 @@ def init_t_wf(dataset: str, subject: str) -> pe.Workflow:
     return t_wf
 
 
-def init_anat_wf(subject: str, work_dir: Path, simg_cmd: SimgCmd) -> pe.Workflow:
+def init_anat_wf(dataset: str, subject: str, work_dir: Path, simg_cmd: SimgCmd) -> pe.Workflow:
     anat_wf = pe.Workflow(f'subject_{subject}_anat_wf')
     work_curr = Path(work_dir, f'subject_{subject}_anat_wf')
     inputnode = pe.Node(niu.IdentityInterface(fields=['anat_dir', 'anat_files']), name='inputnode')
     myelin = pe.Node(MyelinEstimate(), name='myelin')
     morphometry = pe.Node(
-        Morphometry(subject=subject, work_dir=work_curr, simg_cmd=simg_cmd), name='morphometry')
+        Morphometry(dataset=dataset, subject=subject, work_dir=work_curr, simg_cmd=simg_cmd),
+        name='morphometry')
     outputnode = pe.Node(niu.IdentityInterface(fields=['myelin', 'morph']), name='outputnode')
 
     anat_wf.connect([
