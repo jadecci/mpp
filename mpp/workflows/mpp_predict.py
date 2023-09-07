@@ -5,9 +5,9 @@ import logging
 
 import nipype.pipeline as pe
 
-from mpp.interfaces.data import InitFeatures, RegionwiseSave, IntegratedFeaturesSave
+from mpp.interfaces.data import InitFeatures, PredictionSave
 from mpp.interfaces.crossval import (
-    CrossValSplit, RegionwiseModel, RegionSelect, IntegratedFeaturesModel)
+    CrossValSplit, RegionwiseModel, RegionSelect, ModalitywiseModel, IntegratedFeaturesModel)
 from mpp.interfaces.features import CVFeatures
 
 base_dir = Path(__file__).resolve().parent.parent
@@ -93,66 +93,69 @@ def main() -> None:
         RegionwiseModel(mode='validate', config=config, features_dir=features_dir),
         name='rw_validate')
     rw_select = pe.JoinNode(
-        RegionSelect(), name='rw_select', joinfield=['results'], joinsource='features')
-    rw_select.inputs.levels = args.levels
-    rw_select.inputs.output_dir = args.output_dir
-    rw_select.inputs.overwrite = args.overwrite
-    rw_select.inputs.config = config
-    rw_select.inputs.phenotype = args.target
+        RegionSelect(
+            levels=args.levels, output_dir=args.output_dir, overwrite=args.overwrite, config=config,
+            phenotype=args.target),
+        name='rw_select', joinfield=['results'], joinsource='features')
     rw_test = pe.Node(
         RegionwiseModel(mode='test', config=config, features_dir=features_dir), name='rw_test')
     rw_save = pe.JoinNode(
-        RegionwiseSave(output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target),
-        name='rw_save', joinfield=['results'], joinsource='features', synchronize=True)
+        PredictionSave(
+            output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
+            type='regionwise'),
+        name='rw_save', joinfield=['results'], joinsource='features')
 
     mp_wf.connect([
         (init_data, rw_validate, [
-            ('sublists', 'sublists'),
-            ('phenotypes', 'phenotypes'),
+            ('sublists', 'sublists'), ('phenotypes', 'phenotypes'),
             ('phenotypes_perm', 'phenotypes_perm')]),
         (cv_split, rw_validate, [('cv_split', 'cv_split')]),
         (cv_split_perm, rw_validate, [('cv_split', 'cv_split_perm')]),
         (features, rw_validate, [
-            ('embeddings', 'embeddings'),
-            ('params', 'params'),
-            ('level', 'level'),
-            ('repeat', 'repeat'),
-            ('fold', 'fold')]),
+            ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
+            ('repeat', 'repeat'), ('fold', 'fold')]),
         (rw_validate, rw_select, [('results', 'results')]),
-        (init_data, rw_test, [
-            ('sublists', 'sublists'),
-            ('phenotypes', 'phenotypes')]),
+        (init_data, rw_test, [('sublists', 'sublists'), ('phenotypes', 'phenotypes')]),
         (cv_split, rw_test, [('cv_split', 'cv_split')]),
         (features, rw_test, [
-            ('embeddings', 'embeddings'),
-            ('params', 'params'),
-            ('level', 'level'),
-            ('repeat', 'repeat'),
-            ('fold', 'fold')]),
+            ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
+            ('repeat', 'repeat'), ('fold', 'fold')]),
         (rw_select, rw_test, [('selected', 'selected')]),
         (rw_test, rw_save, [('results', 'results')])])
+
+    # Modality-wise models
+    mw_model = pe.Node(ModalitywiseModel(config=config, features_dir=features_dir), name='mw_model')
+    mw_save = pe.JoinNode(
+        PredictionSave(
+            output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
+        type='modalitywise'),
+        name='mw_save', joinfield=['results'], joinsource='features')
+    mp_wf.connect([
+        (init_data, mw_model, [('sublists', 'sublists'), ('phenotypes', 'phenotypes')]),
+        (cv_split, mw_model, [('cv_split', 'cv_split')]),
+        (features, mw_model, [
+            ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
+            ('repeat', 'repeat'), ('fold', 'fold')]),
+        (mw_model, mw_save, [('results', 'results')])])
 
     # Integrated features model
     if_model = pe.Node(
         IntegratedFeaturesModel(config=config, features_dir=features_dir), name='if_model')
     if_save = pe.JoinNode(
-        IntegratedFeaturesSave(
-            output_dir=args.output_dir, overwrite=args.overwrite,phenotype=args.target),
+        PredictionSave(
+            output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
+            type='integratedfeatures'),
         name='if_save', joinfield=['results'], joinsource='features')
 
     mp_wf.connect([
-        (init_data, if_model, [
-            ('sublists', 'sublists'),
-            ('phenotypes', 'phenotypes')]),
+        (init_data, if_model, [('sublists', 'sublists'),('phenotypes', 'phenotypes')]),
         (cv_split, if_model, [('cv_split', 'cv_split')]),
         (features, if_model, [
-            ('embeddings', 'embeddings'),
-            ('params', 'params'),
-            ('level', 'level'),
-            ('repeat', 'repeat'),
-            ('fold', 'fold')]),
+            ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
+            ('repeat', 'repeat'), ('fold', 'fold')]),
         (rw_select, if_model, [('selected', 'selected_regions')]),
         (rw_test, if_model, [('rw_ypred', 'rw_ypred')]),
+        (mw_model, if_model, [('mw_ypred', 'mw_ypred')]),
         (if_model, if_save, [('results', 'results')])])
 
     mp_wf.config['execution']['try_hard_link_datasink'] = 'false'

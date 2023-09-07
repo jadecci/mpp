@@ -495,44 +495,22 @@ class InitFeatures(SimpleInterface):
         return runtime
 
 
-class _RegionwiseSaveInputSpec(BaseInterfaceInputSpec):
+class _PredictionSaveInputSpec(BaseInterfaceInputSpec):
     results = traits.List(dtype=dict, desc='accuracy results')
     output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
     overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
     phenotype = traits.Str(mandatory=True, desc='phenotype to use as prediction target')
+    type = traits.Str(mandatory=True, desc='type of model used in prediction')
 
 
-class RegionwiseSave(SimpleInterface):
-    """Save region-wise prediction results"""
-    input_spec = _RegionwiseSaveInputSpec
-
-    def _run_interface(self, runtime):
-        Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
-        output_file = Path(self.inputs.output_dir, f'regionwise_results_{self.inputs.phenotype}.h5')
-
-        results = {key: item for d in self.inputs.results for key, item in d.items()}
-        for key, val in results.items():
-            write_h5(output_file, f'/{key}', np.array(val), self.inputs.overwrite)
-
-        return runtime
-
-
-class _IntegratedFeaturesSaveInputSpec(BaseInterfaceInputSpec):
-    results = traits.List(dtype=dict, desc='accuracy results')
-    output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
-    overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
-    phenotype = traits.Str(mandatory=True, desc='phenotype to use as prediction target')
-
-
-class IntegratedFeaturesSave(SimpleInterface):
-    """Save integrated features prediction results"""
-    input_spec = _IntegratedFeaturesSaveInputSpec
+class PredictionSave(SimpleInterface):
+    """Save prediction results"""
+    input_spec = _PredictionSaveInputSpec
 
     def _run_interface(self, runtime):
         Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
         output_file = Path(
-            self.inputs.output_dir, f'integratedfeatures_results_{self.inputs.phenotype}.h5')
-
+            self.inputs.output_dir, f'{self.inputs.type}_results_{self.inputs.phenotype}.h5')
         results = {key: item for d in self.inputs.results for key, item in d.items()}
         for key, val in results.items():
             write_h5(output_file, f'/{key}', np.array(val), self.inputs.overwrite)
