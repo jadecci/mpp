@@ -40,7 +40,7 @@ class CrossValSplit(SimpleInterface):
         n_folds = int(self.inputs.config['n_folds'])
         rskf = RepeatedStratifiedKFold(
             n_splits=n_folds, n_repeats=n_repeats, random_state=int(self.inputs.config['cv_seed']))
-        for fold, (_, test_ind) in enumerate(rskf.split(subjects, groups=datasets)):
+        for fold, (_, test_ind) in enumerate(rskf.split(subjects, datasets)):
             key = f'repeat{int(np.floor(fold/n_folds))}_fold{int(fold%n_folds)}'
             self._results['cv_split'][key] = np.array(subjects)[test_ind]
 
