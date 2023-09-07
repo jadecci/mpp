@@ -98,6 +98,7 @@ def main() -> None:
     rw_select.inputs.output_dir = args.output_dir
     rw_select.inputs.overwrite = args.overwrite
     rw_select.inputs.config = config
+    rw_select.inputs.phenotype = args.target
     rw_test = pe.Node(
         RegionwiseModel(mode='test', config=config, features_dir=features_dir), name='rw_test')
     rw_save = pe.JoinNode(
