@@ -4,12 +4,11 @@ from pathlib import Path
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 import numpy as np
 from sklearn.model_selection import RepeatedStratifiedKFold
-from sklearn.metrics import r2_score
 from statsmodels.stats.multitest import multipletests
 
 from mpp.utilities.models import (
-    elastic_net, kernel_ridge, linear_svr, kernel_ridge_corr_CV, permutation_test)
-from mpp.utilities.data import write_h5, cv_extract_data, cv_extract_modalitywise_data
+    elastic_net, kernel_ridge_corr_cv, permutation_test)
+from mpp.utilities.data import write_h5, cv_extract_data, cv_extract_subject_data
 
 class _CrossValSplitInputSpec(BaseInterfaceInputSpec):
     sublists = traits.Dict(mandatory=True, dtype=list, desc='availabel subjects in each dataset')
@@ -127,25 +126,21 @@ class RegionwiseModel(SimpleInterface):
         r = np.zeros(train_x.shape[2])
         cod = np.zeros(train_x.shape[2])
         coef = np.zeros((train_x.shape[2], train_x.shape[1]+1))
-        l1_ratios = np.zeros(train_x.shape[2])
         train_ypred = np.zeros((len(train_y), train_x.shape[2]))
         test_ypred = np.zeros((len(test_y), train_x.shape[2]))
         for region in range(train_x.shape[2]):
-            if self.inputs.selected[f'regions_level{self.inputs.level}'][region]:
-                r[region], cod[region], model = elastic_net(
-                    train_x[:, :, region], train_y, test_x[:, :, region], test_y,
-                    int(self.inputs.config['n_alphas']))
-                coef[region, :] = np.concatenate((model.coef_, [model.intercept_]))
-                l1_ratios[region] = model.l1_ratio_
-                train_ypred[:, region] = model.predict(train_x[:, :, region])
-                test_ypred[:, region] = model.predict(test_x[:, :, region])
+            # if self.inputs.selected[f'regions_level{self.inputs.level}'][region]:
+            r[region], cod[region], model = elastic_net(
+                train_x[:, :, region], train_y, test_x[:, :, region], test_y,
+                int(self.inputs.config['n_alphas']))
+            coef[region, :] = np.concatenate((model.coef_, [model.intercept_]))
+            train_ypred[:, region] = model.predict(train_x[:, :, region])
+            test_ypred[:, region] = model.predict(test_x[:, :, region])
 
         key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
         self._results['results'][f'r_{key}'] = r
         self._results['results'][f'cod_{key}'] = cod
-        self._results['results'][f'l1ratio_{key}'] = l1_ratios
         self._results['results'][f'model_{key}'] = coef
-        self._results['results'][f'features_{key}'] = list(coef[:, :-1] != 0)
         self._results['rw_ypred'] = {'train_ypred': train_ypred, 'test_ypred': test_ypred}
 
     def _run_interface(self, runtime):
@@ -260,6 +255,36 @@ class ModalitywiseModel(SimpleInterface):
     input_spec = _ModalitywiseModelInputSpec
     output_spec = _ModalitywiseModelOutputSpec
 
+    def _extract_data(self, subjects: list) -> tuple[dict, np.ndarray,]:
+        y = np.zeros(len(subjects))
+        x_mod = {}
+
+        for i, subject in enumerate(subjects):
+            x = cv_extract_subject_data(
+                self.inputs.sublists, subject, self.inputs.features_dir, self.inputs.level,
+                self.inputs.permutation, self.inputs.embeddings, self.inputs.params,
+                self.inputs.repeat)
+            x_rsfmri_s = np.concatenate((x[0].flatten(), x[4], x[5], x[6], x[7], x[12].flatten()))
+            x_smri_m = np.concatenate((x[8], x[9], x[10], x[11]))
+            x_smri_c = np.concatenate((x[13].flatten(), x[14].flatten(), x[15].flatten()))
+            if i == 0:
+                x_mod = {
+                    'x_rsfmri_s': x_rsfmri_s, 'x_rsfmri_d': x[1].flatten(),
+                    'x_rsfmri_e': x[2].flatten(), 'x_tfmri': x[3].flatten(), 'x_smri_m': x_smri_m,
+                    'x_smri_c': x_smri_c}
+            else:
+                x_mod = {
+                    'x_rsfmri_s': np.vstack((x_rsfmri_s, x_mod['x_rsfmri_s'])),
+                    'x_rsfmri_d': np.vstack((x[1].flatten(), x_mod['x_rsfmri_d'])),
+                    'x_rsfmri_e': np.vstack((x[2].flatten(), x_mod['x_rsfmri_e'])),
+                    'x_tfmri': np.vstack((x[3].flatten(), x_mod['x_tfmri'])),
+                    'x_smri_m': np.vstack((x_smri_m, x_mod['x_smri_m'])),
+                    'x_smri_c': np.vstack((x_smri_c, x_mod['x_smri_c']))}
+            # TODO: diffusion features
+            y[i] = self.inputs.phenotypes[subjects[i]]
+
+        return x_mod, y
+
     def _test(self, train_x, train_y, test_x, test_y, modality):
         r, cod, model = elastic_net(
             train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
@@ -271,11 +296,6 @@ class ModalitywiseModel(SimpleInterface):
         self._results['results'][f'cod_{key}'] = cod
         self._results['results'][f'l1ratio_{key}'] = model.l1_ratio_
         self._results['results'][f'model_{key}'] = coef
-        self._results['results'][f'features_{key}'] = list(coef[:, :-1] != 0)
-
-        r, cod, _ = linear_svr(train_x, train_y, test_x, test_y)
-        self._results['results'][f'lsvr_r_{key}'] = r
-        self._results['results'][f'lsvr_cod_{key}'] = cod
 
         return model.predict(train_x), model.predict(test_x)
 
@@ -285,33 +305,117 @@ class ModalitywiseModel(SimpleInterface):
         test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
         train_sub = [subject for subject in all_sub if subject not in test_sub]
 
-        train_x_rsfmri, train_x_tfmri, train_x_smri, train_y = cv_extract_modalitywise_data(
-            self.inputs.sublists, self.inputs.features_dir, train_sub, self.inputs.repeat,
-            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes)
-        test_x_rsfmri, test_x_tfmri, test_x_smri, test_y = cv_extract_modalitywise_data(
-            self.inputs.sublists, self.inputs.features_dir, test_sub, self.inputs.repeat,
-            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes)
+        train_x, train_y = self._extract_data(train_sub)
+        test_x, test_y = self._extract_data(test_sub)
 
-        train_ypred_rsfmri, test_ypred_rsfmri = self._test(
-            train_x_rsfmri, train_y, test_x_rsfmri, test_y, 'rsfmri')
-        train_ypred_tfmri, test_ypred_tfmri = self._test(
-            train_x_tfmri, train_y, test_x_tfmri, test_y, 'tfmri')
-        train_ypred_smri, test_ypred_smri = self._test(
-            train_x_smri, train_y, test_x_smri, test_y, 'smri')
-        self._results['rw_ypred'] = {
-            'train_ypred': np.vstack((train_ypred_rsfmri, train_ypred_tfmri, train_ypred_smri)).T,
-            'test_ypred': np.vstack((test_ypred_rsfmri, test_ypred_tfmri, test_ypred_smri)).T}
+        ypred = {}
+        modality_list = [
+            'rsfmri_stat', 'rsfmri_dynam', 'rsfmri_eff', 'tfmri', 'smri_morph', 'smri_conn']
+        for train_x, test_x, modality in dict(zip(train_x, test_x, modality_list)):
+            train_pred, test_pred = self._test(train_x, train_y, test_x, test_y, modality)
+            if modality == 'rsfmri_stat':
+                ypred = {'train_ypred': train_pred, 'test_ypred': test_pred}
+            else:
+                ypred = {
+                    'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
+                    'test_ypred': np.vstack((ypred['test_ypred'], test_pred))}
+        self._results['mw_ypred'] = {
+            'train_ypred': ypred['train_ypred'].T, 'test_ypred': ypred['test_ypred'].T}
 
         return runtime
 
 
-class _IntegratedFeaturesModelInputSpec(BaseInterfaceInputSpec):
+class _FeaturewiseModelInputSpec(BaseInterfaceInputSpec):
     sublists = traits.Dict(mandatory=True, dtype=list, desc='available subjects in each dataset')
     features_dir = traits.Dict(
         mandatory=True, dtype=str, desc='absolute path to extracted features for each dataset')
     phenotypes = traits.Dict(mandatory=True, dtype=float, desc='phenotype values')
     embeddings = traits.Dict(mandatory=True, desc='embeddings for gradients')
     params = traits.Dict(mandatory=True, desc='parameters for anatomical connectivity')
+    cv_split = traits.Dict(mandatory=True, dtype=list, desc='test subjects of each fold')
+    level = traits.Str(mandatory=True, desc='parcellation level (1 to 4)')
+    repeat = traits.Int(mandatory=True, desc='current repeat of cross-validation')
+    fold = traits.Int(mandatory=True, desc='current fold in the repeat')
+    config = traits.Dict(mandatory=True, desc='configuration settings')
+
+
+class _FeaturewiseModelOutputSpec(TraitedSpec):
+    results = traits.Dict(desc='accuracy results')
+    fw_ypred = traits.Dict(desc='Predicted psychometric values')
+
+
+class FeaturewiseModel(SimpleInterface):
+    """Train and test feature-wise models"""
+    input_spec = _FeaturewiseModelInputSpec
+    output_spec = _FeaturewiseModelOutputSpec
+    _feature_list = [
+        'rsfc', 'dfc', 'efc', 'tfc', 'strength', 'betweenness', 'participation', 'efficiency',
+        'myelin', 'gmv', 'cs', 'ct', 'gradients', 'ac_gmv', 'ac_cs', 'ac_ct']
+
+    def _extract_data(self, subjects: list) -> tuple[dict, np.ndarray]:
+        y = np.zeros(len(subjects))
+        x_all = {}
+
+        for i, subject in enumerate(subjects):
+            x = cv_extract_subject_data(
+                self.inputs.sublists, subject, self.inputs.features_dir, self.inputs.level,
+                self.inputs.permutation, self.inputs.embeddings, self.inputs.params,
+                self.inputs.repeat)
+            for key, x_curr in dict(zip(self._feature_list, x)):
+                if i == 0:
+                    x_all[key] = x_curr.flatten()
+                else:
+                    x_all[key] = np. vstack((x_all[key], x_curr.flatten()))
+            # TODO: diffusion features
+            y[i] = self.inputs.phenotypes[subjects[i]]
+
+        return x_all, y
+
+    def _test(self, train_x, train_y, test_x, test_y, feature):
+        r, cod, model = elastic_net(
+            train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
+        coef = np.concatenate((model.coef_, [model.intercept_]))
+
+        key = (f'{feature}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
+               f'_level{self.inputs.level}')
+        self._results['results'][f'r_{key}'] = r
+        self._results['results'][f'cod_{key}'] = cod
+        self._results['results'][f'l1ratio_{key}'] = model.l1_ratio_
+        self._results['results'][f'model_{key}'] = coef
+
+        return model.predict(train_x), model.predict(test_x)
+
+    def _run_interface(self, runtime):
+        self._results['results'] = {}
+        all_sub = sum(self.inputs.sublists.values(), [])
+        test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
+        train_sub = [subject for subject in all_sub if subject not in test_sub]
+
+        train_x, train_y = self._extract_data(train_sub)
+        test_x, test_y = self._extract_data(test_sub)
+
+        ypred = {}
+        for train_x, test_x, feature in dict(zip(train_x, test_x, self._feature_list)):
+            train_pred, test_pred = self._test(train_x, train_y, test_x, test_y, feature)
+            if feature == 'rsfc':
+                ypred = {'train_ypred': train_pred, 'test_ypred': test_pred}
+            else:
+                ypred = {
+                    'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
+                    'test_ypred': np.vstack((ypred['test_ypred'], test_pred))}
+        self._results['fw_ypred'] = {
+            'train_ypred': ypred['train_ypred'].T, 'test_ypred': ypred['test_ypred'].T}
+
+        return runtime
+
+
+class _IntegratedFeaturesModelInputSpec(BaseInterfaceInputSpec):
+    sublists = traits.Dict(mandatory=True, dtype=list, desc='available subjects in each dataset')
+    # features_dir = traits.Dict(
+    #    mandatory=True, dtype=str, desc='absolute path to extracted features for each dataset')
+    phenotypes = traits.Dict(mandatory=True, dtype=float, desc='phenotype values')
+    # embeddings = traits.Dict(mandatory=True, desc='embeddings for gradients')
+    # params = traits.Dict(mandatory=True, desc='parameters for anatomical connectivity')
     cv_split = traits.Dict(mandatory=True, dtype=list, desc='test subjects of each fold')
 
     level = traits.Str(mandatory=True, desc='parcellation level (1 to 4)')
@@ -320,9 +424,10 @@ class _IntegratedFeaturesModelInputSpec(BaseInterfaceInputSpec):
 
     rw_ypred = traits.Dict(
         mandatory=True, desc='Predicted psychometric values from region-wise models')
-    selected_regions = traits.Dict(
-        mandatory=True, dtype=list, desc='selected regions for each parcellation level')
+    # selected_regions = traits.Dict(
+    #    mandatory=True, dtype=list, desc='selected regions for each parcellation level')
     mw_ypred = traits.Dict(desc='Predicted psychometric values from modality-wise models')
+    fw_ypred = traits.Dict(desc='Predicted psychometric values from feature-wise models')
     config = traits.Dict(mandatory=True, desc='configuration settings')
 
 
@@ -336,97 +441,42 @@ class IntegratedFeaturesModel(SimpleInterface):
     output_spec = _IntegratedFeaturesModelOutputSpec
 
     def _en(
-            self, train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray,
-            test_y: np.ndarray, key: str) -> dict:
-        r, cod, model = elastic_net(
-            train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
-        results = {
-            f'en_r_{key}': r, f'en_cod_{key}': cod, f'en_l1ratio_{key}': model.l1_ratio_,
-            f'en_model_{key}': np.concatenate((model.coef_, [model.intercept_]))}
-
-        return results
-
-    def _en_stack(
-            self, train_y: np.ndarray, test_y: np.ndarray, key: str,
-            selected_regions: list) -> dict:
-        train_ypred = np.hstack((
-            self.inputs.rw_ypred['train_ypred'][:, selected_regions],
-            self.inputs.mw_ypred['train_ypred']))
-        test_ypred = np.hstack((
-            self.inputs.rw_ypred['test_ypred'][:, selected_regions],
-            self.inputs.mw_ypred['test_ypred']))
-
+            self, train_y: np.ndarray, test_y: np.ndarray, train_ypred: np.ndarray,
+            test_ypred: np.ndarray, key: str) -> dict:
         r, cod, model = elastic_net(
             train_ypred, train_y, test_ypred, test_y, int(self.inputs.config['n_alphas']))
         results = {
             f'enstack_r_{key}': r, f'enstack_cod_{key}': cod,
-            f'enstack_l1ratio_{key}': model.l1_ratio_,
             f'enstack_model_{key}': np.concatenate((model.coef_, [model.intercept_]))}
 
         return results
 
     @staticmethod
-    def _kr(
-            train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
-            key: str) -> dict:
-        r, cod, model = kernel_ridge(train_x, train_y, test_x, test_y)
-        results = {f'kr_r_{key}': r, f'kr_cod_{key}': cod, f'kr_model_{key}': model.dual_coef_}
-
-        return results
-
-    @staticmethod
-    def _lsvr(
-            train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
-            key: str) -> dict:
-        r, cod, model = linear_svr(train_x, train_y, test_x, test_y)
-        results = {
-            f'lsvr_r_{key}': r, f'lsvr_cod_{key}': cod,
-            f'lsvr_model_{key}': np.concatenate((model.coef_, [model.intercept_]))}
-
-        return results
-
-    @staticmethod
     def _kr_corr(
-            train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
-            key: str) -> dict:
-        r = kernel_ridge_corr_CV(train_x, train_y, test_x, test_y)
-        results = {f'krcorr_r_{key}': r}
+            train_y: np.ndarray, test_y: np.ndarray, train_ypred: np.ndarray,
+            test_ypred: np.ndarray, key: str) -> dict:
+        r, cod = kernel_ridge_corr_cv(train_ypred, train_y, test_ypred, test_y)
+        results = {f'krcorr_r_{key}': r, f'krcorr_cod_{key}': cod}
 
-        return results
-
-    def _voting(self, test_y: np.ndarray, key: str, selected_regions: list) -> dict:
-        test_ypred = np.hstack((
-            self.inputs.rw_ypred['test_ypred'][:, selected_regions],
-            self.inputs.mw_ypred['test_ypred'])).mean(axis=1)
-        results = {
-            f'voting_r_{key}': np.corrcoef(test_y, test_ypred)[0, 1],
-            f'voting_cod_{key}': r2_score(test_y, test_ypred)}
         return results
 
     def _run_interface(self, runtime):
         all_sub = sum(self.inputs.sublists.values(), [])
         test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
         train_sub = [subject for subject in all_sub if subject not in test_sub]
-        selected_regions = self.inputs.selected_regions[f'regions_level{self.inputs.level}']
         key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
 
-        train_x, train_y = cv_extract_data(
-            self.inputs.sublists, self.inputs.features_dir, train_sub, self.inputs.repeat,
-            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes)
-        test_x, test_y = cv_extract_data(
-            self.inputs.sublists, self.inputs.features_dir, test_sub, self.inputs.repeat,
-            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes)
+        train_y = np.array([self.inputs.phenotypes[sub] for sub in train_sub])
+        test_y = np.array([self.inputs.phenotypes[sub] for sub in test_sub])
+        train_ypred = np.hstack((
+            self.inputs.rw_ypred['train_ypred'], self.inputs.mw_ypred['train_ypred'],
+            self.inputs.fw_ypred['train_ypred']))
+        test_ypred = np.hstack((
+            self.inputs.rw_ypred['test_ypred'], self.inputs.mw_ypred['test_ypred'],
+            self.inputs.fw_ypred['test_ypred']))
 
-        train_x_selected = train_x[:, :, selected_regions].reshape(
-            train_x.shape[0], train_x.shape[1]*selected_regions.sum())
-        test_x_selected = test_x[:, :, selected_regions].reshape(
-            test_x.shape[0], test_x.shape[1]*selected_regions.sum())
-        en = self._en(train_x_selected, train_y, test_x_selected, test_y, key)
-        en_stack = self._en_stack(train_y, test_y, key, selected_regions)
-        kr = self._kr(train_x_selected, train_y, test_x_selected, test_y, key)
-        lsvr = self._lsvr(train_x_selected, train_y, test_x_selected, test_y, key)
-        kr_corr = self._kr_corr(train_x_selected, train_y, test_x_selected, test_y, key)
-        voting = self._voting(test_y, key, selected_regions)
-        self._results['results'] = en | en_stack | kr | lsvr | kr_corr | voting
+        en = self._en(train_y, test_y, train_ypred, test_ypred, key)
+        kr_corr = self._kr_corr(train_y, test_y, train_ypred, test_ypred, key)
+        self._results['results'] = en | kr_corr
 
         return runtime

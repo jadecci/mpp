@@ -7,7 +7,8 @@ import nipype.pipeline as pe
 
 from mpp.interfaces.data import InitFeatures, PredictionSave
 from mpp.interfaces.crossval import (
-    CrossValSplit, RegionwiseModel, RegionSelect, ModalitywiseModel, IntegratedFeaturesModel)
+    CrossValSplit, RegionwiseModel, RegionSelect, ModalitywiseModel, FeaturewiseModel,
+    IntegratedFeaturesModel)
 from mpp.interfaces.features import CVFeatures
 
 base_dir = Path(__file__).resolve().parent.parent
@@ -68,11 +69,10 @@ def main() -> None:
                      phenotype=args.target),
         name='init_data')
     cv_split = pe.Node(CrossValSplit(config=config), name='cv_split')
-    cv_split_perm = pe.Node(CrossValSplit(config=config, permutation=True), name='cv_split_perm')
+    # cv_split_perm = pe.Node(CrossValSplit(config=config, permutation=True), name='cv_split_perm')
 
-    mp_wf.connect([
-        (init_data, cv_split, [('sublists', 'sublists')]),
-        (init_data, cv_split_perm, [('sublists', 'sublists')])])
+    mp_wf.connect([(init_data, cv_split, [('sublists', 'sublists')]),])
+    #   (init_data, cv_split_perm, [('sublists', 'sublists')])])
 
     # Features to estimate during cross-validation
     features_iterables = [
@@ -85,18 +85,18 @@ def main() -> None:
 
     mp_wf.connect([
         (init_data, features, [('sublists', 'sublists')]),
-        (cv_split, features, [('cv_split', 'cv_split')]),
-        (cv_split_perm, features, [('cv_split', 'cv_split_perm')])])
+        (cv_split, features, [('cv_split', 'cv_split')]),])
+        # (cv_split_perm, features, [('cv_split', 'cv_split_perm')])])
 
     # Region-wise models
-    rw_validate = pe.Node(
-        RegionwiseModel(mode='validate', config=config, features_dir=features_dir),
-        name='rw_validate')
-    rw_select = pe.JoinNode(
-        RegionSelect(
-            levels=args.levels, output_dir=args.output_dir, overwrite=args.overwrite, config=config,
-            phenotype=args.target),
-        name='rw_select', joinfield=['results'], joinsource='features')
+    #rw_validate = pe.Node(
+    #    RegionwiseModel(mode='validate', config=config, features_dir=features_dir),
+    #    name='rw_validate')
+    #rw_select = pe.JoinNode(
+    #    RegionSelect(
+    #        levels=args.levels, output_dir=args.output_dir, overwrite=args.overwrite, config=config,
+    #        phenotype=args.target),
+    #    name='rw_select', joinfield=['results'], joinsource='features')
     rw_test = pe.Node(
         RegionwiseModel(mode='test', config=config, features_dir=features_dir), name='rw_test')
     rw_save = pe.JoinNode(
@@ -106,21 +106,21 @@ def main() -> None:
         name='rw_save', joinfield=['results'], joinsource='features')
 
     mp_wf.connect([
-        (init_data, rw_validate, [
-            ('sublists', 'sublists'), ('phenotypes', 'phenotypes'),
-            ('phenotypes_perm', 'phenotypes_perm')]),
-        (cv_split, rw_validate, [('cv_split', 'cv_split')]),
-        (cv_split_perm, rw_validate, [('cv_split', 'cv_split_perm')]),
-        (features, rw_validate, [
-            ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
-            ('repeat', 'repeat'), ('fold', 'fold')]),
-        (rw_validate, rw_select, [('results', 'results')]),
+    #    (init_data, rw_validate, [
+    #        ('sublists', 'sublists'), ('phenotypes', 'phenotypes'),
+    #        ('phenotypes_perm', 'phenotypes_perm')]),
+    #    (cv_split, rw_validate, [('cv_split', 'cv_split')]),
+    #    (cv_split_perm, rw_validate, [('cv_split', 'cv_split_perm')]),
+    #    (features, rw_validate, [
+    #        ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
+    #        ('repeat', 'repeat'), ('fold', 'fold')]),
+    #    (rw_validate, rw_select, [('results', 'results')]),
         (init_data, rw_test, [('sublists', 'sublists'), ('phenotypes', 'phenotypes')]),
         (cv_split, rw_test, [('cv_split', 'cv_split')]),
         (features, rw_test, [
             ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
             ('repeat', 'repeat'), ('fold', 'fold')]),
-        (rw_select, rw_test, [('selected', 'selected')]),
+     #   (rw_select, rw_test, [('selected', 'selected')]),
         (rw_test, rw_save, [('results', 'results')])])
 
     # Modality-wise models
@@ -138,6 +138,21 @@ def main() -> None:
             ('repeat', 'repeat'), ('fold', 'fold')]),
         (mw_model, mw_save, [('results', 'results')])])
 
+    # feature-wise models
+    fw_model = pe.Node(FeaturewiseModel(config=config, features_dir=features_dir), name='fw_model')
+    fw_save = pe.JoinNode(
+        PredictionSave(
+            output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
+            type='featurewise'),
+        name='fw_save', joinfield=['results'], joinsource='features')
+    mp_wf.connect([
+        (init_data, fw_model, [('sublists', 'sublists'), ('phenotypes', 'phenotypes')]),
+        (cv_split, fw_model, [('cv_split', 'cv_split')]),
+        (features, fw_model, [
+            ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
+            ('repeat', 'repeat'), ('fold', 'fold')]),
+        (fw_model, fw_save, [('results', 'results')])])
+
     # Integrated features model
     if_model = pe.Node(
         IntegratedFeaturesModel(config=config, features_dir=features_dir), name='if_model')
@@ -153,9 +168,10 @@ def main() -> None:
         (features, if_model, [
             ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
             ('repeat', 'repeat'), ('fold', 'fold')]),
-        (rw_select, if_model, [('selected', 'selected_regions')]),
+    #    (rw_select, if_model, [('selected', 'selected_regions')]),
         (rw_test, if_model, [('rw_ypred', 'rw_ypred')]),
         (mw_model, if_model, [('mw_ypred', 'mw_ypred')]),
+        (fw_model, if_model, [('fw_ypred', 'fw_ypred')]),
         (if_model, if_save, [('results', 'results')])])
 
     mp_wf.config['execution']['try_hard_link_datasink'] = 'false'

@@ -111,6 +111,50 @@ def pheno_hcp(
     return sublist_out, pheno_dict, pheno_dict_perm
 
 
+def cv_extract_subject_data(
+        sublists: dict, subject: str, features_dir: dict, level: str, permutation: bool,
+        embeddings: dict, params: dict, repeat: int) -> tuple[np.ndarray, ...]:
+    dataset = [key for key in sublists if subject in sublists[key]][0]
+    if dataset == 'HCP-A' or 'HCP-D':
+        feature_file = Path(
+            features_dir[dataset], f'{dataset}_{subject}_V1_MR.h5')
+    else:
+        feature_file = Path(
+            features_dir[dataset], f'{dataset}_{subject}.h5')
+
+    rsfc = read_h5(feature_file, f'/rsfc/level{level}')
+    dfc = read_h5(feature_file, f'/dfc/level{level}')
+    efc = read_h5(feature_file, f'/efc/level{level}')
+    strength = read_h5(feature_file, f'/network_stats/strength/level{level}')
+    betweenness = read_h5(feature_file, f'/network_stats/betweenness/level{level}')
+    participation = read_h5(feature_file, f'/network_stats/participation/level{level}')
+    efficiency = read_h5(feature_file, f'/network_stats/efficiency/level{level}')
+    myelin = read_h5(feature_file, f'/myelin/level{level}')
+    gmv = read_h5(feature_file, f'/morphometry/GMV/level{level}')
+    cs = read_h5(feature_file, f'/morphometry/CS/level{level}')
+    ct = read_h5(feature_file, f'/morphometry/CT/level{level}')
+
+    tfc = np.zeros((rsfc.shape[0], rsfc.shape[1], len(task_runs[dataset])))
+    for run, task in enumerate(task_runs[dataset]):
+        tfc[:, :, run] = read_h5(feature_file, f'/tfc/{task}/level{level}')
+        #    feature_file, f'/tfc/{task}/level{level}', impute=True, impute_shape=rsfc.shape)
+
+    if permutation:
+        gradients = diffusion_mapping_sub(embeddings[f'repeat{repeat}'], rsfc)
+        ac_gmv = score_sub(params[f'repeat{repeat}'], gmv)
+        ac_cs = score_sub(params[f'repeat{repeat}'], cs)
+        ac_ct = score_sub(params[f'repeat{repeat}'], ct)
+    else:
+        gradients = diffusion_mapping_sub(embeddings['embedding'], rsfc)
+        ac_gmv = score_sub(params['params'], gmv)
+        ac_cs = score_sub(params['params'], cs)
+        ac_ct = score_sub(params['params'], ct)
+
+    return (
+        rsfc, dfc, efc, tfc, strength, betweenness, participation, efficiency, myelin, gmv, cs, ct,
+        gradients, ac_gmv, ac_cs, ac_ct)
+
+
 def cv_extract_data(
         sublists: dict, features_dir: dict, subjects: list, repeat: int, level: str,
         embeddings: dict, params: dict, phenotypes: dict,
@@ -119,42 +163,9 @@ def cv_extract_data(
     x_all = np.array([])
 
     for i, subject in enumerate(subjects):
-        dataset = [key for key in sublists if subject in sublists[key]][0]
-        if dataset == 'HCP-A' or 'HCP-D':
-            feature_file = Path(
-                features_dir[dataset], f'{dataset}_{subject}_V1_MR.h5')
-        else:
-            feature_file = Path(
-                features_dir[dataset], f'{dataset}_{subject}.h5')
-
-        rsfc = read_h5(feature_file, f'/rsfc/level{level}')
-        dfc = read_h5(feature_file, f'/dfc/level{level}')
-        efc = read_h5(feature_file, f'/efc/level{level}')
-        strength = read_h5(feature_file, f'/network_stats/strength/level{level}')
-        betweenness = read_h5(feature_file, f'/network_stats/betweenness/level{level}')
-        participation = read_h5(feature_file, f'/network_stats/participation/level{level}')
-        efficiency = read_h5(feature_file, f'/network_stats/efficiency/level{level}')
-        myelin = read_h5(feature_file, f'/myelin/level{level}')
-        gmv = read_h5(feature_file, f'/morphometry/GMV/level{level}')
-        cs = read_h5(feature_file, f'/morphometry/CS/level{level}')
-        ct = read_h5(feature_file, f'/morphometry/CT/level{level}')
-
-        tfc = np.zeros((rsfc.shape[0], rsfc.shape[1], len(task_runs[dataset])))
-        for run, task in enumerate(task_runs[dataset]):
-            tfc[:, :, run] = read_h5(feature_file, f'/tfc/{task}/level{level}')
-            #    feature_file, f'/tfc/{task}/level{level}', impute=True, impute_shape=rsfc.shape)
-
-        if permutation:
-            gradients = diffusion_mapping_sub(embeddings[f'repeat{repeat}'], rsfc)
-            ac_gmv = score_sub(params[f'repeat{repeat}'], gmv)
-            ac_cs = score_sub(params[f'repeat{repeat}'], cs)
-            ac_ct = score_sub(params[f'repeat{repeat}'], ct)
-        else:
-            gradients = diffusion_mapping_sub(embeddings['embedding'], rsfc)
-            ac_gmv = score_sub(params['params'], gmv)
-            ac_cs = score_sub(params['params'], cs)
-            ac_ct = score_sub(params['params'], ct)
-
+        rsfc, dfc, efc, tfc, strength, betweenness, participation, efficiency, myelin, gmv, cs, \
+            ct, gradients, ac_gmv, ac_cs, ac_ct = cv_extract_subject_data(
+                sublists, subject, features_dir, level, permutation, embeddings, params, repeat)
         x = np.vstack((
             rsfc, dfc, efc, tfc.reshape(tfc.shape[0], tfc.shape[1]*tfc.shape[2]).T,
             strength, betweenness, participation, efficiency,
@@ -166,64 +177,3 @@ def cv_extract_data(
         y[i] = phenotypes[subjects[i]]
 
     return x_all, y
-
-
-def cv_extract_modalitywise_data(
-        sublists: dict, features_dir: dict, subjects: list, repeat: int, level: str,
-        embeddings: dict, params: dict, phenotypes: dict,
-        permutation: bool = False) -> tuple[np.ndarray, ...]:
-    y = np.zeros(len(subjects))
-    x_rsfmri = np.array([])
-    x_tfmri = np.array([])
-    x_smri = np.array([])
-
-    for i, subject in enumerate(subjects):
-        dataset = [key for key in sublists if subject in sublists[key]][0]
-        if dataset == 'HCP-A' or 'HCP-D':
-            feature_file = Path(
-                features_dir[dataset], f'{dataset}_{subject}_V1_MR.h5')
-        else:
-            feature_file = Path(
-                features_dir[dataset], f'{dataset}_{subject}.h5')
-
-        rsfc = read_h5(feature_file, f'/rsfc/level{level}')
-        dfc = read_h5(feature_file, f'/dfc/level{level}')
-        efc = read_h5(feature_file, f'/efc/level{level}')
-        strength = read_h5(feature_file, f'/network_stats/strength/level{level}')
-        betweenness = read_h5(feature_file, f'/network_stats/betweenness/level{level}')
-        participation = read_h5(feature_file, f'/network_stats/participation/level{level}')
-        efficiency = read_h5(feature_file, f'/network_stats/efficiency/level{level}')
-        myelin = read_h5(feature_file, f'/myelin/level{level}')
-        gmv = read_h5(feature_file, f'/morphometry/GMV/level{level}')
-        cs = read_h5(feature_file, f'/morphometry/CS/level{level}')
-        ct = read_h5(feature_file, f'/morphometry/CT/level{level}')
-
-        tfc = np.zeros((rsfc.shape[0], rsfc.shape[1], len(task_runs[dataset])))
-        for run, task in enumerate(task_runs[dataset]):
-            tfc[:, :, run] = read_h5(feature_file, f'/tfc/{task}/level{level}')
-            #    feature_file, f'/tfc/{task}/level{level}', impute=True, impute_shape=rsfc.shape)
-
-        if permutation:
-            gradients = diffusion_mapping_sub(embeddings[f'repeat{repeat}'], rsfc)
-            ac_gmv = score_sub(params[f'repeat{repeat}'], gmv)
-            ac_cs = score_sub(params[f'repeat{repeat}'], cs)
-            ac_ct = score_sub(params[f'repeat{repeat}'], ct)
-        else:
-            gradients = diffusion_mapping_sub(embeddings['embedding'], rsfc)
-            ac_gmv = score_sub(params['params'], gmv)
-            ac_cs = score_sub(params['params'], cs)
-            ac_ct = score_sub(params['params'], ct)
-
-        x = np.concatenate((
-            rsfc.flatten(), dfc.flatten(), efc.flatten(), strength, betweenness, participation,
-            efficiency, gradients.flatten()))
-        x_rsfmri = x if i == 0 else np.vstack((x_rsfmri, x))
-        x_tfmri = x if i == 0 else np.vstack((x_tfmri, tfc.flatten()))
-        x = np.concatenate((
-            myelin, gmv, np.pad(cs, (0, len(gmv) - len(cs))), np.pad(ct, (0, len(gmv) - len(ct))),
-            gradients.flatten(), ac_gmv.flatten(), ac_cs.flatten(), ac_ct.flatten()))
-        x_smri = x if i == 0 else np.vstack((x_smri, x))
-        # TODO: diffusion features
-        y[i] = phenotypes[subjects[i]]
-
-    return x_rsfmri, x_tfmri, x_smri, y
