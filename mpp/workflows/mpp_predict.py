@@ -7,8 +7,7 @@ import nipype.pipeline as pe
 
 from mpp.interfaces.data import InitFeatures, PredictionSave
 from mpp.interfaces.crossval import (
-    CrossValSplit, RegionwiseModel, RegionSelect, ModalitywiseModel, FeaturewiseModel,
-    IntegratedFeaturesModel)
+    CrossValSplit, RegionwiseModel, FeaturewiseModel, IntegratedFeaturesModel)
 from mpp.interfaces.features import CVFeatures
 
 base_dir = Path(__file__).resolve().parent.parent
@@ -123,22 +122,7 @@ def main() -> None:
      #   (rw_select, rw_test, [('selected', 'selected')]),
         (rw_test, rw_save, [('results', 'results')])])
 
-    # Modality-wise models
-    mw_model = pe.Node(ModalitywiseModel(config=config, features_dir=features_dir), name='mw_model')
-    mw_save = pe.JoinNode(
-        PredictionSave(
-            output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
-        type='modalitywise'),
-        name='mw_save', joinfield=['results'], joinsource='features')
-    mp_wf.connect([
-        (init_data, mw_model, [('sublists', 'sublists'), ('phenotypes', 'phenotypes')]),
-        (cv_split, mw_model, [('cv_split', 'cv_split')]),
-        (features, mw_model, [
-            ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
-            ('repeat', 'repeat'), ('fold', 'fold')]),
-        (mw_model, mw_save, [('results', 'results')])])
-
-    # feature-wise models
+    # Feature-wise models
     fw_model = pe.Node(FeaturewiseModel(config=config, features_dir=features_dir), name='fw_model')
     fw_save = pe.JoinNode(
         PredictionSave(
@@ -169,7 +153,6 @@ def main() -> None:
             ('level', 'level'), ('repeat', 'repeat'), ('fold', 'fold')]),
     #    (rw_select, if_model, [('selected', 'selected_regions')]),
         (rw_test, if_model, [('rw_ypred', 'rw_ypred')]),
-        (mw_model, if_model, [('mw_ypred', 'mw_ypred')]),
         (fw_model, if_model, [('fw_ypred', 'fw_ypred')]),
         (if_model, if_save, [('results', 'results')])])
 
