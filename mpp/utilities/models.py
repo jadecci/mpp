@@ -22,7 +22,7 @@ def elastic_net(
 
 def kernel_ridge_corr(
         train_x: np.ndarray, train_y: np.ndarray, lambda_val: float, test_x: np.ndarray,
-        test_y: np.ndarray) -> tuple[float, ...]:
+        test_y: np.ndarray) -> tuple[float, float, np.ndarray, np.ndarray]:
     k_lambda = train_x + lambda_val * np.eye(train_x.shape[0])
     one_row = np.ones((train_x.shape[0], 1))
 
@@ -32,15 +32,16 @@ def kernel_ridge_corr(
             @ np.linalg.solve(k_lambda, train_y))
     alpha = np.linalg.solve(k_lambda, train_y.reshape(one_row.shape) - one_row * b_scalar)
 
+    train_ybar = train_x @ alpha + np.ones((train_y.shape[0], 1)) * b_scalar
     test_ybar = test_x @ alpha + np.ones((test_y.shape[0], 1)) * b_scalar
     r = np.corrcoef(test_y, test_ybar.T)[0, 1]
 
-    return r, r2_score(test_y, test_ybar)
+    return r, r2_score(test_y, test_ybar), train_ybar, test_ybar
 
 
 def kernel_ridge_corr_cv(
         train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray,
-        test_y: np.ndarray) -> tuple[float, ...]:
+        test_y: np.ndarray) -> tuple[float, float, np.ndarray, np.ndarray]:
     lambdas = [0, .0001, .0005, .001, .005, .01, .05, .1, .5, 1, 5, 10]
     kernel_x = np.corrcoef(np.vstack((train_x, test_x)))
     train_x_kernel = kernel_x[np.ix_(range(train_x.shape[0]), range(train_x.shape[0]))]
@@ -51,15 +52,16 @@ def kernel_ridge_corr_cv(
     for i, lambda_curr in enumerate(lambdas):
         rskf = RepeatedKFold(n_splits=10, n_repeats=1, random_state=None)
         for train_ind, test_ind in rskf.split(train_x_kernel):
-            r_curr, _ = kernel_ridge_corr(
+            r_curr, _, _, _ = kernel_ridge_corr(
                 train_x_kernel[np.ix_(train_ind, train_ind)], train_y[train_ind], lambda_curr,
                 train_x_kernel[np.ix_(test_ind, train_ind)], train_y[test_ind])
             r_lambdas[i] = r_lambdas[i] + r_curr / 10
 
     lambda_best = lambdas[np.argmax(r_lambdas)]
-    r, cod = kernel_ridge_corr(train_x_kernel, train_y, lambda_best, test_x_kernel, test_y)
+    r, cod, train_ypred, test_ypred = kernel_ridge_corr(
+        train_x_kernel, train_y, lambda_best, test_x_kernel, test_y)
 
-    return r, cod
+    return r, cod, train_ypred, test_ypred
 
 
 def permutation_test(acc: np.ndarray, null_acc: np.ndarray) -> np.ndarray:

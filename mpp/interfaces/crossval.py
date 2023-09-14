@@ -292,18 +292,16 @@ class ModalitywiseModel(SimpleInterface):
         key = (f'{modality}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
                f'_level{self.inputs.level}')
 
-        r, cod, model = elastic_net(
-            train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
-        key = (f'{modality}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
-               f'_level{self.inputs.level}')
-        self._results['results'][f'en_r_{key}'] = r
-        self._results['results'][f'en_cod_{key}'] = cod
+        #r, cod, model = elastic_net(
+        #    train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
+        #self._results['results'][f'en_r_{key}'] = r
+        #self._results['results'][f'en_cod_{key}'] = cod
 
-        r, cod = kernel_ridge_corr_cv(train_x, train_y, test_x, test_y)
+        r, cod, train_ypred, test_ypred = kernel_ridge_corr_cv(train_x, train_y, test_x, test_y)
         self._results['results'][f'krcorr_r_{key}'] = r
         self._results['results'][f'krcorr_cod_{key}'] = cod
 
-        return model.predict(train_x), model.predict(test_x)
+        return train_ypred, test_ypred
 
     def _run_interface(self, runtime):
         self._results['results'] = {}
@@ -395,16 +393,16 @@ class FeaturewiseModel(SimpleInterface):
         key = (f'{feature}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
                f'_level{self.inputs.level}')
 
-        r, cod, model = elastic_net(
+        r, cod, _ = elastic_net(
             train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
         self._results['results'][f'en_r_{key}'] = r
         self._results['results'][f'en_cod_{key}'] = cod
 
-        r, cod = kernel_ridge_corr_cv(train_x, train_y, test_x, test_y)
+        r, cod, train_ypred, test_ypred = kernel_ridge_corr_cv(train_x, train_y, test_x, test_y)
         self._results['results'][f'krcorr_r_{key}'] = r
         self._results['results'][f'krcorr_cod_{key}'] = cod
 
-        return model.predict(train_x), model.predict(test_x)
+        return train_ypred, test_ypred
 
     def _run_interface(self, runtime):
         self._results['results'] = {}
