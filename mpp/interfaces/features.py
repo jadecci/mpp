@@ -275,7 +275,7 @@ class _CVFeaturesInputSpec(BaseInterfaceInputSpec):
         mandatory=True, dtype=list, desc='list of subjects available in each dataset')
     cv_split = traits.Dict(
         mandatory=True, dtype=list, desc='list of subjects in the test split of each fold')
-    cv_split_perm = traits.Dict(mandatory=True, dtype=list, desc='list of permuted subjects')
+    # cv_split_perm = traits.Dict(mandatory=True, dtype=list, desc='list of permuted subjects')
     repeat = traits.Int(mandatory=True, desc='current repeat of cross-validation')
     fold = traits.Int(mandatory=True, desc='current fold in the repeat')
     level = traits.Str(mandatory=True, desc='parcellation level')
@@ -347,14 +347,14 @@ class CVFeatures(SimpleInterface):
         self._results['params']['params'] = params
 
         # assuming n_repeats_perm = n_repeats x 10
-        n_perm_check = int(self.inputs.config['n_repeats']) * 10
-        if int(self.inputs.config['n_repeats_perm']) == n_perm_check:
-            for repeat_split in range(10):
-                repeat = int(self.inputs.repeat) * 10 + repeat_split
-                embed, params = self._compute_features(
-                    image_features, self.inputs.cv_split_perm, repeat)
-                self._results['embeddings'][f'repeat{repeat}'] = embed
-                self._results['params'][f'repeat{repeat}'] = params
+        # n_perm_check = int(self.inputs.config['n_repeats']) * 10
+        # if int(self.inputs.config['n_repeats_perm']) == n_perm_check:
+        #    for repeat_split in range(10):
+        #        repeat = int(self.inputs.repeat) * 10 + repeat_split
+        #        embed, params = self._compute_features(
+        #            image_features, self.inputs.cv_split_perm, repeat)
+        #        self._results['embeddings'][f'repeat{repeat}'] = embed
+        #        self._results['params'][f'repeat{repeat}'] = params
 
         self._results['repeat'] = self.inputs.repeat
         self._results['fold'] = self.inputs.fold

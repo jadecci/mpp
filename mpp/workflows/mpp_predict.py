@@ -154,8 +154,7 @@ def main() -> None:
         (fw_model, fw_save, [('results', 'results')])])
 
     # Integrated features model
-    if_model = pe.Node(
-        IntegratedFeaturesModel(config=config, features_dir=features_dir), name='if_model')
+    if_model = pe.Node(IntegratedFeaturesModel(config=config), name='if_model')
     if_save = pe.JoinNode(
         PredictionSave(
             output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
@@ -166,8 +165,8 @@ def main() -> None:
         (init_data, if_model, [('sublists', 'sublists'),('phenotypes', 'phenotypes')]),
         (cv_split, if_model, [('cv_split', 'cv_split')]),
         (features, if_model, [
-            ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
-            ('repeat', 'repeat'), ('fold', 'fold')]),
+    #        ('embeddings', 'embeddings'), ('params', 'params'),
+            ('level', 'level'), ('repeat', 'repeat'), ('fold', 'fold')]),
     #    (rw_select, if_model, [('selected', 'selected_regions')]),
         (rw_test, if_model, [('rw_ypred', 'rw_ypred')]),
         (mw_model, if_model, [('mw_ypred', 'mw_ypred')]),

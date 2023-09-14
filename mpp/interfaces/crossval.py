@@ -262,7 +262,7 @@ class ModalitywiseModel(SimpleInterface):
         for i, subject in enumerate(subjects):
             x = cv_extract_subject_data(
                 self.inputs.sublists, subject, self.inputs.features_dir, self.inputs.level,
-                self.inputs.permutation, self.inputs.embeddings, self.inputs.params,
+                False, self.inputs.embeddings, self.inputs.params,
                 self.inputs.repeat)
             x_rsfmri_s = np.concatenate((x[0].flatten(), x[4], x[5], x[6], x[7], x[12].flatten()))
             x_smri_m = np.concatenate((x[8], x[9], x[10], x[11]))
@@ -311,8 +311,9 @@ class ModalitywiseModel(SimpleInterface):
         ypred = {}
         modality_list = [
             'rsfmri_stat', 'rsfmri_dynam', 'rsfmri_eff', 'tfmri', 'smri_morph', 'smri_conn']
-        for train_x, test_x, modality in dict(zip(train_x, test_x, modality_list)):
-            train_pred, test_pred = self._test(train_x, train_y, test_x, test_y, modality)
+        iters = zip(train_x.values(), test_x.values(), modality_list)
+        for train_curr, test_curr, modality in iters:
+            train_pred, test_pred = self._test(train_curr, train_y, test_curr, test_y, modality)
             if modality == 'rsfmri_stat':
                 ypred = {'train_ypred': train_pred, 'test_ypred': test_pred}
             else:
@@ -359,9 +360,9 @@ class FeaturewiseModel(SimpleInterface):
         for i, subject in enumerate(subjects):
             x = cv_extract_subject_data(
                 self.inputs.sublists, subject, self.inputs.features_dir, self.inputs.level,
-                self.inputs.permutation, self.inputs.embeddings, self.inputs.params,
+                False, self.inputs.embeddings, self.inputs.params,
                 self.inputs.repeat)
-            for key, x_curr in dict(zip(self._feature_list, x)):
+            for key, x_curr in zip(self._feature_list, x):
                 if i == 0:
                     x_all[key] = x_curr.flatten()
                 else:
@@ -395,8 +396,9 @@ class FeaturewiseModel(SimpleInterface):
         test_x, test_y = self._extract_data(test_sub)
 
         ypred = {}
-        for train_x, test_x, feature in dict(zip(train_x, test_x, self._feature_list)):
-            train_pred, test_pred = self._test(train_x, train_y, test_x, test_y, feature)
+        iters = zip(train_x.values(), test_x.values(), self._feature_list)
+        for train_curr, test_curr, feature in iters:
+            train_pred, test_pred = self._test(train_curr, train_y, test_curr, test_y, feature)
             if feature == 'rsfc':
                 ypred = {'train_ypred': train_pred, 'test_ypred': test_pred}
             else:
