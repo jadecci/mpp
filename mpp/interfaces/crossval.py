@@ -313,8 +313,7 @@ class ModalitywiseModel(SimpleInterface):
         test_x, test_y = self._extract_data(test_sub)
 
         ypred = {}
-        modality_list = [
-            'rsfmri_stat', 'rsfmri_dynam', 'rsfmri_eff', 'tfmri', 'smri_morph', 'smri_conn']
+        modality_list = ['rsfmri', 'tfmri', 'smri']
         iters = zip(train_x.values(), test_x.values(), modality_list)
         for train_curr, test_curr, modality in iters:
             train_pred, test_pred = self._test(train_curr, train_y, test_curr, test_y, modality)
@@ -375,17 +374,23 @@ class FeaturewiseModel(SimpleInterface):
                 False, self.inputs.embeddings, self.inputs.params,
                 self.inputs.repeat)
             for key, x_curr in zip(self._feature_list, x):
-                if key.isin(['rsfc', 'dfc', 'efc', 'ac_gmv', 'ac_cs', 'ac_ct']):
+                if key in ['rsfc', 'dfc', 'efc', 'ac_gmv', 'ac_cs', 'ac_ct']:
                     x_feature = x_curr[np.triu_indices_from(x_curr, k=1)]
                     self._add_sub_data(x_all, x_feature, key, i)
+                elif key == 'gradients':
+                    self._add_sub_data(x_all, x_curr.flatten(), key, i)
                 elif key == 'tfc':
                     for t_run in range(x_curr.shape[2]):
-                        x_feature = x_curr[:, :, t_run][np.triu_indices_from(x_curr, k=1)]
+                        x_feature = x_curr[:, :, t_run]
+                        x_feature = x_feature[np.triu_indices_from(x_feature, k=1)]
                         self._add_sub_data(x_all, x_feature, f'{key}_{t_run}', i)
                 else:
                     self._add_sub_data(x_all, x_curr, key, i)
             # TODO: diffusion features
             y[i] = self.inputs.phenotypes[subjects[i]]
+            if i == len(subjects)-1:
+                for t_run in range(1, x[3].shape[2]):
+                    self._feature_list.insert(3+t_run, 'tfc_{t_run}')
 
         return x_all, y
 
@@ -465,7 +470,7 @@ class IntegratedFeaturesModel(SimpleInterface):
             test_ypred: np.ndarray, key: str) -> dict:
         r, cod, model = elastic_net(
             train_ypred, train_y, test_ypred, test_y, int(self.inputs.config['n_alphas']))
-        results = {f'en_r_{key}': r, f'encod_{key}': cod}
+        results = {f'en_r_{key}': r, f'en_cod_{key}': cod}
 
         return results
 
