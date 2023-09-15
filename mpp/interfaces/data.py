@@ -1,6 +1,5 @@
 import subprocess
 from pathlib import Path
-from os import getenv
 import logging
 
 import pandas as pd
@@ -217,6 +216,7 @@ class _InitDiffusionDataInputSpec(BaseInterfaceInputSpec):
         mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
     work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
     subject = traits.Str(mandatory=True, desc='subject ID')
+    int_dir = traits.Directory(desc='directory containing intermediate files from previous runs')
     output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
 
 
@@ -263,16 +263,22 @@ class InitDiffusionData(SimpleInterface):
             on_failure='stop')
 
         if self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
-            d_dir = Path(subject_dir, 'unprocessed', 'Diffusion')
-            dl.get(
-                path=d_dir.parent, dataset=dataset_dir, get_data=False, source=source,
-                on_failure='stop')
-            d_files = {}
-            for dirs in [98, 99]:
-                for phase in ['AP', 'PA']:
-                    for ftype in ['.nii.gz', '.bval', '.bvec']:
-                        key = f'dir{dirs}_{phase}{ftype}'
-                        d_files[key] = Path(d_dir, f'{self.inputs.subject}_dMRI_{key}')
+            if self.inputs.int_dir:
+                d_dir = self.inputs.int_dir
+                d_files = {
+                    'data': Path(d_dir, 'data.nii.gz'), 'bval': Path(d_dir, 'bvals'),
+                    'bvec': Path(d_dir, 'bvecs'), 'mask': Path(d_dir, 'nodif_brain_mask.nii.gz')}
+            else:
+                d_dir = Path(subject_dir, 'unprocessed', 'Diffusion')
+                dl.get(
+                    path=d_dir.parent, dataset=dataset_dir, get_data=False, source=source,
+                    on_failure='stop')
+                d_files = {}
+                for dirs in [98, 99]:
+                    for phase in ['AP', 'PA']:
+                        for ftype in ['.nii.gz', '.bval', '.bvec']:
+                            key = f'dir{dirs}_{phase}{ftype}'
+                            d_files[key] = Path(d_dir, f'{self.inputs.subject}_dMRI_{key}')
         elif self.inputs.dataset == 'HCP-YA':
             d_dir = Path(subject_dir, 'T1w', 'Diffusion')
             dl.get(
@@ -286,7 +292,7 @@ class InitDiffusionData(SimpleInterface):
         for key, val in d_files.items():
             if val.is_symlink():
                 dl.get(path=val, dataset=d_dir.parent, source=source, on_failure='stop')
-            else:
+            elif not self.inputs.int_dir:
                 self._results['d_files'][key] = ''
 
         anat_dir = Path(subject_dir, 'T1w')

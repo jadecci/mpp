@@ -923,6 +923,8 @@ class CSD(SimpleInterface):
     def _run_interface(self, runtime):
         if self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
             shells = '1500,3000'
+        elif self.inputs.dataset == 'HCP-YA':
+            shells = '1000, 2000, 3000'
         else:
             raise DatasetError()
 
@@ -954,9 +956,12 @@ class CSD(SimpleInterface):
 class _TCKInputSpec(BaseInterfaceInputSpec):
     fod_wm_file = traits.File(mandatory=True, exists=True, desc='white matter FOD file')
     fs_dir = traits.Directory(desc='FreeSurfer subject directory')
+    dataset = traits.Str(
+        mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
     bval = traits.File(mandatory=True, exists=True, desc='b value file')
     bvec = traits.File(mandatory=True, exists=True, desc='b vector files')
     work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
+
     simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
 
@@ -969,23 +974,20 @@ class TCK(SimpleInterface):
     input_spec = _TCKInputSpec
     output_spec = _TCKOutputSpec
 
+    def _params(self) -> dict:
+        voxel_sizes = {'HCP-YA': 1.25, 'HCP-A': 1.5, 'HCP-D': 1.5, 'ABCD': 1.7, 'UKB': 2}
+        voxel_size = voxel_sizes[self.inputs.dataset]
+        params = {
+            # default parameters of tckgen
+            'algorithm': 'iFOD2', 'step': str(0.5 * voxel_size), 'angle': '45',
+            'minlength': str(2 * voxel_size), 'cutoff': '0.05', 'trials': '1000', 'samples': '4',
+            'downsample': '3', 'power': '0.33',
+            # parameters different from default (Jung et al. 2021)
+            'maxlength': '250', 'max_attempts_per_seed': '50', 'select': '10000000'}
+
+        return params
+
     def _run_interface(self, runtime):
-        # parameters (Jung et al. 2021)
-        algorithm = 'iFOD2'
-        step = '0.625'
-        angle = '45'
-        minlength = '2.5'
-        maxlength = '250'
-        cutoff = '0.06'
-        trials = '1000'
-        downsample = '3'
-        max_attempts_per_seed = '50'
-        tract_schaefer = '10000000'
-
-        # default settings
-        samples = '4'
-        power = '0.25'
-
         ftt_file = Path(self.inputs.work_dir, 'ftt.nii.gz')
         ftt = self.inputs.simg_cmd.run_cmd('5ttgen').split() + [
             'hsvs', str(self.inputs.fs_dir),str(ftt_file)]
@@ -994,14 +996,13 @@ class TCK(SimpleInterface):
 
         seed_file = Path(self.inputs.work_dir, 'WBT_10M_seeds_ctx.txt')
         self._results['tck_file'] = Path(self.inputs.work_dir, 'WBT_10M_ctx.tck')
-        tck = self.inputs.simg_cmd.run_cmd('tckgen').split() + [
-            '-algorithm', algorithm, '-select', tract_schaefer,
-            '-step', step, '-angle', angle, '-minlength', minlength, '-maxlength', maxlength,
-            '-cutoff', cutoff, '-trials', trials, '-downsample', downsample,
-            '-seed_dynamic', str(self.inputs.fod_wm_file),
-            '-max_attempts_per_seed', max_attempts_per_seed, '-output_seeds', str(seed_file),
-            '-act', str(ftt_file), '-backtrack', '-crop_at_gmwmi', '-samples', samples,
-            '-power', power, '-nthreads', '0',
+        params = self._params()
+        tck = self.inputs.simg_cmd.run_cmd('tckgen').split()
+        for param, value in params.items():
+            tck = tck + [f'-{param}', value]
+        tck = tck + [
+            '-seed_dynamic', str(self.inputs.fod_wm_file), '-act', str(ftt_file),
+            '-output_seeds', str(seed_file), '-backtrack', '-crop_at_gmwmi', '-nthreads', '0',
             '-fslgrad', str(self.inputs.bvec), str(self.inputs.bval),
             str(self.inputs.fod_wm_file), str(self._results['tck_file'])]
         if not self._results['tck_file'].is_file():

@@ -1,6 +1,7 @@
 from pathlib import Path
 import argparse
 import logging
+from typing import Union
 
 import pandas as pd
 import nipype.pipeline as pe
@@ -12,7 +13,7 @@ from mpp.interfaces.data import InitData, SaveFeatures, InitDiffusionData, SaveD
 from mpp.interfaces.features import RSFC, NetworkStats, TFC, MyelinEstimate, Morphometry, SCWF
 from mpp.interfaces.preproc import HCPMinProc, CSD, TCK
 from mpp.utilities.utilities import SimgCmd
-from mpp.utilities.preproc import d_files_hcpya
+from mpp.utilities.preproc import d_files_intermediate
 
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
@@ -26,6 +27,9 @@ def main() -> None:
     parser.add_argument(
         '--diffusion', dest='diffusion', action='store_true',
         help='Process diffusion data and extract diffusion features')
+    parser.add_argument(
+        '--intermediate_dir', type=Path, dest='int_dir', default=None,
+        help='Directory containing intermediate files from previous runs')
     parser.add_argument(
         '--workdir', type=Path, dest='work_dir', default=Path.cwd(), help='Work directory')
     parser.add_argument(
@@ -55,7 +59,7 @@ def main() -> None:
             if args.diffusion:
                 subject_wf = init_d_wf(
                     args.dataset, str(subject), args.work_dir, args.output_dir, simg_cmd,
-                    args.overwrite)
+                    args.overwrite, args.int_dir)
             else:
                 subject_wf = init_subject_wf(
                     args.dataset, str(subject), args.work_dir, args.output_dir, simg_cmd,
@@ -171,19 +175,21 @@ def init_anat_wf(dataset: str, subject: str, work_dir: Path, simg_cmd: SimgCmd) 
 
 def init_d_wf(
         dataset: str, subject: str, work_dir: Path, output_dir: Path, simg_cmd: SimgCmd,
-        overwrite: bool) -> pe.Workflow:
+        overwrite: bool, int_dir: Union[Path, None]) -> pe.Workflow:
     d_wf = pe.Workflow(f'subject_{subject}_diffusion_wf', base_dir=work_dir)
     work_curr = Path(work_dir, f'subject_{subject}_diffusion_wf')
     init_data = pe.Node(
         InitDiffusionData(
             dataset=dataset, work_dir=work_curr, subject=subject, output_dir=output_dir),
         name='init_data')
+    if int_dir is not None:
+        init_data.inputs.int_dir = int_dir
 
     tmp_dir = Path(work_curr, 'intermediate_tmp')
     tmp_dir.mkdir(parents=True, exist_ok=True)
     dtifit = pe.Node(fsl.DTIFit(command=simg_cmd.run_cmd('dtifit')), name='dtifit')
     csd = pe.Node(CSD(dataset=dataset, work_dir=tmp_dir, simg_cmd=simg_cmd), name='csd')
-    tck = pe.Node(TCK(work_dir=tmp_dir, simg_cmd=simg_cmd), name='tck')
+    tck = pe.Node(TCK(dataset=dataset, work_dir=tmp_dir, simg_cmd=simg_cmd), name='tck')
 
     sc = SCWF(subject=subject, work_dir=work_curr, simg_cmd=simg_cmd).run()
     sc_wf = sc.outputs.sc_wf
@@ -192,7 +198,7 @@ def init_d_wf(
         SaveDFeatures(output_dir=output_dir, dataset=dataset, subject=subject, overwrite=overwrite),
         name='save_features')
 
-    if dataset == 'HCP-A' or dataset == 'HCP-D':
+    if (dataset == 'HCP-A' or dataset == 'HCP-D') and int_dir is not None:
         hcp_proc = HCPMinProc(
             dataset=dataset, work_dir=work_curr, subject=subject, simg_cmd=simg_cmd).run()
         hcp_proc_wf = hcp_proc.outputs.hcp_proc_wf
@@ -208,9 +214,10 @@ def init_d_wf(
                 ('outputnode.bvec', 'bvec'), ('outputnode.mask', 'mask')]),
             (hcp_proc_wf, tck, [('outputnode.bval', 'bval'), ('outputnode.bvec', 'bvec')])])
 
-    elif dataset == 'HCP-YA':
+    elif dataset == 'HCP-YA' or int_dir is None:
         split_files = pe.Node(
-            niu.Function(function=d_files_hcpya, output_names=['data', 'bval', 'bvec', 'mask']),
+            niu.Function(
+                function=d_files_intermediate, output_names=['data', 'bval', 'bvec', 'mask']),
             name='split_files')
         d_wf.connect([
             (init_data, split_files, [('d_files', 'd_files')]),
