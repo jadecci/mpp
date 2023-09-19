@@ -6,12 +6,12 @@ data_dir = path.join(path.dirname(path.realpath(__file__)), '..')
 
 # HCP-YA
 hcpya_pheno_file = path.join(data_dir, 'phenotype', 'unrestricted_jadecci_11_13_2018_6_44_10.csv')
-hcpya_scores = ['Subject', 'T1_Count', '3T_RS-fMRI_Count', '3T_tMRI_PctCompl', '3T_dMRI_Compl']
+hcpya_scores = ['Subject', 'T1_Count', '3T_RS-fMRI_Count', '3T_tMRI_PctCompl', '3T_dMRI_PctCompl']
 hcpya_data = pd.read_csv(hcpya_pheno_file, usecols=hcpya_scores)[hcpya_scores]
-hcpya_drop = hcpya_data.loc[
-    (hcpya_data['T1_Count'] == 0) & (hcpya_data['3T_RS-fMRI_Count'] == 0) &
-    (hcpya_data['3T_tMRI_PctCompl'] == 0) & (not hcpya_data['3T_dMRI_Compl'])].index
-hcpya_data.drop(hcpya_drop, inplace=True)
+hcpya_data.drop(hcpya_data.loc[hcpya_data['T1_Count'] == 0].index, inplace=True)
+hcpya_data.drop(hcpya_data.loc[hcpya_data['3T_RS-fMRI_Count'] == 0].index, inplace=True)
+hcpya_data.drop(hcpya_data.loc[hcpya_data['3T_tMRI_PctCompl'] != 100].index, inplace=True)
+hcpya_data.drop(hcpya_data.loc[hcpya_data['3T_dMRI_PctCompl'] != 100].index, inplace=True)
 hcpya_out_file = path.join(data_dir, 'sublist', 'HCP-YA_allRun.csv')
 hcpya_data['Subject'].to_csv(hcpya_out_file, header=False, index=False)
 
