@@ -317,7 +317,7 @@ class ModalitywiseModel(SimpleInterface):
         iters = zip(train_x.values(), test_x.values(), modality_list)
         for train_curr, test_curr, modality in iters:
             train_pred, test_pred = self._test(train_curr, train_y, test_curr, test_y, modality)
-            if modality == 'rsfmri_stat':
+            if modality == 'rsfmri':
                 ypred = {'train_ypred': train_pred, 'test_ypred': test_pred}
             else:
                 ypred = {
@@ -388,9 +388,6 @@ class FeaturewiseModel(SimpleInterface):
                     self._add_sub_data(x_all, x_curr, key, i)
             # TODO: diffusion features
             y[i] = self.inputs.phenotypes[subjects[i]]
-            if i == len(subjects)-1:
-                for t_run in range(1, x[3].shape[2]):
-                    self._feature_list.insert(3+t_run, 'tfc_{t_run}')
 
         return x_all, y
 
@@ -417,6 +414,8 @@ class FeaturewiseModel(SimpleInterface):
 
         train_x, train_y = self._extract_data(train_sub)
         test_x, test_y = self._extract_data(test_sub)
+        for i in range(len(train_x.keys())-len(self._feature_list)):
+            self._feature_list.insert(4+i, f'tfc_{i+1}')
 
         ypred = {}
         iters = zip(train_x.values(), test_x.values(), self._feature_list)
@@ -468,7 +467,7 @@ class IntegratedFeaturesModel(SimpleInterface):
     def _en(
             self, train_y: np.ndarray, test_y: np.ndarray, train_ypred: np.ndarray,
             test_ypred: np.ndarray, key: str) -> dict:
-        r, cod, model = elastic_net(
+        r, cod, _ = elastic_net(
             train_ypred, train_y, test_ypred, test_y, int(self.inputs.config['n_alphas']))
         results = {f'en_r_{key}': r, f'en_cod_{key}': cod}
 
@@ -478,7 +477,7 @@ class IntegratedFeaturesModel(SimpleInterface):
     def _kr_corr(
             train_y: np.ndarray, test_y: np.ndarray, train_ypred: np.ndarray,
             test_ypred: np.ndarray, key: str) -> dict:
-        r, cod = kernel_ridge_corr_cv(train_ypred, train_y, test_ypred, test_y)
+        r, cod, _, _ = kernel_ridge_corr_cv(train_ypred, train_y, test_ypred, test_y)
         results = {f'krcorr_r_{key}': r, f'krcorr_cod_{key}': cod}
 
         return results

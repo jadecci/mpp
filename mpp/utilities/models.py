@@ -27,16 +27,25 @@ def kernel_ridge_corr(
     one_row = np.ones((train_x.shape[0], 1))
 
     # assuming N(features) > N(subjects)
-    b_scalar = (
-            np.linalg.solve(one_row.T @ np.linalg.solve(k_lambda, one_row), one_row.T)
-            @ np.linalg.solve(k_lambda, train_y))
-    alpha = np.linalg.solve(k_lambda, train_y.reshape(one_row.shape) - one_row * b_scalar)
+    try:
+        b_scalar = (
+                np.linalg.solve(one_row.T @ np.linalg.solve(k_lambda, one_row), one_row.T)
+                @ np.linalg.solve(k_lambda, train_y))
+    except np.linalg.LinAlgError:
+        b_scalar = (
+                np.linalg.lstsq(one_row.T @ np.linalg.lstsq(k_lambda, one_row), one_row.T)
+                @ np.linalg.lstsq(k_lambda, train_y))
+
+    try:
+        alpha = np.linalg.solve(k_lambda, train_y.reshape(one_row.shape) - one_row * b_scalar)
+    except np.linalg.LinAlgError:
+        alpha = np.linalg.lstsq(k_lambda, train_y.reshape(one_row.shape) - one_row * b_scalar)
 
     train_ybar = train_x @ alpha + np.ones((train_y.shape[0], 1)) * b_scalar
     test_ybar = test_x @ alpha + np.ones((test_y.shape[0], 1)) * b_scalar
     r = np.corrcoef(test_y, test_ybar.T)[0, 1]
 
-    return r, r2_score(test_y, test_ybar), train_ybar, test_ybar
+    return r, r2_score(test_y, test_ybar), train_ybar.T, test_ybar.T
 
 
 def kernel_ridge_corr_cv(

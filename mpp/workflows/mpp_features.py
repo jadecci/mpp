@@ -222,9 +222,9 @@ def init_d_wf(
         d_wf.connect([
             (init_data, split_files, [('d_files', 'd_files')]),
             (split_files, dtifit, [
-                ('data', 'dwi'), ('bval', 'bval'), ('bvec', 'bvec'), ('mask', 'mask')]),
+                ('data', 'dwi'), ('bval', 'bvals'), ('bvec', 'bvecs'), ('mask', 'mask')]),
             (split_files, csd, [
-                ('data', 'dwi'), ('bval', 'bval'), ('bvec', 'bvec'), ('mask', 'mask')]),
+                ('data', 'data'), ('bval', 'bval'), ('bvec', 'bvec'), ('mask', 'mask')]),
             (split_files, tck, [('bval', 'bval'), ('bvec', 'bvec')])])
 
     d_wf.connect([

@@ -924,7 +924,7 @@ class CSD(SimpleInterface):
         if self.inputs.dataset == 'HCP-A' or self.inputs.dataset == 'HCP-D':
             shells = '1500,3000'
         elif self.inputs.dataset == 'HCP-YA':
-            shells = '1000, 2000, 3000'
+            shells = '1000,2000,3000'
         else:
             raise DatasetError()
 
