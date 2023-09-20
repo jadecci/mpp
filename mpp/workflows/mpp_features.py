@@ -15,7 +15,6 @@ from mpp.interfaces.features import (
 from mpp.interfaces.preproc import HCPMinProc, CSD, TCK
 from mpp.utilities.utilities import SimgCmd
 from mpp.utilities.preproc import d_files_intermediate
-from mpp.utilities.features import join_dicts
 
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
@@ -129,11 +128,7 @@ def init_rs_wf(dataset: str, subject: str) -> pe.Workflow:
     inputnode = pe.Node(
         niu.IdentityInterface(fields=['rs_runs', 'rs_files', 'hcpd_b_runs']), name='inputnode')
     rsfc = pe.Node(RSFC(dataset=dataset), name='rsfc')
-    network_stats = pe.Node(
-        NetworkStats(), name='network_stats', iterables=[('level', ['1', '2', '3', '4'])])
-    rs_stats = pe.JoinNode(
-        niu.Function(function=join_dicts, output_names=['rs_stats']), name='rs_stats',
-        joinfield=['stats'], joinsource='network_stats')
+    network_stats = pe.Node(NetworkStats(), name='network_stats')
     outputnode = pe.Node(
         niu.IdentityInterface(fields=['rsfc', 'dfc', 'efc', 'rs_stats']), name='outputnode')
 
@@ -142,8 +137,7 @@ def init_rs_wf(dataset: str, subject: str) -> pe.Workflow:
             ('rs_runs', 'rs_runs'), ('rs_files', 'rs_files'), ('hcpd_b_runs', 'hcpd_b_runs')]),
         (rsfc, network_stats, [('rsfc', 'conn')]),
         (rsfc, outputnode, [('rsfc', 'rsfc'), ('dfc', 'dfc'), ('efc', 'efc')]),
-        (network_stats, rs_stats, [('stats', 'in_dict')]),
-        (rs_stats, outputnode, [('rs_stats', 'rs_stats')])])
+        (network_stats, outputnode, [('stats', 'rs_stats')])])
 
     return rs_wf
 
@@ -245,7 +239,7 @@ def init_d_wf(
             ('fs_dir', 'inputnode.fs_dir')]),
         (tck, sc_wf, [('tck_file', 'inputnode.tck_file')]),
         (sc_wf, sc_count_stats, [('outputnode.count_files', 'conn_files')]),
-        (sc_wf, sc_length_stats, [('outputnode.length_files', 'length_files')]),
+        (sc_wf, sc_length_stats, [('outputnode.length_files', 'conn_files')]),
         (dtifit, fa_md, [('FA', 'fa_file'), ('MD', 'md_file')]),
         (sc_wf, fa_md, [('outputnode.atlas_files', 'atlas_files')]),
         (init_data, save_features, [('dataset_dir', 'dataset_dir')]),

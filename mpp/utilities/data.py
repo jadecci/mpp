@@ -115,7 +115,7 @@ def cv_extract_subject_data(
         sublists: dict, subject: str, features_dir: dict, level: str, permutation: bool,
         embeddings: dict, params: dict, repeat: int) -> tuple[np.ndarray, ...]:
     dataset = [key for key in sublists if subject in sublists[key]][0]
-    if dataset == 'HCP-A' or 'HCP-D':
+    if dataset in ['HCP-A', 'HCP-D']:
         feature_file = Path(
             features_dir[dataset], f'{dataset}_{subject}_V1_MR.h5')
     else:

@@ -450,7 +450,7 @@ class _IntegratedFeaturesModelInputSpec(BaseInterfaceInputSpec):
     #    mandatory=True, desc='Predicted psychometric values from region-wise models')
     # selected_regions = traits.Dict(
     #    mandatory=True, dtype=list, desc='selected regions for each parcellation level')
-    mw_ypred = traits.Dict(desc='Predicted psychometric values from modality-wise models')
+    #mw_ypred = traits.Dict(desc='Predicted psychometric values from modality-wise models')
     fw_ypred = traits.Dict(desc='Predicted psychometric values from feature-wise models')
     config = traits.Dict(mandatory=True, desc='configuration settings')
 
@@ -492,11 +492,11 @@ class IntegratedFeaturesModel(SimpleInterface):
         test_y = np.array([self.inputs.phenotypes[sub] for sub in test_sub])
         train_ypred = np.hstack((
             #self.inputs.rw_ypred['train_ypred'],
-            self.inputs.mw_ypred['train_ypred'],
+            #self.inputs.mw_ypred['train_ypred'],
             self.inputs.fw_ypred['train_ypred']))
         test_ypred = np.hstack((
             #self.inputs.rw_ypred['test_ypred'],
-            self.inputs.mw_ypred['test_ypred'],
+            #self.inputs.mw_ypred['test_ypred'],
             self.inputs.fw_ypred['test_ypred']))
 
         en = self._en(train_y, test_y, train_ypred, test_ypred, key)

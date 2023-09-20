@@ -511,7 +511,7 @@ class InitFeatures(SimpleInterface):
 
         for dataset in self.inputs.features_dir:
             features_files = list(Path(self.inputs.features_dir[dataset]).iterdir())
-            if dataset == 'HCP-A' or 'HCP-D':
+            if dataset in ['HCP-A', 'HCP-D']:
                 sublist = [str(file)[-19:-9] for file in features_files]
             else:
                 sublist = [str(file)[-9:-3] for file in features_files]

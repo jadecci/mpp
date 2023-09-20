@@ -1,7 +1,7 @@
 import subprocess
 from os import environ
 from pathlib import Path
-from sys.float_info import epsilon
+import sys
 
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 import nipype.pipeline as pe
@@ -88,30 +88,27 @@ class NetworkStats(SimpleInterface):
 
     def _get_conn(self, level):
         if self.inputs.conn:
-            return self.inputs.rsfc[f'level{level}']
+            return self.inputs.conn[f'level{level}']
         else:
             conn_file = f'{str(self.inputs.conn_files[0])[-5]}{int(level)-1}.csv'
             conn = np.array(pd.read_csv(conn_file, header=None))
 
         return conn
 
-    def _compute_stats(self, level):
-        conn = self._get_conn(level)
-
-        stre = bct.strengths_und(conn)
-        betw = bct.betweenness_wei(conn)
-        part = bct.participation_coef(conn, bct.community_louvain(conn, B='negative_sym')[0])
-        effi = bct.efficiency_wei(conn, local=True)
-
-        self._results['stats'][f'level{level}_strength'] = stre
-        self._results['stats'][f'level{level}_betweenness'] = betw
-        self._results['stats'][f'level{level}_participation'] = part
-        self._results['stats'][f'level{level}_efficiency'] = effi
-
     def _run_interface(self, runtime):
         self._results['stats'] = {}
         for level in ['1', '2', '3', '4']:
-            self._compute_stats(level)
+            conn = self._get_conn(level)
+
+            stre = bct.strengths_und(conn)
+            betw = bct.betweenness_wei(conn)
+            part = bct.participation_coef(conn, bct.community_louvain(conn, B='negative_sym')[0])
+            effi = bct.efficiency_wei(conn, local=True)
+
+            self._results['stats'][f'level{level}_strength'] = stre
+            self._results['stats'][f'level{level}_betweenness'] = betw
+            self._results['stats'][f'level{level}_participation'] = part
+            self._results['stats'][f'level{level}_efficiency'] = effi
 
         return runtime
 
@@ -317,7 +314,7 @@ class CVFeatures(SimpleInterface):
         for subject in all_sub:
             dataset = [
                 key for key in self.inputs.sublists if subject in self.inputs.sublists[key]][0]
-            if dataset == 'HCP-A' or 'HCP-D':
+            if dataset in ['HCP-A', 'HCP-D']:
                 feature_file = Path(
                     self.inputs.features_dir[dataset], f'{dataset}_{subject}_V1_MR.h5')
             else:
@@ -617,7 +614,8 @@ class FAMD(SimpleInterface):
         for parcel in parcels.nonzero()[0]:
             selected = data[np.where(atlas == parcel)[0]]
             selected = selected[~np.isnan(selected)]
-            selected = selected[np.where(np.abs(selected.mean(axis=0)) >= epsilon)[0]]
+            selected = selected[
+                np.where(np.abs(selected.mean(axis=0)) >= sys.float_info.epsilon)[0]]
             parc[parcel-1] = selected.mean()
 
         return parc, level
