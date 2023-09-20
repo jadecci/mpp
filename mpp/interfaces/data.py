@@ -366,7 +366,7 @@ class _SaveFeaturesInputSpec(BaseInterfaceInputSpec):
     rsfc = traits.Dict(mandatory=True, dtype=float, desc='resting-state functional connectivity')
     dfc = traits.Dict(mandatory=True, dtype=float, desc='dynamic functional connectivity')
     efc = traits.Dict(mandatory=True, dtype=float, desc='effective functional connectivity')
-    rs_stats = traits.Dict(mandatory=True, dtype=float, desc='dynamic functional connectivity')
+    rs_stats = traits.Dict(mandatory=True, dtype=float, desc='network statistics')
     tfc = traits.Dict({}, dtype=dict, desc='task-based functional connectivity')
     myelin = traits.Dict(mandatory=True, dtype=float, desc='myelin content estimates')
     morph = traits.Dict(mandatory=True, dtype=float, desc='morphometry features')
@@ -428,6 +428,13 @@ class SaveFeatures(SimpleInterface):
 class _SaveDFeaturesInputSpec(BaseInterfaceInputSpec):
     count_files = traits.List(mandatory=True, desc='SC based on streamline count')
     length_files = traits.List(mandatory=True, desc='SC based on streamline length')
+    count_stats = traits.Dict(
+        mandatory=True, dtype=float, desc='network statistics for count-based SC')
+    length_stats = traits.Dict(
+        mandatory=True, dtype=float, desc='network statistics for length-based SC')
+    fa = traits.Dict(desc='region-wise FA values')
+    md = traits.Dict(desc='region-wise MD values')
+
     output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
     dataset = traits.Str(
         mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
@@ -453,7 +460,25 @@ class SaveDFeatures(SimpleInterface):
         for length_file in self.inputs.length_files:
             sc_length = pd.read_csv(length_file, header=None)
             ds_length = f'/sc/length/level{str(sc_length.shape[0])[0]}'
-            write_h5(output_file, ds_length, np.array(sc_length), self.inputs.overwrite)
+            write_h5(output_file, ds_length, np.array(sc_length), self.inputs.overwrite)\
+
+        for level in ['1', '2', '3', '4']:
+            for stats in ['strength', 'betweenness', 'participation', 'efficiency']:
+                ds_count_stats = f'/sc_count_stats/{stats}/level{level}'
+                count_stats = self.inputs.count_stats[f'level{level}_{stats}']
+                write_h5(output_file, ds_count_stats, count_stats, self.inputs.overwrite)
+
+                ds_length_stats = f'/sc_length_stats/{stats}/level{level}'
+                length_stats = self.inputs.length_stats[f'level{level}_{stats}']
+                write_h5(output_file, ds_length_stats, length_stats, self.inputs.overwrite)
+
+            ds_fa = f'/fa/level{level}'
+            fa = self.inputs.fa['level{level}']
+            write_h5(output_file, ds_fa, fa, self.inputs.overwrite)
+
+            ds_md = f'/md/level{level}'
+            md = self.inputs.md['level{level}']
+            write_h5(output_file, ds_md, md, self.inputs.overwrite)
 
         dl.remove(dataset=self.inputs.dataset_dir, reckless='kill', on_failure='continue')
 

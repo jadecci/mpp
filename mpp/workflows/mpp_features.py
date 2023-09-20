@@ -10,10 +10,12 @@ from nipype.interfaces import fsl
 from nipype import config
 
 from mpp.interfaces.data import InitData, SaveFeatures, InitDiffusionData, SaveDFeatures
-from mpp.interfaces.features import RSFC, NetworkStats, TFC, MyelinEstimate, Morphometry, SCWF
+from mpp.interfaces.features import (
+    RSFC, NetworkStats, TFC, MyelinEstimate, Morphometry, SCWF, FAMD)
 from mpp.interfaces.preproc import HCPMinProc, CSD, TCK
 from mpp.utilities.utilities import SimgCmd
 from mpp.utilities.preproc import d_files_intermediate
+from mpp.utilities.features import join_dicts
 
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
@@ -127,16 +129,21 @@ def init_rs_wf(dataset: str, subject: str) -> pe.Workflow:
     inputnode = pe.Node(
         niu.IdentityInterface(fields=['rs_runs', 'rs_files', 'hcpd_b_runs']), name='inputnode')
     rsfc = pe.Node(RSFC(dataset=dataset), name='rsfc')
-    network_stats = pe.Node(NetworkStats(), name='network_stats')
+    network_stats = pe.Node(
+        NetworkStats(), name='network_stats', iterables=[('level', ['1', '2', '3', '4'])])
+    rs_stats = pe.JoinNode(
+        niu.Function(function=join_dicts, output_names=['rs_stats']), name='rs_stats',
+        joinfield=['stats'], joinsource='network_stats')
     outputnode = pe.Node(
         niu.IdentityInterface(fields=['rsfc', 'dfc', 'efc', 'rs_stats']), name='outputnode')
 
     rs_wf.connect([
         (inputnode, rsfc, [
             ('rs_runs', 'rs_runs'), ('rs_files', 'rs_files'), ('hcpd_b_runs', 'hcpd_b_runs')]),
-        (rsfc, network_stats, [('rsfc', 'rsfc')]),
+        (rsfc, network_stats, [('rsfc', 'conn')]),
         (rsfc, outputnode, [('rsfc', 'rsfc'), ('dfc', 'dfc'), ('efc', 'efc')]),
-        (network_stats, outputnode, [('rs_stats', 'rs_stats')])])
+        (network_stats, rs_stats, [('stats', 'in_dict')]),
+        (rs_stats, outputnode, [('rs_stats', 'rs_stats')])])
 
     return rs_wf
 
@@ -191,8 +198,11 @@ def init_d_wf(
     csd = pe.Node(CSD(dataset=dataset, work_dir=tmp_dir, simg_cmd=simg_cmd), name='csd')
     tck = pe.Node(TCK(dataset=dataset, work_dir=tmp_dir, simg_cmd=simg_cmd), name='tck')
 
-    sc = SCWF(subject=subject, work_dir=work_curr, simg_cmd=simg_cmd).run()
+    sc = SCWF(subject=subject, dataset=dataset, work_dir=work_curr, simg_cmd=simg_cmd).run()
     sc_wf = sc.outputs.sc_wf
+    sc_length_stats = pe.Node(NetworkStats(), name='sc_length_stats')
+    sc_count_stats = pe.Node(NetworkStats(), name='sc_count_stats')
+    fa_md = pe.Node(FAMD(), name='fa_md')
 
     save_features = pe.Node(
         SaveDFeatures(output_dir=output_dir, dataset=dataset, subject=subject, overwrite=overwrite),
@@ -234,10 +244,17 @@ def init_d_wf(
             ('t1_files', 'inputnode.t1_files'), ('fs_files', 'inputnode.fs_files'),
             ('fs_dir', 'inputnode.fs_dir')]),
         (tck, sc_wf, [('tck_file', 'inputnode.tck_file')]),
+        (sc_wf, sc_count_stats, [('outputnode.count_files', 'conn_files')]),
+        (sc_wf, sc_length_stats, [('outputnode.length_files', 'length_files')]),
+        (dtifit, fa_md, [('FA', 'fa_file'), ('MD', 'md_file')]),
+        (sc_wf, fa_md, [('outputnode.atlas_files', 'atlas_files')]),
         (init_data, save_features, [('dataset_dir', 'dataset_dir')]),
         (sc_wf, save_features, [
             ('outputnode.count_files', 'count_files'),
-            ('outputnode.length_files', 'length_files')])])
+            ('outputnode.length_files', 'length_files')]),
+        (sc_count_stats, save_features, [('stats', 'count_stats')]),
+        (sc_length_stats, save_features, [('stats', 'length_stats')]),
+        (fa_md, save_features, [('fa', 'fa'), ('md', 'md')])])
 
     return d_wf
 

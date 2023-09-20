@@ -1,6 +1,7 @@
 import subprocess
 from os import environ
 from pathlib import Path
+from sys.float_info import epsilon
 
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 import nipype.pipeline as pe
@@ -71,33 +72,46 @@ class RSFC(SimpleInterface):
 
 
 class _NetworkStatsInputSpec(BaseInterfaceInputSpec):
-    rsfc = traits.Dict(mandatory=True, dtype=float, desc='resting-state functional connectivity')
+    conn = traits.Dict({}, dtype=float, desc='connectivity matrix')
+    conn_files = traits.File('', desc='connectivity matrix file')
 
 
 class _NetworkStatsOutputSpec(TraitedSpec):
-    rs_stats = traits.Dict(dtype=float, desc='dynamic functional connectivity')
+    stats = traits.Dict(dtype=float, desc='network statistics features')
 
 
 class NetworkStats(SimpleInterface):
-    """Compute graph theory based network statistics using
-    (static) resting-state functional connectivity"""
+    """Compute graph theory based network statistics using (static) resting-state functional
+    connectivity or structural connectivity"""
     input_spec = _NetworkStatsInputSpec
     output_spec = _NetworkStatsOutputSpec
 
-    def _run_interface(self, runtime):
-        self._results['rs_stats'] = {}
-        for level in range(4):
-            rsfc = self.inputs.rsfc[f'level{level+1}']
-            strength = bct.strengths_und(rsfc)
-            betweenness = bct.betweenness_wei(rsfc)
-            participation = bct.participation_coef(
-                rsfc, bct.community_louvain(rsfc, B='negative_sym')[0])
-            efficiency = bct.efficiency_wei(rsfc, local=True)
+    def _get_conn(self, level):
+        if self.inputs.conn:
+            return self.inputs.rsfc[f'level{level}']
+        else:
+            conn_file = f'{str(self.inputs.conn_files[0])[-5]}{int(level)-1}.csv'
+            conn = np.array(pd.read_csv(conn_file, header=None))
 
-            self._results['rs_stats'][f'level{level+1}_strength'] = strength
-            self._results['rs_stats'][f'level{level+1}_betweenness'] = betweenness
-            self._results['rs_stats'][f'level{level+1}_participation'] = participation
-            self._results['rs_stats'][f'level{level+1}_efficiency'] = efficiency
+        return conn
+
+    def _compute_stats(self, level):
+        conn = self._get_conn(level)
+
+        stre = bct.strengths_und(conn)
+        betw = bct.betweenness_wei(conn)
+        part = bct.participation_coef(conn, bct.community_louvain(conn, B='negative_sym')[0])
+        effi = bct.efficiency_wei(conn, local=True)
+
+        self._results['stats'][f'level{level}_strength'] = stre
+        self._results['stats'][f'level{level}_betweenness'] = betw
+        self._results['stats'][f'level{level}_participation'] = part
+        self._results['stats'][f'level{level}_efficiency'] = effi
+
+    def _run_interface(self, runtime):
+        self._results['stats'] = {}
+        for level in ['1', '2', '3', '4']:
+            self._compute_stats(level)
 
         return runtime
 
@@ -448,6 +462,8 @@ class SC(SimpleInterface):
 
 class _SCWFInputSpec(BaseInterfaceInputSpec):
     subject = traits.Str(mandatory=True, desc='subject ID')
+    dataset = traits.Str(
+        mandatory=True, desc='name of dataset to get (HCP-YA, HCP-A, HCP-D, ABCD, UKB)')
     work_dir = traits.Directory(mandatory=True, desc='absolute path to work directory')
     simg_cmd = traits.Any(mandatory=True, desc='command for using singularity image (or not)')
 
@@ -526,11 +542,16 @@ class SCWF(SimpleInterface):
             fsl.FLIRT(command=self.inputs.simg_cmd.run_cmd('flirt'), interp='nearestneighbour'),
             name='cort_t1')
         combine_atlas = pe.Node(CombineAtlas(work_dir=tmp_dir), name='combine_atlas')
+        resos = {'HCP-YA': 1.25, 'HCP-A': 1.5, 'HCP-D': 1.5}
+        atlas_ds = pe.Node(fsl.FLIRT(
+            command=self.inputs.simg_cmd.run_cmd(cmd='flirt'), interp='nearestneighbour',
+            apply_isoxfm=resos[self.inputs.dataset]), name='atlas_ds')
 
         sc = pe.Node(SC(work_dir=tmp_dir, simg_cmd=self.inputs.simg_cmd), name='sc')
         outputnode = pe.JoinNode(
-            niu.IdentityInterface(fields=['count_files', 'length_files']), name='outputnode',
-            joinfield=['count_files', 'length_files'], joinsource='split_atlas')
+            niu.IdentityInterface(fields=['count_files', 'length_files', 'atlas_files']),
+            name='outputnode', joinfield=['count_files', 'length_files', 'atlas_files'],
+            joinsource='split_atlas')
 
         self._results['sc_wf'].connect([
             (inputnode, sub_dir, [('fs_dir', 'fs_dir')]),
@@ -563,7 +584,56 @@ class SCWF(SimpleInterface):
             (cort_t1, combine_atlas, [('out_file', 'cort_file')]),
             (inputnode, sc, [('tck_file', 'tck_file')]),
             (split_atlas, sc, [('level', 'level')]),
-            (combine_atlas, sc, [('combined_file', 'atlas_file')]),
+            (combine_atlas, atlas_ds, [('combined_file', 'in_file')]),
+            (atlas_ds, sc, [('out_file', 'atlas_file')]),
+            (atlas_ds, outputnode, [('out_file', 'atlas_files')]),
             (sc, outputnode, [('count_file', 'count_files'), ('length_file', 'length_files')])])
+
+        return runtime
+
+
+class _FAMDInputSpec(BaseInterfaceInputSpec):
+    atlas_files = traits.List(mandatory=True, exists=True, desc='combined atlas in T1 space')
+    fa_file = traits.File(mandatory=True, exists=True, desc='FA file')
+    md_file = traits.File(mandatory=True, exists=True, desc='MD file')
+
+
+class _FAMDOutputSpec(TraitedSpec):
+    fa = traits.Dict(desc='region-wise FA values')
+    md = traits.Dict(desc='region-wise MD values')
+
+
+class FAMD(SimpleInterface):
+    """Compute region-wise FA and MD"""
+    input_spec = _FAMDInputSpec
+    output_spec = _FAMDOutputSpec
+
+    @staticmethod
+    def _extract_data(atlas, data):
+        parcels = np.unique(atlas).astype(int)
+        level = parcels.max() % 100
+        parc = np.zeros(parcels.shape[0])
+
+        for parcel in parcels.nonzero()[0]:
+            selected = data[np.where(atlas == parcel)[0]]
+            selected = selected[~np.isnan(selected)]
+            selected = selected[np.where(np.abs(selected.mean(axis=0)) >= epsilon)[0]]
+            parc[parcel-1] = selected.mean()
+
+        return parc, level
+
+    def _run_interface(self, runtime):
+        self._results['fa'] = {}
+        self._results['md'] = {}
+        data_fa = nib.load(self.inputs.fa_file).get_fdata()
+        data_md = nib.load(self.inputs.md_file).get_fdata()
+
+        for atlas_file in self.inputs.atlas_files:
+            atlas = nib.load(atlas_file).get_fdata()
+            parc_fa, level = self._extract_data(atlas, data_fa)
+            parc_md, _ = self._extract_data(atlas, data_md)
+
+            self._results['fa'][f'level{level}'] = parc_fa
+            self._results['md'][f'level{level}'] = parc_md
 
         return runtime

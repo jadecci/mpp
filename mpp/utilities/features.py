@@ -1,4 +1,4 @@
-import sys
+from sys.float_info import epsilon
 from typing import Union
 from pathlib import Path
 import logging
@@ -57,8 +57,7 @@ def parcellate(
         for parcel in parcels:
             selected = t_vol_resid[:, np.where(parc_mel[mask] == (parcel))[0]]
             selected = selected[:, ~np.isnan(selected[0, :])]
-            selected = selected[
-                       :, np.where(np.abs(selected.mean(axis=0)) >= sys.float_info.epsilon)[0]]
+            selected = selected[:, np.where(np.abs(selected.mean(axis=0)) >= epsilon)[0]]
             parc_vol[parcel-1, :] = selected.mean(axis=1)
 
         tavg_dict[key] = np.vstack((parc_surf, parc_vol))
@@ -302,3 +301,7 @@ def add_annot(sub_dir: str, subject: str, lh_annot: str, rh_annot: str) -> str:
     annot_args = f'--annot {annot_name}'
 
     return annot_args
+
+
+def join_dicts(in_dicts: list) -> dict:
+    return {key: item for d in in_dicts for key, item in d.items()}
