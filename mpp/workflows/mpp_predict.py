@@ -69,7 +69,6 @@ def main() -> None:
         name='init_data')
     cv_split = pe.Node(CrossValSplit(config=config), name='cv_split')
     # cv_split_perm = pe.Node(CrossValSplit(config=config, permutation=True), name='cv_split_perm')
-
     mp_wf.connect([(init_data, cv_split, [('sublists', 'sublists')]),])
     #   (init_data, cv_split_perm, [('sublists', 'sublists')])])
 
@@ -96,14 +95,14 @@ def main() -> None:
     #        levels=args.levels, output_dir=args.output_dir, overwrite=args.overwrite, config=config,
     #        phenotype=args.target),
     #    name='rw_select', joinfield=['results'], joinsource='features')
-    rw_test = pe.Node(
-        RegionwiseModel(mode='test', config=config, features_dir=features_dir), name='rw_test')
-    rw_save = pe.JoinNode(
-        PredictionSave(
-            output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
-            type='regionwise'),
-        name='rw_save', joinfield=['results'], joinsource='features')
-    mp_wf.connect([
+    #rw_test = pe.Node(
+    #    RegionwiseModel(mode='test', config=config, features_dir=features_dir), name='rw_test')
+    #rw_save = pe.JoinNode(
+    #    PredictionSave(
+    #        output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
+    #        type='regionwise'),
+    #    name='rw_save', joinfield=['results'], joinsource='features')
+    #mp_wf.connect([
     #    (init_data, rw_validate, [
     #        ('sublists', 'sublists'), ('phenotypes', 'phenotypes'),
     #        ('phenotypes_perm', 'phenotypes_perm')]),
@@ -113,13 +112,13 @@ def main() -> None:
     #        ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
     #        ('repeat', 'repeat'), ('fold', 'fold')]),
     #    (rw_validate, rw_select, [('results', 'results')]),
-        (init_data, rw_test, [('sublists', 'sublists'), ('phenotypes', 'phenotypes')]),
-        (cv_split, rw_test, [('cv_split', 'cv_split')]),
-        (features, rw_test, [
-            ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
-            ('repeat', 'repeat'), ('fold', 'fold')]),
-     #   (rw_select, rw_test, [('selected', 'selected')]),
-        (rw_test, rw_save, [('results', 'results')])])
+    #    (init_data, rw_test, [('sublists', 'sublists'), ('phenotypes', 'phenotypes')]),
+    #    (cv_split, rw_test, [('cv_split', 'cv_split')]),
+    #    (features, rw_test, [
+    #        ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
+    #        ('repeat', 'repeat'), ('fold', 'fold')]),
+    #    (rw_select, rw_test, [('selected', 'selected')]),
+    #    (rw_test, rw_save, [('results', 'results')])])
 
     # Modality-wise models
     mw_model = pe.Node(ModalitywiseModel(config=config, features_dir=features_dir), name='mw_model')
@@ -166,7 +165,7 @@ def main() -> None:
     #        ('embeddings', 'embeddings'), ('params', 'params'),
             ('level', 'level'), ('repeat', 'repeat'), ('fold', 'fold')]),
     #    (rw_select, if_model, [('selected', 'selected_regions')]),
-        (rw_test, if_model, [('rw_ypred', 'rw_ypred')]),
+    #    (rw_test, if_model, [('rw_ypred', 'rw_ypred')]),
         (mw_model, if_model, [('mw_ypred', 'mw_ypred')]),
         (fw_model, if_model, [('fw_ypred', 'fw_ypred')]),
         (if_model, if_save, [('results', 'results')])])
