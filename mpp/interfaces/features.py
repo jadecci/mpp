@@ -73,7 +73,7 @@ class RSFC(SimpleInterface):
 
 class _NetworkStatsInputSpec(BaseInterfaceInputSpec):
     conn = traits.Dict({}, dtype=float, desc='connectivity matrix')
-    conn_files = traits.File('', desc='connectivity matrix file')
+    conn_files = traits.List('', desc='connectivity matrix file')
 
 
 class _NetworkStatsOutputSpec(TraitedSpec):
@@ -90,7 +90,7 @@ class NetworkStats(SimpleInterface):
         if self.inputs.conn:
             return self.inputs.conn[f'level{level}']
         else:
-            conn_file = f'{str(self.inputs.conn_files[0])[-5]}{int(level)-1}.csv'
+            conn_file = f'{str(self.inputs.conn_files[0])[:-5]}{int(level)-1}.csv'
             conn = np.array(pd.read_csv(conn_file, header=None))
 
         return conn
@@ -542,7 +542,7 @@ class SCWF(SimpleInterface):
         resos = {'HCP-YA': 1.25, 'HCP-A': 1.5, 'HCP-D': 1.5}
         atlas_ds = pe.Node(fsl.FLIRT(
             command=self.inputs.simg_cmd.run_cmd(cmd='flirt'), interp='nearestneighbour',
-            apply_isoxfm=resos[self.inputs.dataset]), name='atlas_ds')
+            apply_isoxfm=resos[self.inputs.dataset], datatype='int'), name='atlas_ds')
 
         sc = pe.Node(SC(work_dir=tmp_dir, simg_cmd=self.inputs.simg_cmd), name='sc')
         outputnode = pe.JoinNode(
@@ -581,7 +581,8 @@ class SCWF(SimpleInterface):
             (cort_t1, combine_atlas, [('out_file', 'cort_file')]),
             (inputnode, sc, [('tck_file', 'tck_file')]),
             (split_atlas, sc, [('level', 'level')]),
-            (combine_atlas, atlas_ds, [('combined_file', 'in_file')]),
+            (combine_atlas, atlas_ds, [
+                ('combined_file', 'in_file'), ('combined_file', 'reference')]),
             (atlas_ds, sc, [('out_file', 'atlas_file')]),
             (atlas_ds, outputnode, [('out_file', 'atlas_files')]),
             (sc, outputnode, [('count_file', 'count_files'), ('length_file', 'length_files')])])
@@ -608,7 +609,7 @@ class FAMD(SimpleInterface):
     @staticmethod
     def _extract_data(atlas, data):
         parcels = np.unique(atlas).astype(int)
-        level = parcels.max() % 100
+        level = parcels.max() // 100
         parc = np.zeros(parcels.shape[0])
 
         for parcel in parcels.nonzero()[0]:

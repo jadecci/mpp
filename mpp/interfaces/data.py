@@ -473,11 +473,11 @@ class SaveDFeatures(SimpleInterface):
                 write_h5(output_file, ds_length_stats, length_stats, self.inputs.overwrite)
 
             ds_fa = f'/fa/level{level}'
-            fa = self.inputs.fa['level{level}']
+            fa = self.inputs.fa[f'level{level}']
             write_h5(output_file, ds_fa, fa, self.inputs.overwrite)
 
             ds_md = f'/md/level{level}'
-            md = self.inputs.md['level{level}']
+            md = self.inputs.md[f'level{level}']
             write_h5(output_file, ds_md, md, self.inputs.overwrite)
 
         dl.remove(dataset=self.inputs.dataset_dir, reckless='kill', on_failure='continue')
