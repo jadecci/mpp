@@ -51,7 +51,7 @@ def main() -> None:
     args = parser.parse_args()
 
     simg_cmd = SimgCmd(
-        simg=args.simg, work_dir=args.work_dir, out_dir=args.output_dir)
+        simg=args.simg, work_dir=args.work_dir, out_dir=args.output_dir, int_dir=args.int_dir)
 
     sublist = pd.read_csv(args.sublist, header=None).squeeze('columns')
     for subject in sublist:
@@ -202,7 +202,7 @@ def init_d_wf(
         SaveDFeatures(output_dir=output_dir, dataset=dataset, subject=subject, overwrite=overwrite),
         name='save_features')
 
-    if (dataset == 'HCP-A' or dataset == 'HCP-D') and int_dir is not None:
+    if (dataset == 'HCP-A' or dataset == 'HCP-D') and int_dir is None:
         hcp_proc = HCPMinProc(
             dataset=dataset, work_dir=work_curr, subject=subject, simg_cmd=simg_cmd).run()
         hcp_proc_wf = hcp_proc.outputs.hcp_proc_wf
@@ -218,7 +218,7 @@ def init_d_wf(
                 ('outputnode.bvec', 'bvec'), ('outputnode.mask', 'mask')]),
             (hcp_proc_wf, tck, [('outputnode.bval', 'bval'), ('outputnode.bvec', 'bvec')])])
 
-    elif dataset == 'HCP-YA' or int_dir is None:
+    elif dataset == 'HCP-YA' or int_dir is not None:
         split_files = pe.Node(
             niu.Function(
                 function=d_files_intermediate, output_names=['data', 'bval', 'bvec', 'mask']),

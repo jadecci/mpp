@@ -299,8 +299,9 @@ class InitDiffusionData(SimpleInterface):
         fs_dir = Path(subject_dir, 'T1w', self.inputs.subject)
         mni_dir = Path(subject_dir, 'MNINonLinear')
         dl.get(
-            path=mni_dir, dataset=dataset_dir, get_data=False, source=source,
-            on_failure='stop')
+            path=anat_dir, dataset=dataset_dir, get_data=False, source=source, on_failure='stop')
+        dl.get(
+            path=mni_dir, dataset=dataset_dir, get_data=False, source=source, on_failure='stop')
 
         fs_files = {
             'lh_aparc': Path(fs_dir, 'label', 'lh.aparc.annot'),
