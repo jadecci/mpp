@@ -51,7 +51,7 @@ def main() -> None:
     args = parser.parse_args()
 
     simg_cmd = SimgCmd(
-        simg=args.simg, work_dir=args.work_dir, out_dir=args.output_dir)
+        simg=args.simg, work_dir=args.work_dir, out_dir=args.output_dir, int_dir=args.int_dir)
 
     sublist = pd.read_csv(args.sublist, header=None).squeeze('columns')
     for subject in sublist:

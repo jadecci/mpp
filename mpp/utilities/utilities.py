@@ -5,13 +5,16 @@ base_dir = Path(__file__).resolve().parent.parent.parent
 
 
 class SimgCmd:
-    def __init__(self, simg: Union[str, None], work_dir: Path,
-                 out_dir: Path) -> None:
+    def __init__(
+            self, simg: Union[str, None], work_dir: Path, out_dir: Path,
+            int_dir: Union[Path, None]) -> None:
         if simg is None:
             self.cmd = None
         else:
             self.cmd = (f'singularity run -B {work_dir}:{work_dir},'
                         f'{out_dir}:{out_dir},{base_dir}:{base_dir}')
+            if int_dir is not None:
+                self.cmd = f'{self.cmd},{int_dir}:{int_dir}'
             self._simg = simg
 
     def run_cmd(self, cmd: str, options: Union[str, None] = None) -> str:
