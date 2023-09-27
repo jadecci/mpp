@@ -53,8 +53,9 @@ def random_forest_cv(
         train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray,
         test_y: np.ndarray) -> tuple[float, float]:
     params = {
-        'n_estimator': np.linspace(100, 1000, 4), 'min_samples_split': np.linspace(0.01, 0.1, 10),
-        'max_features': np.linspace(1, train_x.shape[1], train_x.shape[1])}
+        'n_estimators': np.linspace(100, 1000, 4, dtype=int),
+        'min_samples_split': np.linspace(0.01, 0.1, 10),
+        'max_features': np.linspace(1, train_x.shape[1], train_x.shape[1], dtype=int)}
     rfr_cv = GridSearchCV(
         estimator=RandomForestRegressor(criterion='friedman_mse'), param_grid=params)
     rfr_cv.fit(train_x, train_y)
@@ -70,8 +71,9 @@ def random_patches(
         train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray,
         test_y: np.ndarray) -> tuple[float, float]:
     params = {
-        'n_estimators': np.linspace(10, 100, 5), 'max_samples': np.linspace(0.5, 0.8, 4),
-        'max_features': np.linspace(100, 1000, 10)}
+        'n_estimators': np.linspace(100, 1000, 4, dtype=int),
+        'max_samples': np.linspace(0.5, 0.8, 4),
+        'max_features': np.linspace(100, 1000, 10, dtype=int)}
     rp = GridSearchCV(estimator=BaggingRegressor(estimator=KernelRidgeCorr()), param_grid=params)
     rp.fit(train_x, train_y)
 
