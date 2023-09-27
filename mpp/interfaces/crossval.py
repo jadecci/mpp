@@ -7,7 +7,7 @@ from sklearn.model_selection import RepeatedStratifiedKFold
 from statsmodels.stats.multitest import multipletests
 
 from mpp.utilities.models import (
-    elastic_net, kernel_ridge_corr_cv, permutation_test)
+    elastic_net, kernel_ridge_corr_cv, linear, random_forest_cv, random_patches, permutation_test)
 from mpp.utilities.data import write_h5, cv_extract_data, cv_extract_subject_data
 
 class _CrossValSplitInputSpec(BaseInterfaceInputSpec):
@@ -452,7 +452,6 @@ class _IntegratedFeaturesModelInputSpec(BaseInterfaceInputSpec):
     #    mandatory=True, dtype=list, desc='selected regions for each parcellation level')
     #mw_ypred = traits.Dict(desc='Predicted psychometric values from modality-wise models')
     fw_ypred = traits.Dict(desc='Predicted psychometric values from feature-wise models')
-    config = traits.Dict(mandatory=True, desc='configuration settings')
 
 
 class _IntegratedFeaturesModelOutputSpec(TraitedSpec):
@@ -464,23 +463,20 @@ class IntegratedFeaturesModel(SimpleInterface):
     input_spec = _IntegratedFeaturesModelInputSpec
     output_spec = _IntegratedFeaturesModelOutputSpec
 
-    def _en(
+    def _lr(
             self, train_y: np.ndarray, test_y: np.ndarray, train_ypred: np.ndarray,
-            test_ypred: np.ndarray, key: str) -> dict:
-        r, cod, _ = elastic_net(
-            train_ypred, train_y, test_ypred, test_y, int(self.inputs.config['n_alphas']))
-        results = {f'en_r_{key}': r, f'en_cod_{key}': cod}
+            test_ypred: np.ndarray, key: str) -> None:
+        r, cod = linear(
+            train_ypred, train_y, test_ypred, test_y)
+        self._results['results'][f'lr_r_{key}'] = r
+        self._results['results'][f'lr_cod_{key}'] = cod
 
-        return results
-
-    @staticmethod
-    def _kr_corr(
-            train_y: np.ndarray, test_y: np.ndarray, train_ypred: np.ndarray,
-            test_ypred: np.ndarray, key: str) -> dict:
-        r, cod, _, _ = kernel_ridge_corr_cv(train_ypred, train_y, test_ypred, test_y)
-        results = {f'krcorr_r_{key}': r, f'krcorr_cod_{key}': cod}
-
-        return results
+    def _rfr(
+            self, train_y: np.ndarray, test_y: np.ndarray, train_ypred: np.ndarray,
+            test_ypred: np.ndarray, key: str) -> None:
+        r, cod = random_forest_cv(train_ypred, train_y, test_ypred, test_y)
+        self._results['results'][f'rfr_r_{key}'] = r
+        self._results['results'][f'rfr_cod_{key}'] = cod
 
     def _run_interface(self, runtime):
         all_sub = sum(self.inputs.sublists.values(), [])
@@ -501,8 +497,74 @@ class IntegratedFeaturesModel(SimpleInterface):
         train_ypred = self.inputs.fw_ypred['train_ypred']
         test_ypred = self.inputs.fw_ypred['test_ypred']
 
-        en = self._en(train_y, test_y, train_ypred, test_ypred, key)
-        kr_corr = self._kr_corr(train_y, test_y, train_ypred, test_ypred, key)
-        self._results['results'] = en | kr_corr
+        self._results['results'] = {}
+        self._lr(train_y, test_y, train_ypred, test_ypred, key)
+        self._rfr(train_y, test_y, train_ypred, test_ypred, key)
+
+        return runtime
+
+
+class _RandomPatchesModelInputSpec(BaseInterfaceInputSpec):
+    sublists = traits.Dict(mandatory=True, dtype=list, desc='available subjects in each dataset')
+    features_dir = traits.Dict(
+        mandatory=True, dtype=str, desc='absolute path to extracted features for each dataset')
+    phenotypes = traits.Dict(mandatory=True, dtype=float, desc='phenotype values')
+    embeddings = traits.Dict(mandatory=True, desc='embeddings for gradients')
+    params = traits.Dict(mandatory=True, desc='parameters for anatomical connectivity')
+    cv_split = traits.Dict(mandatory=True, dtype=list, desc='test subjects of each fold')
+
+    level = traits.Str(mandatory=True, desc='parcellation level (1 to 4)')
+    repeat = traits.Int(mandatory=True, desc='current repeat of cross-validation')
+    fold = traits.Int(mandatory=True, desc='current fold in the repeat')
+
+
+class _RandomPatchesModelOutputSpec(TraitedSpec):
+    results = traits.Dict(desc='accuracy results')
+
+
+class RandomPatchesModel(SimpleInterface):
+    """Train and test the integrated features model"""
+    input_spec = _RandomPatchesModelInputSpec
+    output_spec = _RandomPatchesModelOutputSpec
+
+    def _extract_data(self, subjects: list) -> tuple[np.ndarray, np.ndarray,]:
+        y = np.zeros(len(subjects))
+        x = np.array([])
+
+        for i, subject in enumerate(subjects):
+            x = cv_extract_subject_data(
+                self.inputs.sublists, subject, self.inputs.features_dir, self.inputs.level,
+                False, self.inputs.embeddings, self.inputs.params,
+                self.inputs.repeat)
+            x_task = np.concatenate(([
+                x[3][:, :, i][np.triu_indices_from(x[3][:, :, i], k=1)]
+                for i in range(x[3].shape[2])]))
+            x_curr = np.concatenate((
+                x[0][np.triu_indices_from(x[0], k=1)], x[1][np.triu_indices_from(x[1], k=1)],
+                x[2][np.triu_indices_from(x[2], k=1)], x_task, x[4], x[5], x[6], x[7], x[8], x[9],
+                x[10], x[11], x[12].flatten(), x[13][np.triu_indices_from(x[13], k=1)],
+                x[14][np.triu_indices_from(x[14], k=1)], x[15][np.triu_indices_from(x[15], k=1)]))
+            if i == 0:
+                x = x_curr
+            else:
+                x = np.vstack((x, x_curr))
+            # TODO: diffusion features
+            y[i] = self.inputs.phenotypes[subjects[i]]
+
+        return x, y
+
+    def _run_interface(self, runtime):
+        self._results['results'] = {}
+        all_sub = sum(self.inputs.sublists.values(), [])
+        test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
+        train_sub = [subject for subject in all_sub if subject not in test_sub]
+
+        train_x, train_y = self._extract_data(train_sub)
+        test_x, test_y = self._extract_data(test_sub)
+
+        key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
+        r, cod = random_patches(train_x, train_y, test_x, test_y)
+        self._results['results'][f'rp_r_{key}'] = r
+        self._results['results'][f'rp_cod_{key}'] = cod
 
         return runtime

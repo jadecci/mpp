@@ -7,7 +7,8 @@ import nipype.pipeline as pe
 
 from mpp.interfaces.data import InitFeatures, PredictionSave
 from mpp.interfaces.crossval import (
-    CrossValSplit, RegionwiseModel, ModalitywiseModel, FeaturewiseModel, IntegratedFeaturesModel)
+    CrossValSplit, RegionwiseModel, ModalitywiseModel, FeaturewiseModel, IntegratedFeaturesModel,
+    RandomPatchesModel)
 from mpp.interfaces.features import CVFeatures
 
 base_dir = Path(__file__).resolve().parent.parent
@@ -151,7 +152,7 @@ def main() -> None:
         (fw_model, fw_save, [('results', 'results')])])
 
     # Integrated features model
-    if_model = pe.Node(IntegratedFeaturesModel(config=config), name='if_model')
+    if_model = pe.Node(IntegratedFeaturesModel(), name='if_model')
     if_save = pe.JoinNode(
         PredictionSave(
             output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
@@ -169,6 +170,19 @@ def main() -> None:
     #    (mw_model, if_model, [('mw_ypred', 'mw_ypred')]),
         (fw_model, if_model, [('fw_ypred', 'fw_ypred')]),
         (if_model, if_save, [('results', 'results')])])
+
+    # Random patches model
+    rp_model = pe.Node(RandomPatchesModel(), name='rp_model')
+    rp_save = pe.JoinNode(
+        PredictionSave(
+            output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
+            type='randompatches'),
+        name='rp_save', joinfield=['results'], joinsource='features')
+    mp_wf.connect([
+        (init_data, rp_model, [('sublists', 'sublists'), ('phenotypes', 'phenotypes')]),
+        (cv_split, rp_model, [('cv_split', 'cv_split')]),
+        (features, rp_model, [('level', 'level'), ('repeat', 'repeat'), ('fold', 'fold')]),
+        (rp_model, rp_save, [('results', 'results')])])
 
     mp_wf.config['execution']['try_hard_link_datasink'] = 'false'
     mp_wf.config['execution']['crashfile_format'] = 'txt'

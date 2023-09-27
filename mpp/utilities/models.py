@@ -1,7 +1,8 @@
 import numpy as np
-from sklearn.linear_model import ElasticNetCV
-from sklearn.model_selection import RepeatedKFold
-from sklearn.metrics import r2_score
+from sklearn.linear_model import ElasticNetCV, LinearRegression
+from sklearn.ensemble import RandomForestRegressor, BaggingRegressor
+from mpp.interfaces.models import KernelRidgeCorr
+from sklearn.model_selection import GridSearchCV
 
 
 def elastic_net(
@@ -20,57 +21,65 @@ def elastic_net(
     return r, cod, en
 
 
-def kernel_ridge_corr(
-        train_x: np.ndarray, train_y: np.ndarray, lambda_val: float, test_x: np.ndarray,
-        test_y: np.ndarray) -> tuple[float, float, np.ndarray, np.ndarray]:
-    k_lambda = train_x + lambda_val * np.eye(train_x.shape[0])
-    one_row = np.ones((train_x.shape[0], 1))
-
-    # assuming N(features) > N(subjects)
-    try:
-        b_scalar = (
-                np.linalg.solve(one_row.T @ np.linalg.solve(k_lambda, one_row), one_row.T)
-                @ np.linalg.solve(k_lambda, train_y))
-    except np.linalg.LinAlgError:
-        b_scalar = (
-                np.linalg.lstsq(one_row.T @ np.linalg.lstsq(k_lambda, one_row), one_row.T)
-                @ np.linalg.lstsq(k_lambda, train_y))
-
-    try:
-        alpha = np.linalg.solve(k_lambda, train_y.reshape(one_row.shape) - one_row * b_scalar)
-    except np.linalg.LinAlgError:
-        alpha = np.linalg.lstsq(k_lambda, train_y.reshape(one_row.shape) - one_row * b_scalar)
-
-    train_ybar = train_x @ alpha + np.ones((train_y.shape[0], 1)) * b_scalar
-    test_ybar = test_x @ alpha + np.ones((test_y.shape[0], 1)) * b_scalar
-    r = np.corrcoef(test_y, test_ybar.T)[0, 1]
-
-    return r, r2_score(test_y, test_ybar), train_ybar.T, test_ybar.T
-
-
 def kernel_ridge_corr_cv(
         train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray,
         test_y: np.ndarray) -> tuple[float, float, np.ndarray, np.ndarray]:
     lambdas = [0, .0001, .0005, .001, .005, .01, .05, .1, .5, 1, 5, 10]
-    kernel_x = np.corrcoef(np.vstack((train_x, test_x)))
-    train_x_kernel = kernel_x[np.ix_(range(train_x.shape[0]), range(train_x.shape[0]))]
-    test_x_kernel = kernel_x[
-        np.ix_(range(train_x.shape[0], kernel_x.shape[0]), range(train_x.shape[0]))]
+    krc_cv = GridSearchCV(estimator=KernelRidgeCorr(), param_grid={'lambda_val': lambdas})
+    krc_cv.fit(train_x, train_y)
 
-    r_lambdas = np.zeros(len(lambdas))
-    for i, lambda_curr in enumerate(lambdas):
-        rskf = RepeatedKFold(n_splits=10, n_repeats=1, random_state=None)
-        for train_ind, test_ind in rskf.split(train_x_kernel):
-            r_curr, _, _, _ = kernel_ridge_corr(
-                train_x_kernel[np.ix_(train_ind, train_ind)], train_y[train_ind], lambda_curr,
-                train_x_kernel[np.ix_(test_ind, train_ind)], train_y[test_ind])
-            r_lambdas[i] = r_lambdas[i] + r_curr / 10
+    train_ypred = krc_cv.predict(train_x)
+    test_ypred = krc_cv.predict(test_y)
+    r = np.corrcoef(test_y, test_ypred.T)[0, 1]
+    cod = krc_cv.score(test_x, test_y)
 
-    lambda_best = lambdas[np.argmax(r_lambdas)]
-    r, cod, train_ypred, test_ypred = kernel_ridge_corr(
-        train_x_kernel, train_y, lambda_best, test_x_kernel, test_y)
+    return r, cod, train_ypred.T, test_ypred.T
 
-    return r, cod, train_ypred, test_ypred
+
+def linear(
+        train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray,
+        test_y: np.ndarray) -> tuple[float, float]:
+    lr = LinearRegression()
+    lr.fit(train_x, train_y)
+
+    test_ybar = lr.predict(test_x)
+    r = np.corrcoef(test_y, test_ybar)[0, 1]
+    cod = lr.score(test_x, test_y)
+
+    return r, cod
+
+
+def random_forest_cv(
+        train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray,
+        test_y: np.ndarray) -> tuple[float, float]:
+    params = {
+        'n_estimator': np.linspace(100, 1000, 4), 'min_samples_split': np.linspace(0.01, 0.1, 10),
+        'max_features': np.linspace(1, train_x.shape[1], train_x.shape[1])}
+    rfr_cv = GridSearchCV(
+        estimator=RandomForestRegressor(criterion='friedman_mse'), param_grid=params)
+    rfr_cv.fit(train_x, train_y)
+
+    test_ybar = rfr_cv.predict(test_x)
+    r = np.corrcoef(test_y, test_ybar)[0, 1]
+    cod = rfr_cv.score(test_x, test_y)
+
+    return r, cod
+
+
+def random_patches(
+        train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray,
+        test_y: np.ndarray) -> tuple[float, float]:
+    params = {
+        'n_estimators': np.linspace(10, 100, 5), 'max_samples': np.linspace(0.5, 0.8, 4),
+        'max_features': np.linspace(100, 1000, 10)}
+    rp = GridSearchCV(estimator=BaggingRegressor(estimator=KernelRidgeCorr()), param_grid=params)
+    rp.fit(train_x, train_y)
+
+    test_ybar = rp.predict(test_x)
+    r = np.corrcoef(test_y, test_ybar)[0, 1]
+    cod = rp.score(test_x, test_y)
+
+    return r, cod
 
 
 def permutation_test(acc: np.ndarray, null_acc: np.ndarray) -> np.ndarray:
