@@ -498,8 +498,8 @@ class IntegratedFeaturesModel(SimpleInterface):
             #self.inputs.rw_ypred['test_ypred'],
             #self.inputs.mw_ypred['test_ypred'],
         #    self.inputs.fw_ypred['test_ypred']))
-        train_ypred = self.inputs.fw_ypred(['train_ypred'])
-        test_ypred = self.inputs.fw_ypred(['test_ypred'])
+        train_ypred = self.inputs.fw_ypred['train_ypred']
+        test_ypred = self.inputs.fw_ypred['test_ypred']
 
         en = self._en(train_y, test_y, train_ypred, test_ypred, key)
         kr_corr = self._kr_corr(train_y, test_y, train_ypred, test_ypred, key)
