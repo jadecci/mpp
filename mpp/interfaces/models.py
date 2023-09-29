@@ -44,7 +44,8 @@ class KernelRidgeCorr(BaseEstimator):
 
         x_kernel = np.corrcoef(np.vstack((self.x_train_, x_checked)))
         x_test_kernel = x_kernel[np.ix_(
-            range(self.x_train_.shape[0], x_checked.shape[0]), range(self.x_train_.shape[0]))]
+            range(self.x_train_.shape[0], self.x_train_.shape[0] + x_checked.shape[0]),
+            range(self.x_train_.shape[0]))]
         y_pred = x_test_kernel @ self.coef_ + np.ones((x_test_kernel.shape[0], 1)) * self.intercept_
 
         return y_pred

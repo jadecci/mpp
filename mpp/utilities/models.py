@@ -29,7 +29,7 @@ def kernel_ridge_corr_cv(
     krc_cv.fit(train_x, train_y)
 
     train_ypred = krc_cv.predict(train_x)
-    test_ypred = krc_cv.predict(test_y)
+    test_ypred = krc_cv.predict(test_x)
     r = np.corrcoef(test_y, test_ypred.T)[0, 1]
     cod = krc_cv.score(test_x, test_y)
 
@@ -73,8 +73,10 @@ def random_patches(
     params = {
         'n_estimators': np.linspace(100, 1000, 4, dtype=int),
         'max_samples': np.linspace(0.5, 0.8, 4),
-        'max_features': np.linspace(100, 1000, 10, dtype=int)}
-    rp = GridSearchCV(estimator=BaggingRegressor(estimator=KernelRidgeCorr()), param_grid=params)
+        'max_features': np.linspace(500, 1000, 5, dtype=int)}
+    lambdas = [0, .0001, .0005, .001, .005, .01, .05, .1, .5, 1, 5, 10]
+    krc_cv = GridSearchCV(estimator=KernelRidgeCorr(), param_grid={'lambda_val': lambdas})
+    rp = GridSearchCV(estimator=BaggingRegressor(estimator=krc_cv), param_grid=params)
     rp.fit(train_x, train_y)
 
     test_ybar = rp.predict(test_x)

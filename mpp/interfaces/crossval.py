@@ -529,7 +529,7 @@ class RandomPatchesModel(SimpleInterface):
 
     def _extract_data(self, subjects: list) -> tuple[np.ndarray, np.ndarray,]:
         y = np.zeros(len(subjects))
-        x = np.array([])
+        x_all = np.array([])
 
         for i, subject in enumerate(subjects):
             x = cv_extract_subject_data(
@@ -545,13 +545,13 @@ class RandomPatchesModel(SimpleInterface):
                 x[10], x[11], x[12].flatten(), x[13][np.triu_indices_from(x[13], k=1)],
                 x[14][np.triu_indices_from(x[14], k=1)], x[15][np.triu_indices_from(x[15], k=1)]))
             if i == 0:
-                x = x_curr
+                x_all = x_curr[np.newaxis, ...]
             else:
-                x = np.vstack((x, x_curr))
+                x_all = np.vstack((x_all, x_curr[np.newaxis, ...]))
             # TODO: diffusion features
             y[i] = self.inputs.phenotypes[subjects[i]]
 
-        return x, y
+        return x_all, y
 
     def _run_interface(self, runtime):
         self._results['results'] = {}
