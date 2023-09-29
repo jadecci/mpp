@@ -7,7 +7,7 @@ import nipype.pipeline as pe
 
 from mpp.interfaces.data import InitFeatures, PredictionSave
 from mpp.interfaces.crossval import (
-    CrossValSplit, RegionwiseModel, ModalitywiseModel, FeaturewiseModel, IntegratedFeaturesModel,
+    CrossValSplit, RegionwiseModel, FeaturewiseModel, ConfoundsModel, IntegratedFeaturesModel,
     RandomPatchesModel)
 from mpp.interfaces.features import CVFeatures
 
@@ -136,6 +136,19 @@ def main() -> None:
             ('repeat', 'repeat'), ('fold', 'fold')]),
         (fw_model, fw_save, [('results', 'results')])])
 
+    # Confound models
+    conf_model = pe.Node(ConfoundsModel(), name='conf_model')
+    conf_save = pe.JoinNode(
+        PredictionSave(
+            output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
+            type='confounds'), name='conf_save', joinfield=['results'], joinsource='features')
+    mp_wf.connect([
+        (init_data, conf_model, [
+            ('sublists', 'sublists'), ('confounds', 'confounds'), ('phenotypes', 'phenotypes'),
+            ('level', 'level'), ('repeat', 'repeat'), ('fold', 'fold')]),
+        (cv_split, conf_model, [('cv_split', 'cv_split')]),
+        (conf_model, conf_save, [('results', 'results')])])
+
     # Integrated features model
     if_model = pe.Node(IntegratedFeaturesModel(), name='if_model')
     if_save = pe.JoinNode(
@@ -148,7 +161,7 @@ def main() -> None:
         (init_data, if_model, [('sublists', 'sublists'),('phenotypes', 'phenotypes')]),
         (cv_split, if_model, [('cv_split', 'cv_split')]),
         (features, if_model, [
-    #        ('embeddings', 'embeddings'), ('params', 'params'),
+    #       ('embeddings', 'embeddings'), ('params', 'params'),
             ('level', 'level'), ('repeat', 'repeat'), ('fold', 'fold')]),
     #    (rw_select, if_model, [('selected', 'selected_regions')]),
     #    (rw_test, if_model, [('rw_ypred', 'rw_ypred')]),

@@ -293,7 +293,9 @@ class FeaturewiseModel(SimpleInterface):
 
         return x_all, y
 
-    def _test(self, train_x, train_y, test_x, test_y, feature):
+    def _test(
+            self, train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
+            feature: str) -> [np.ndarray, np.ndarray]:
         key = (f'{feature}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
                f'_level{self.inputs.level}')
 
@@ -331,6 +333,72 @@ class FeaturewiseModel(SimpleInterface):
                     'test_ypred': np.vstack((ypred['test_ypred'], test_pred))}
         self._results['fw_ypred'] = {
             'train_ypred': ypred['train_ypred'].T, 'test_ypred': ypred['test_ypred'].T}
+
+        return runtime
+
+
+class _ConfoundsModelInputSpec(BaseInterfaceInputSpec):
+    sublists = traits.Dict(mandatory=True, dtype=list, desc='available subjects in each dataset')
+    phenotypes = traits.Dict(mandatory=True, dtype=float, desc='phenotype values')
+    confounds = traits.Dict(dtype=dict, desc='confound values from subjects in sublists')
+    cv_split = traits.Dict(mandatory=True, dtype=list, desc='test subjects of each fold')
+    level = traits.Str(mandatory=True, desc='parcellation level (1 to 4)')
+    repeat = traits.Int(mandatory=True, desc='current repeat of cross-validation')
+    fold = traits.Int(mandatory=True, desc='current fold in the repeat')
+
+
+class _ConfoundsModelOutputSpec(TraitedSpec):
+    results = traits.Dict(desc='accuracy results')
+
+
+class ConfoundsModel(SimpleInterface):
+    """Train and test confound models"""
+    input_spec = _ConfoundsModelInputSpec
+    output_spec = _ConfoundsModelOutputSpec
+
+    def _extract_data(self, subjects: list) -> tuple[np.ndarray, np.ndarray]:
+        y = np.zeros(len(subjects))
+        x = np.zeros((len(subjects), len(list(self.inputs.confounds.keys()))))
+        for i, subject in enumerate(subjects):
+            for j, conf in enumerate(list(self.inputs.confounds.keys())):
+                x[i, j] = self.inputs.confounds[conf][subjects[i]]
+            y[i] = self.inputs.phenotypes[subjects[i]]
+
+        return x, y
+
+    def _test(
+            self, train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
+            confound: str) -> None:
+        key = (f'{confound}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
+               f'_level{self.inputs.level}')
+
+        r, cod, _ = elastic_net(
+            train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
+        self._results['results'][f'en_r_{key}'] = r
+        self._results['results'][f'en_cod_{key}'] = cod
+
+        r, cod, train_ypred, test_ypred = kernel_ridge_corr_cv(train_x, train_y, test_x, test_y)
+        self._results['results'][f'krcorr_r_{key}'] = r
+        self._results['results'][f'krcorr_cod_{key}'] = cod
+
+    def _run_interface(self, runtime):
+        self._results['results'] = {}
+        all_sub = sum(self.inputs.sublists.values(), [])
+        test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
+        train_sub = [subject for subject in all_sub if subject not in test_sub]
+
+        train_x, train_y = self._extract_data(train_sub)
+        test_x, test_y = self._extract_data(test_sub)
+
+        # Single-confound models
+        for i, conf in enumerate(list(self.inputs.confounds.keys())):
+            self._test(train_x[:, i], train_y, test_x[:, i], test_y, conf)
+        # Grouped-confound models
+        self._test(train_x[:, [0, 1, 5, 6, 7]], train_y, test_x[:, [0, 1, 5, 6, 7]], test_y, 'demo')
+        self._test(train_x[:, [3, 4]], train_y, test_x[:, [3, 4]], test_y, 'brain')
+        self._test(train_x[:, [0, 1, 2]], train_y, test_x[:, [0, 1, 2]], test_y, 'qn')
+        # All-confound models
+        self._test(train_x, train_y, test_x, test_y, 'all')
 
         return runtime
 

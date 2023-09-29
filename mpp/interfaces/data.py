@@ -516,11 +516,14 @@ class InitFeatures(SimpleInterface):
                 sublist = [str(file)[-19:-9] for file in features_files]
             else:
                 sublist = [str(file)[-9:-3] for file in features_files]
-            sublist, self._results['confounds'] = pheno_conf_hcp(
+            sublist, _ = pheno_conf_hcp(
                 dataset, self.inputs.phenotypes_dir[dataset], self.inputs.features_dir[dataset],
                 sublist)
             sublist, pheno, pheno_perm = pheno_hcp(
                 dataset, self.inputs.phenotypes_dir[dataset], self.inputs.phenotype, sublist)
+            _, self._results['confounds'] = pheno_conf_hcp(
+                dataset, self.inputs.phenotypes_dir[dataset], self.inputs.features_dir[dataset],
+                sublist)
             self._results['phenotypes'] = pheno
             self._results['phenotypes_perm'] = pheno_perm
             self._results['sublists'][dataset] = sublist
