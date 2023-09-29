@@ -121,21 +121,6 @@ def main() -> None:
     #    (rw_select, rw_test, [('selected', 'selected')]),
     #    (rw_test, rw_save, [('results', 'results')])])
 
-    # Modality-wise models
-    #mw_model = pe.Node(ModalitywiseModel(config=config, features_dir=features_dir), name='mw_model')
-    #mw_save = pe.JoinNode(
-    #    PredictionSave(
-    #        output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
-    #        type='modalitywise'),
-    #    name='mw_save', joinfield=['results'], joinsource='features')
-    #mp_wf.connect([
-    #    (init_data, mw_model, [('sublists', 'sublists'), ('phenotypes', 'phenotypes')]),
-    #    (cv_split, mw_model, [('cv_split', 'cv_split')]),
-    #    (features, mw_model, [
-    #        ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
-    #        ('repeat', 'repeat'), ('fold', 'fold')]),
-    #    (mw_model, mw_save, [('results', 'results')])])
-
     # Feature-wise models
     fw_model = pe.Node(FeaturewiseModel(config=config, features_dir=features_dir), name='fw_model')
     fw_save = pe.JoinNode(
