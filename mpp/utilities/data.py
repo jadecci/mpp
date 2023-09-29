@@ -95,6 +95,10 @@ def pheno_hcp(
             dtype={'src_subject_id': str, col_names[pheno_name]: float})[[
                 'src_subject_id', col_names[pheno_name]]]
 
+        if dataset == 'HCP-A' and pheno_name == 'fluidcogcomp':
+            pheno_data.drop(
+                index=pheno_data.loc[pheno_data[col_names[pheno_name]] == 999].index, inplace=True)
+
     else:
         raise DatasetError()
 
