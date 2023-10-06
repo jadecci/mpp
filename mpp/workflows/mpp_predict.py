@@ -91,13 +91,15 @@ def main() -> None:
         mp_wf, _ = confound_wf(mp_wf, init_data, cv_split, args)
     elif args.only == 'randompatches':
         mp_wf = randompatches_wf(mp_wf, init_data, cv_split, features, args)
+    elif args.only == 'featurewise':
+        mp_wf, _ = featurewise_wf(
+            mp_wf, init_data, cv_split, features, config, features_dir, args)
     else:
         mp_wf, fw_model = featurewise_wf(
             mp_wf, init_data, cv_split, features, config, features_dir, args)
-        if args.only != 'featurewise':
-            mp_wf, conf_model = confound_wf(mp_wf, init_data, cv_split, args)
-            mp_wf = integratedfeatures_wf(
-                mp_wf, init_data, cv_split, features, fw_model, conf_model, args)
+        mp_wf, conf_model = confound_wf(mp_wf, init_data, cv_split, args)
+        mp_wf = integratedfeatures_wf(
+            mp_wf, init_data, cv_split, features, fw_model, conf_model, args)
 
     mp_wf.config['execution']['try_hard_link_datasink'] = 'false'
     mp_wf.config['execution']['crashfile_format'] = 'txt'

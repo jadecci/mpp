@@ -126,7 +126,7 @@ class RegionwiseModel(SimpleInterface):
         r = np.zeros(train_x.shape[2])
         cod = np.zeros(train_x.shape[2])
         for region in range(train_x.shape[2]):
-            r[region], cod[region], _ = elastic_net(
+            r[region], cod[region], _, _ = elastic_net(
                 train_x[:, :, region], train_y, val_x[:, :, region], val_y,
                 int(self.inputs.config['n_alphas']))
         r = np.nan_to_num(r)
@@ -148,12 +148,9 @@ class RegionwiseModel(SimpleInterface):
         test_ypred = np.zeros((len(test_y), train_x.shape[2]))
         for region in range(train_x.shape[2]):
             # if self.inputs.selected[f'regions_level{self.inputs.level}'][region]:
-            r[region], cod[region], model = elastic_net(
+            r[region], cod[region], train_ypred[:, region], test_ypred[:, region] = elastic_net(
                 train_x[:, :, region], train_y, test_x[:, :, region], test_y,
                 int(self.inputs.config['n_alphas']))
-            coef[region, :] = np.concatenate((model.coef_, [model.intercept_]))
-            train_ypred[:, region] = model.predict(train_x[:, :, region])
-            test_ypred[:, region] = model.predict(test_x[:, :, region])
 
         key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
         self._results['results'][f'r_{key}'] = r
@@ -317,14 +314,14 @@ class FeaturewiseModel(SimpleInterface):
         key = (f'{feature}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
                f'_level{self.inputs.level}')
 
-        r, cod, _ = elastic_net(
+        r, cod, train_ypred, test_ypred = elastic_net(
             train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
         self._results['results'][f'en_r_{key}'] = r
         self._results['results'][f'en_cod_{key}'] = cod
 
-        r, cod, train_ypred, test_ypred = kernel_ridge_corr_cv(train_x, train_y, test_x, test_y)
-        self._results['results'][f'krcorr_r_{key}'] = r
-        self._results['results'][f'krcorr_cod_{key}'] = cod
+        # r, cod, _, _ = kernel_ridge_corr_cv(train_x, train_y, test_x, test_y)
+        # self._results['results'][f'krcorr_r_{key}'] = r
+        # self._results['results'][f'krcorr_cod_{key}'] = cod
 
         return train_ypred, test_ypred
 
@@ -391,14 +388,10 @@ class ConfoundsModel(SimpleInterface):
         key = (f'{confound}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
                f'_level{self.inputs.level}')
 
-        r, cod, _ = elastic_net(
+        r, cod, train_ypred, test_ypred = elastic_net(
             train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
         self._results['results'][f'en_r_{key}'] = r
         self._results['results'][f'en_cod_{key}'] = cod
-
-        r, cod, train_ypred, test_ypred = kernel_ridge_corr_cv(train_x, train_y, test_x, test_y)
-        self._results['results'][f'krcorr_r_{key}'] = r
-        self._results['results'][f'krcorr_cod_{key}'] = cod
 
         return train_ypred, test_ypred
 
