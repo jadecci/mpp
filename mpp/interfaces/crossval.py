@@ -8,7 +8,8 @@ from statsmodels.stats.multitest import multipletests
 
 from mpp.utilities.models import (
     elastic_net, kernel_ridge_corr_cv, linear, random_forest_cv, random_patches, permutation_test)
-from mpp.utilities.data import write_h5, cv_extract_data, cv_extract_subject_data
+from mpp.utilities.data import write_h5, cv_extract_subject_data
+
 
 class _CrossValSplitInputSpec(BaseInterfaceInputSpec):
     sublists = traits.Dict(mandatory=True, dtype=list, desc='availabel subjects in each dataset')
@@ -79,6 +80,31 @@ class RegionwiseModel(SimpleInterface):
     input_spec = _RegionwiseModelInputSpec
     output_spec = _RegionwiseModelOutputSpec
 
+    def _extract_data(
+            self, subjects: list, repeat: int, phenotypes: dict,
+            permutation: bool = False) -> tuple[np.ndarray, ...]:
+        y = np.zeros(len(subjects))
+        x_all = np.array([])
+
+        for i, subject in enumerate(subjects):
+            rsfc, dfc, efc, tfc, strength, betweenness, participation, efficiency, myelin, gmv, \
+                cs, ct, gradients, ac_gmv, ac_cs, ac_ct = cv_extract_subject_data(
+                    self.inputs.sublists, subject, self.inputs.features_dir, self.inputs.level,
+                    permutation, self.inputs.embeddings, self.inputs.params, repeat)
+            x = np.vstack((
+                rsfc, dfc, efc, tfc.reshape(tfc.shape[0], tfc.shape[1] * tfc.shape[2]).T,
+                strength, betweenness, participation, efficiency,
+                myelin, gmv, np.pad(cs, (0, len(gmv) - len(cs))),
+                np.pad(ct, (0, len(gmv) - len(ct))),
+                gradients, ac_gmv,
+                np.hstack((ac_cs, np.zeros((ac_cs.shape[0], len(gmv) - len(cs))))),
+                np.hstack((ac_ct, np.zeros((ac_cs.shape[0], len(gmv) - len(ct)))))))
+            # TODO: diffusion features
+            x_all = x if i == 0 else np.dstack((x_all.T, x.T)).T  # N x F x R
+            y[i] = phenotypes[subjects[i]]
+
+        return x_all, y
+
     def _validate(self, repeat: int, permutation: bool = False) -> tuple[np.ndarray, ...]:
         if permutation:
             cv_split = self.inputs.cv_split_perm
@@ -94,12 +120,8 @@ class RegionwiseModel(SimpleInterface):
         testval_sub = np.concatenate((val_sub, test_sub))
         train_sub = [subject for subject in all_sub if subject not in testval_sub]
 
-        train_x, train_y = cv_extract_data(
-            self.inputs.sublists, self.inputs.features_dir, train_sub, repeat, self.inputs.level,
-            self.inputs.embeddings, self.inputs.params, phenotypes, permutation=permutation)
-        val_x, val_y = cv_extract_data(
-            self.inputs.sublists, self.inputs.features_dir, val_sub, repeat, self.inputs.level,
-            self.inputs.embeddings, self.inputs.params, phenotypes, permutation=permutation)
+        train_x, train_y = self._extract_data(train_sub, repeat, phenotypes, permutation)
+        val_x, val_y = self._extract_data(val_sub, repeat, phenotypes, permutation)
 
         r = np.zeros(train_x.shape[2])
         cod = np.zeros(train_x.shape[2])
@@ -116,12 +138,8 @@ class RegionwiseModel(SimpleInterface):
         test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
         train_sub = [subject for subject in all_sub if subject not in test_sub]
 
-        train_x, train_y = cv_extract_data(
-            self.inputs.sublists, self.inputs.features_dir, train_sub, self.inputs.repeat,
-            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes)
-        test_x, test_y = cv_extract_data(
-            self.inputs.sublists, self.inputs.features_dir, test_sub, self.inputs.repeat,
-            self.inputs.level, self.inputs.embeddings, self.inputs.params, self.inputs.phenotypes)
+        train_x, train_y = self._extract_data(train_sub, self.inputs.repeat, self.inputs.phenotypes)
+        test_x, test_y = self._extract_data(test_sub, self.inputs.repeat, self.inputs.phenotypes)
 
         r = np.zeros(train_x.shape[2])
         cod = np.zeros(train_x.shape[2])
@@ -349,6 +367,7 @@ class _ConfoundsModelInputSpec(BaseInterfaceInputSpec):
 
 class _ConfoundsModelOutputSpec(TraitedSpec):
     results = traits.Dict(desc='accuracy results')
+    c_ypred = traits.Dict(desc='Predicted psychometric values')
 
 
 class ConfoundsModel(SimpleInterface):
@@ -368,7 +387,7 @@ class ConfoundsModel(SimpleInterface):
 
     def _test(
             self, train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
-            confound: str) -> None:
+            confound: str) -> tuple[np.ndarray, ...]:
         key = (f'{confound}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
                f'_level{self.inputs.level}')
 
@@ -381,8 +400,11 @@ class ConfoundsModel(SimpleInterface):
         self._results['results'][f'krcorr_r_{key}'] = r
         self._results['results'][f'krcorr_cod_{key}'] = cod
 
+        return train_ypred, test_ypred
+
     def _run_interface(self, runtime):
         self._results['results'] = {}
+        ypred = {}
         all_sub = sum(self.inputs.sublists.values(), [])
         test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
         train_sub = [subject for subject in all_sub if subject not in test_sub]
@@ -392,36 +414,46 @@ class ConfoundsModel(SimpleInterface):
 
         # Single-confound models
         for i, conf in enumerate(list(self.inputs.confounds.keys())):
-            self._test(train_x[:, i], train_y, test_x[:, i], test_y, conf)
+            train_pred, test_pred = self._test(train_x[:, i], train_y, test_x[:, i], test_y, conf)
+            if i == 0:
+                ypred = {'train_ypred': train_pred, 'test_ypred': test_pred}
+            else:
+                ypred = {
+                    'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
+                    'test_ypred': np.vstack((ypred['test_ypred'], test_pred))}
+
         # Grouped-confound models
-        self._test(train_x[:, [0, 1, 5, 6, 7]], train_y, test_x[:, [0, 1, 5, 6, 7]], test_y, 'demo')
-        self._test(train_x[:, [3, 4]], train_y, test_x[:, [3, 4]], test_y, 'brain')
-        self._test(train_x[:, [0, 1, 2]], train_y, test_x[:, [0, 1, 2]], test_y, 'qn')
+        conf_group = {'demo': [0, 1, 5, 6, 7], 'brain': [3, 4], 'qn': [0, 1, 2]}
+        for group, inds in conf_group.items():
+            train_pred, test_pred = self._test(
+                train_x[:, inds], train_y, test_x[:, inds], test_y, group)
+            ypred = {
+                'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
+                'test_ypred': np.vstack((ypred['test_ypred'], test_pred))}
+
         # All-confound models
-        self._test(train_x, train_y, test_x, test_y, 'all')
+        train_pred, test_pred = self._test(train_x, train_y, test_x, test_y, 'all')
+        ypred = {
+            'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
+            'test_ypred': np.vstack((ypred['test_ypred'], test_pred))}
+
+        self._results['c_ypred'] = {
+            'train_ypred': ypred['train_ypred'].T, 'test_ypred': ypred['test_ypred'].T}
 
         return runtime
 
 
 class _IntegratedFeaturesModelInputSpec(BaseInterfaceInputSpec):
     sublists = traits.Dict(mandatory=True, dtype=list, desc='available subjects in each dataset')
-    # features_dir = traits.Dict(
-    #    mandatory=True, dtype=str, desc='absolute path to extracted features for each dataset')
     phenotypes = traits.Dict(mandatory=True, dtype=float, desc='phenotype values')
-    # embeddings = traits.Dict(mandatory=True, desc='embeddings for gradients')
-    # params = traits.Dict(mandatory=True, desc='parameters for anatomical connectivity')
     cv_split = traits.Dict(mandatory=True, dtype=list, desc='test subjects of each fold')
 
     level = traits.Str(mandatory=True, desc='parcellation level (1 to 4)')
     repeat = traits.Int(mandatory=True, desc='current repeat of cross-validation')
     fold = traits.Int(mandatory=True, desc='current fold in the repeat')
 
-    #rw_ypred = traits.Dict(
-    #    mandatory=True, desc='Predicted psychometric values from region-wise models')
-    # selected_regions = traits.Dict(
-    #    mandatory=True, dtype=list, desc='selected regions for each parcellation level')
-    #mw_ypred = traits.Dict(desc='Predicted psychometric values from modality-wise models')
     fw_ypred = traits.Dict(desc='Predicted psychometric values from feature-wise models')
+    c_ypred = traits.Dict(desc='Predicted psychometric values from confound models')
 
 
 class _IntegratedFeaturesModelOutputSpec(TraitedSpec):
@@ -456,16 +488,10 @@ class IntegratedFeaturesModel(SimpleInterface):
 
         train_y = np.array([self.inputs.phenotypes[sub] for sub in train_sub])
         test_y = np.array([self.inputs.phenotypes[sub] for sub in test_sub])
-        #train_ypred = np.hstack((
-            #self.inputs.rw_ypred['train_ypred'],
-            #self.inputs.mw_ypred['train_ypred'],
-        #    self.inputs.fw_ypred['train_ypred']))
-        #test_ypred = np.hstack((
-            #self.inputs.rw_ypred['test_ypred'],
-            #self.inputs.mw_ypred['test_ypred'],
-        #    self.inputs.fw_ypred['test_ypred']))
-        train_ypred = self.inputs.fw_ypred['train_ypred']
-        test_ypred = self.inputs.fw_ypred['test_ypred']
+        train_ypred = np.hstack((
+            self.inputs.fw_ypred['train_ypred'], self.inputs.c_ypred['train_ypred']))
+        test_ypred = np.hstack((
+            self.inputs.fw_ypred['test_ypred'], self.inputs.c_ypred['test_ypred']))
 
         self._results['results'] = {}
         self._lr(train_y, test_y, train_ypred, test_ypred, key)

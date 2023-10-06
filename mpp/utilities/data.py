@@ -157,27 +157,3 @@ def cv_extract_subject_data(
     return (
         rsfc, dfc, efc, tfc, strength, betweenness, participation, efficiency, myelin, gmv, cs, ct,
         gradients, ac_gmv, ac_cs, ac_ct)
-
-
-def cv_extract_data(
-        sublists: dict, features_dir: dict, subjects: list, repeat: int, level: str,
-        embeddings: dict, params: dict, phenotypes: dict,
-        permutation: bool = False) -> tuple[np.ndarray, ...]:
-    y = np.zeros(len(subjects))
-    x_all = np.array([])
-
-    for i, subject in enumerate(subjects):
-        rsfc, dfc, efc, tfc, strength, betweenness, participation, efficiency, myelin, gmv, cs, \
-            ct, gradients, ac_gmv, ac_cs, ac_ct = cv_extract_subject_data(
-                sublists, subject, features_dir, level, permutation, embeddings, params, repeat)
-        x = np.vstack((
-            rsfc, dfc, efc, tfc.reshape(tfc.shape[0], tfc.shape[1]*tfc.shape[2]).T,
-            strength, betweenness, participation, efficiency,
-            myelin, gmv, np.pad(cs, (0, len(gmv) - len(cs))), np.pad(ct, (0, len(gmv) - len(ct))),
-            gradients, ac_gmv, np.hstack((ac_cs, np.zeros((ac_cs.shape[0], len(gmv) - len(cs))))),
-            np.hstack((ac_ct, np.zeros((ac_cs.shape[0], len(gmv) - len(ct)))))))
-        # TODO: diffusion features
-        x_all = x if i == 0 else np.dstack((x_all.T, x.T)).T  # N x F x R
-        y[i] = phenotypes[subjects[i]]
-
-    return x_all, y
