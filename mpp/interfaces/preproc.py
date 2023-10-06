@@ -990,7 +990,7 @@ class TCK(SimpleInterface):
     def _run_interface(self, runtime):
         ftt_file = Path(self.inputs.work_dir, 'ftt.nii.gz')
         ftt = self.inputs.simg_cmd.run_cmd('5ttgen').split() + [
-            'hsvs', str(self.inputs.fs_dir),str(ftt_file)]
+            'hsvs', '-nocleanup', str(self.inputs.fs_dir), str(ftt_file)]
         if not ftt_file.is_file():
             subprocess.run(ftt, check=True)
 
