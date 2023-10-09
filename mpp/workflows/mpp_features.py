@@ -184,7 +184,7 @@ def init_d_wf(
             dataset=dataset, work_dir=work_curr, subject=subject, output_dir=output_dir),
         name='init_data')
     if int_dir is not None:
-        init_data.inputs.int_dir = int_dir
+        init_data.inputs.int_dir = Path(int_dir, subject)
 
     tmp_dir = Path(work_curr, 'intermediate_tmp')
     tmp_dir.mkdir(parents=True, exist_ok=True)
