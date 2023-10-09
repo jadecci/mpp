@@ -612,7 +612,7 @@ class FAMD(SimpleInterface):
         level = parcels.max() // 100
         parc = np.zeros(parcels.shape[0])
 
-        for parcel in parcels.nonzero()[0]:
+        for parcel in range(parcels.shape[0]):
             selected = data[np.where(atlas == parcel)[0]]
             selected = selected[~np.isnan(selected)]
             selected = selected[
