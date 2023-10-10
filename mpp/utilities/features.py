@@ -184,12 +184,12 @@ def pheno_conf_hcp(
     conf = conf.dropna().drop_duplicates(subset='subject')
     conf = conf[conf['subject'].isin(sublist)]
 
+    # gender coding: 1 for Female, 2 for Male
+    conf['gender'] = [1 if item == 'F' else 2 for item in conf['gender']]
     # secondary variables
     conf['age2'] = np.power(conf['age'], 2)
     conf['ageGender'] = conf['age'] * conf['gender']
     conf['age2Gender'] = conf['age2'] * conf['gender']
-    # gender coding: 1 for Female, 2 for Male
-    conf['gender'] = [1 if item == 'F' else 2 for item in conf['gender']]
 
     sublist_out = conf['subject'].to_list()
     conf_dict = conf.set_index('subject').to_dict()

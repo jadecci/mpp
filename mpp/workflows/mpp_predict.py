@@ -53,7 +53,7 @@ def main() -> None:
     parser.add_argument(
         '--wrapper', type=str, dest='wrapper', default='', help='wrapper script for HTCondor')
     parser.add_argument(
-        '--only', type=str, dest='only', default='', help='only run a certain model')
+        '--model', type=str, dest='model', default='', help='run a certain model')
     args = parser.parse_args()
 
     # Configuration file
@@ -85,19 +85,19 @@ def main() -> None:
         (cv_split, features, [('cv_split', 'cv_split')])])
 
     # Models
-    if args.only == 'regionwise':
+    if args.model == 'regionwise':
         mp_wf = regionwise_wf(mp_wf, init_data, cv_split, features, config, features_dir, args)
-    elif args.only == 'confound':
-        mp_wf, _ = confound_wf(mp_wf, init_data, cv_split, args)
-    elif args.only == 'randompatches':
-        mp_wf = randompatches_wf(mp_wf, init_data, cv_split, features, args)
-    elif args.only == 'featurewise':
+    elif args.model == 'confound':
+        mp_wf, _ = confound_wf(mp_wf, init_data, features, cv_split, config, args)
+    elif args.model == 'randompatches':
+        mp_wf = randompatches_wf(mp_wf, init_data, cv_split, features, features_dir, args)
+    elif args.model == 'featurewise':
         mp_wf, _ = featurewise_wf(
             mp_wf, init_data, cv_split, features, config, features_dir, args)
     else:
         mp_wf, fw_model = featurewise_wf(
             mp_wf, init_data, cv_split, features, config, features_dir, args)
-        mp_wf, conf_model = confound_wf(mp_wf, init_data, cv_split, args)
+        mp_wf, conf_model = confound_wf(mp_wf, init_data, features, cv_split, config, args)
         mp_wf = integratedfeatures_wf(
             mp_wf, init_data, cv_split, features, fw_model, conf_model, args)
 
@@ -162,9 +162,9 @@ def featurewise_wf(
 
 
 def confound_wf(
-        wf: pe.Workflow, init_data: pe.Node, cv_split:
-        pe.Node, args) -> tuple[pe.Workflow, pe.Node]:
-    conf_model = pe.Node(ConfoundsModel(), name='conf_model')
+        wf: pe.Workflow, init_data: pe.Node, features: pe.Node, cv_split: pe.Node, config: dict,
+        args) -> tuple[pe.Workflow, pe.Node]:
+    conf_model = pe.Node(ConfoundsModel(config=config), name='conf_model')
     conf_save = pe.JoinNode(
         PredictionSave(
             output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
@@ -173,8 +173,8 @@ def confound_wf(
 
     wf.connect([
         (init_data, conf_model, [
-            ('sublists', 'sublists'), ('confounds', 'confounds'), ('phenotypes', 'phenotypes'),
-            ('level', 'level'), ('repeat', 'repeat'), ('fold', 'fold')]),
+            ('sublists', 'sublists'), ('confounds', 'confounds'), ('phenotypes', 'phenotypes')]),
+        (features, conf_model, [('repeat', 'repeat'), ('fold', 'fold')]),
         (cv_split, conf_model, [('cv_split', 'cv_split')]),
         (conf_model, conf_save, [('results', 'results')])])
 
@@ -204,8 +204,8 @@ def integratedfeatures_wf(
 
 def randompatches_wf(
             wf: pe.Workflow, init_data: pe.Node, cv_split: pe.Node, features: pe.Node,
-            args) -> pe.Workflow:
-    rp_model = pe.Node(RandomPatchesModel(), name='rp_model')
+            features_dir: dict, args) -> pe.Workflow:
+    rp_model = pe.Node(RandomPatchesModel(features_dir=features_dir), name='rp_model')
     rp_save = pe.JoinNode(
         PredictionSave(
             output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
@@ -215,7 +215,9 @@ def randompatches_wf(
     wf.connect([
         (init_data, rp_model, [('sublists', 'sublists'), ('phenotypes', 'phenotypes')]),
         (cv_split, rp_model, [('cv_split', 'cv_split')]),
-        (features, rp_model, [('level', 'level'), ('repeat', 'repeat'), ('fold', 'fold')]),
+        (features, rp_model, [
+            ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
+            ('repeat', 'repeat'), ('fold', 'fold')]),
         (rp_model, rp_save, [('results', 'results')])])
 
     return wf
