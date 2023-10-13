@@ -433,8 +433,8 @@ class _SaveDFeaturesInputSpec(BaseInterfaceInputSpec):
         mandatory=True, dtype=float, desc='network statistics for count-based SC')
     length_stats = traits.Dict(
         mandatory=True, dtype=float, desc='network statistics for length-based SC')
-    fa = traits.Dict(desc='region-wise FA values')
-    md = traits.Dict(desc='region-wise MD values')
+    # fa = traits.Dict(desc='region-wise FA values')
+    # md = traits.Dict(desc='region-wise MD values')
 
     output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
     dataset = traits.Str(
@@ -473,13 +473,13 @@ class SaveDFeatures(SimpleInterface):
                 length_stats = self.inputs.length_stats[f'level{level}_{stats}']
                 write_h5(output_file, ds_length_stats, length_stats, self.inputs.overwrite)
 
-            ds_fa = f'/fa/level{level}'
-            fa = self.inputs.fa[f'level{level}']
-            write_h5(output_file, ds_fa, fa, self.inputs.overwrite)
+            # ds_fa = f'/fa/level{level}'
+            # fa = self.inputs.fa[f'level{level}']
+            # write_h5(output_file, ds_fa, fa, self.inputs.overwrite)
 
-            ds_md = f'/md/level{level}'
-            md = self.inputs.md[f'level{level}']
-            write_h5(output_file, ds_md, md, self.inputs.overwrite)
+            # ds_md = f'/md/level{level}'
+            # md = self.inputs.md[f'level{level}']
+            # write_h5(output_file, ds_md, md, self.inputs.overwrite)
 
         dl.remove(dataset=self.inputs.dataset_dir, reckless='kill', on_failure='continue')
 
