@@ -2,6 +2,7 @@ import subprocess
 from os import environ
 from pathlib import Path
 import sys
+from typing import Union
 
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 import nipype.pipeline as pe
@@ -17,10 +18,9 @@ from mpp.utilities.features import (
     parcellate, fc, diffusion_mapping, score, add_subdir, atlas_files, add_annot)
 from mpp.utilities.data import read_h5
 from mpp.utilities.preproc import t1_files_type, fs_files_aparc, combine_4strings
+from mpp.exceptions import DatasetError
 
 base_dir = Path(__file__).resolve().parent.parent
-
-tr_dataset = {'HCP-YA': 0.72, 'HCP-A': 0.8, 'HCP-D': 0.8, 'ABCD': 0.8, 'UKB': 0.735}
 
 
 class _RSFCInputSpec(BaseInterfaceInputSpec):
@@ -41,6 +41,8 @@ class RSFC(SimpleInterface):
     """Compute resting-state static and dynamic functional connectivity"""
     input_spec = _RSFCInputSpec
     output_spec = _RSFCOutputSpec
+
+    _tr_dataset = {'HCP-YA': 0.72, 'HCP-A': 0.8, 'HCP-D': 0.8, 'ABCD': 0.8, 'UKB': 0.735}
 
     def _run_interface(self, runtime):
         n_runs = len(self.inputs.rs_runs) + self.inputs.hcpd_b_runs
@@ -66,7 +68,7 @@ class RSFC(SimpleInterface):
                         tavg_dict[key] = val
 
         self._results['rsfc'], self._results['dfc'], self._results['efc'] = fc(
-            tavg_dict, t_rep=tr_dataset[self.inputs.dataset])
+            tavg_dict, t_rep=self._tr_dataset[self.inputs.dataset])
 
         return runtime
 
@@ -129,14 +131,44 @@ class TFC(SimpleInterface):
     input_spec = _TFCInputSpec
     output_spec = _TFCOutputSpec
 
+    _task_runs = {
+        'HCP-YA': ['tfMRI_EMOTION', 'tfMRI_GAMBLING', 'tfMRI_LANGUAGE', 'tfMRI_MOTOR',
+                   'tfMRI_RELATIONAL', 'tfMRI_SOCIAL', 'tfMRI_WM'],
+        'HCP-A': ['tfMRI_CARIT_PA', 'tfMRI_FACENAME_PA', 'tfMRI_VISMOTOR_PA'],
+        'HCP-D': ['tfMRI_CARIT', 'tfMRI_EMOTION', 'tfMRI_GUESSING']}
+
+    def _parcellate(self, run: str) -> dict:
+        t_surf = nib.load(self.inputs.t_files[f'{run}_surf']).get_fdata()
+        t_vol = nib.load(self.inputs.t_files[f'{run}_vol']).get_fdata()
+        tavg = parcellate(t_surf, t_vol, self.inputs.dataset, self.inputs.rs_files)
+
+        return tavg
+
+    @staticmethod
+    def _concat(tavg1: dict, tavg2: dict) -> dict:
+        tavg = {}
+        for key in tavg1.keys():
+            tavg[key] = np.hstack((tavg1[key], tavg2[key]))
+
+        return tavg
+
     def _run_interface(self, runtime):
         self._results['tfc'] = {}
-        for run in self.inputs.t_runs:
-            if self.inputs.t_files[f'{run}_surf'] and self.inputs.t_files[f'{run}_vol']:
-                t_surf = nib.load(self.inputs.t_files[f'{run}_surf']).get_fdata()
-                t_vol = nib.load(self.inputs.t_files[f'{run}_vol']).get_fdata()
-                tavg = parcellate(t_surf, t_vol, self.inputs.dataset, self.inputs.t_files)
-                self._results['tfc'][run], _, _ = fc(tavg)
+        for run in self._task_runs[self.inputs.dataset]:
+            if self.inputs.dataset == 'HCP-YA':
+                tavg = self._concat(self._parcellate(f'{run}_LR'), self._parcellate(f'{run}_Rl'))
+            elif self.inputs.dataset == 'HCP-D':
+                if run == 'tfMRI_EMOTION':
+                    tavg = self._parcellate(f'{run}_PA')
+                else:
+                    tavg = self._concat(
+                        self._parcellate(f'{run}_PA'), self._parcellate(f'{run}_AP'))
+            elif self.inputs.dataset == 'HCP-A':
+                tavg = self._parcellate(run)
+            else:
+                raise DatasetError()
+
+            self._results['tfc'][run], _, _ = fc(tavg)
 
         return runtime
 

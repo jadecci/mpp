@@ -357,9 +357,9 @@ class _ConfoundsModelInputSpec(BaseInterfaceInputSpec):
     phenotypes = traits.Dict(mandatory=True, dtype=float, desc='phenotype values')
     confounds = traits.Dict(dtype=dict, desc='confound values from subjects in sublists')
     cv_split = traits.Dict(mandatory=True, dtype=list, desc='test subjects of each fold')
-    level = traits.Str(mandatory=True, desc='parcellation level (1 to 4)')
     repeat = traits.Int(mandatory=True, desc='current repeat of cross-validation')
     fold = traits.Int(mandatory=True, desc='current fold in the repeat')
+    config = traits.Dict(mandatory=True, desc='configuration settings')
 
 
 class _ConfoundsModelOutputSpec(TraitedSpec):
@@ -375,7 +375,7 @@ class ConfoundsModel(SimpleInterface):
     def _extract_data(self, subjects: list) -> tuple[np.ndarray, np.ndarray]:
         y = np.zeros(len(subjects))
         x = np.zeros((len(subjects), len(list(self.inputs.confounds.keys()))))
-        for i, subject in enumerate(subjects):
+        for i, _ in enumerate(subjects):
             for j, conf in enumerate(list(self.inputs.confounds.keys())):
                 x[i, j] = self.inputs.confounds[conf][subjects[i]]
             y[i] = self.inputs.phenotypes[subjects[i]]
@@ -385,8 +385,7 @@ class ConfoundsModel(SimpleInterface):
     def _test(
             self, train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
             confound: str) -> tuple[np.ndarray, ...]:
-        key = (f'{confound}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
-               f'_level{self.inputs.level}')
+        key = (f'{confound}_repeat{self.inputs.repeat}_fold{self.inputs.fold}')
 
         r, cod, train_ypred, test_ypred = elastic_net(
             train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
@@ -407,7 +406,8 @@ class ConfoundsModel(SimpleInterface):
 
         # Single-confound models
         for i, conf in enumerate(list(self.inputs.confounds.keys())):
-            train_pred, test_pred = self._test(train_x[:, i], train_y, test_x[:, i], test_y, conf)
+            train_pred, test_pred = self._test(
+                train_x[:, i].reshape(-1, 1), train_y, test_x[:, i].reshape(-1, 1), test_y, conf)
             if i == 0:
                 ypred = {'train_ypred': train_pred, 'test_ypred': test_pred}
             else:
