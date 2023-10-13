@@ -53,6 +53,7 @@ def main() -> None:
     simg_cmd = SimgCmd(
         simg=args.simg, work_dir=args.work_dir, out_dir=args.output_dir, int_dir=args.int_dir)
 
+    args.output_dir.mkdir(parents=True, exist_ok=True)
     sublist = pd.read_csv(args.sublist, header=None).squeeze('columns')
     for subject in sublist:
         output_file = Path(args.output_dir, f'{args.dataset}_{subject}.h5')

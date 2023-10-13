@@ -140,7 +140,7 @@ class TFC(SimpleInterface):
     def _parcellate(self, run: str) -> dict:
         t_surf = nib.load(self.inputs.t_files[f'{run}_surf']).get_fdata()
         t_vol = nib.load(self.inputs.t_files[f'{run}_vol']).get_fdata()
-        tavg = parcellate(t_surf, t_vol, self.inputs.dataset, self.inputs.rs_files)
+        tavg = parcellate(t_surf, t_vol, self.inputs.dataset, self.inputs.t_files)
 
         return tavg
 
@@ -156,7 +156,7 @@ class TFC(SimpleInterface):
         self._results['tfc'] = {}
         for run in self._task_runs[self.inputs.dataset]:
             if self.inputs.dataset == 'HCP-YA':
-                tavg = self._concat(self._parcellate(f'{run}_LR'), self._parcellate(f'{run}_Rl'))
+                tavg = self._concat(self._parcellate(f'{run}_LR'), self._parcellate(f'{run}_RL'))
             elif self.inputs.dataset == 'HCP-D':
                 if run == 'tfMRI_EMOTION':
                     tavg = self._parcellate(f'{run}_PA')
