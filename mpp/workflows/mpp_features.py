@@ -78,9 +78,10 @@ def main() -> None:
             if args.condordag:
                 subject_wf.run(
                     plugin='CondorDAGMan',
-                    plugin_args={'dagman_args': f'-outfile_dir {args.work_dir}',
-                                 'wrapper_cmd': args.wrapper,
-                                 'dagman_args': '-import_env'})
+                    plugin_args={
+                        'dagman_args': f'-outfile_dir {args.work_dir}', 'wrapper_cmd': args.wrapper,
+                        'dagman_args': '-import_env',
+                        'override_specs': 'request_memory = 5 GB\nrequest_cpus = 1'})
             else:
                 subject_wf.run()
 
@@ -197,7 +198,7 @@ def init_d_wf(
     sc_wf = sc.outputs.sc_wf
     sc_length_stats = pe.Node(NetworkStats(), name='sc_length_stats')
     sc_count_stats = pe.Node(NetworkStats(), name='sc_count_stats')
-    fa_md = pe.Node(FAMD(), name='fa_md')
+    # fa_md = pe.Node(FAMD(), name='fa_md')
 
     save_features = pe.Node(
         SaveDFeatures(output_dir=output_dir, dataset=dataset, subject=subject, overwrite=overwrite),
@@ -241,15 +242,15 @@ def init_d_wf(
         (tck, sc_wf, [('tck_file', 'inputnode.tck_file')]),
         (sc_wf, sc_count_stats, [('outputnode.count_files', 'conn_files')]),
         (sc_wf, sc_length_stats, [('outputnode.length_files', 'conn_files')]),
-        (dtifit, fa_md, [('FA', 'fa_file'), ('MD', 'md_file')]),
-        (sc_wf, fa_md, [('outputnode.atlas_files', 'atlas_files')]),
+        # (dtifit, fa_md, [('FA', 'fa_file'), ('MD', 'md_file')]),
+        # (sc_wf, fa_md, [('outputnode.atlas_files', 'atlas_files')]),
         (init_data, save_features, [('dataset_dir', 'dataset_dir')]),
         (sc_wf, save_features, [
             ('outputnode.count_files', 'count_files'),
             ('outputnode.length_files', 'length_files')]),
         (sc_count_stats, save_features, [('stats', 'count_stats')]),
-        (sc_length_stats, save_features, [('stats', 'length_stats')]),
-        (fa_md, save_features, [('fa', 'fa'), ('md', 'md')])])
+        (sc_length_stats, save_features, [('stats', 'length_stats')])])
+        # (fa_md, save_features, [('fa', 'fa'), ('md', 'md')])])
 
     return d_wf
 
