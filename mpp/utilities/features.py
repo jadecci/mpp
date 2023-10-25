@@ -12,6 +12,7 @@ from sklearn.metrics import pairwise_distances
 from mapalign.embed import compute_diffusion_map
 from statsmodels.formula.api import ols
 from rdcmpy import RegressionDCM
+from sklearn.linear_model import LinearRegression
 
 from mpp.exceptions import DatasetError
 
@@ -255,6 +256,17 @@ def score_sub(params: pd.DataFrame, sub_features: np.ndarray) -> np.ndarray:
                     params_curr[0] + params_curr[1] * sub_features[j] +
                     params_curr[2] * mean_features)
     return ac
+
+
+def pheno_reg_conf(
+        train_y: np.ndarray, train_conf: np.ndarray, test_y: np.ndarray,
+        test_conf: np.ndarray) -> tuple[np.ndarray, ...]:
+    conf_reg = LinearRegression()
+    conf_reg.fit(train_conf, train_y)
+    train_y_resid = train_y - conf_reg.predict(train_conf)
+    test_y_resid = test_y - conf_reg.predict(test_conf)
+
+    return train_y_resid, test_y_resid
 
 
 def add_subdir(sub_dir: str, subject: str, fs_dir: str) -> str:

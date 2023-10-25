@@ -9,6 +9,7 @@ from statsmodels.stats.multitest import multipletests
 from mpp.utilities.models import (
     elastic_net, kernel_ridge_corr_cv, linear, random_forest_cv, random_patches, permutation_test)
 from mpp.utilities.data import write_h5, cv_extract_subject_data
+from mpp.utilities.features import pheno_reg_conf
 
 
 class _CrossValSplitInputSpec(BaseInterfaceInputSpec):
@@ -251,6 +252,7 @@ class _FeaturewiseModelInputSpec(BaseInterfaceInputSpec):
     features_dir = traits.Dict(
         mandatory=True, dtype=str, desc='absolute path to extracted features for each dataset')
     phenotypes = traits.Dict(mandatory=True, dtype=float, desc='phenotype values')
+    confounds = traits.Dict(dtype=dict, desc='confound values from subjects in sublists')
     embeddings = traits.Dict(mandatory=True, desc='embeddings for gradients')
     params = traits.Dict(mandatory=True, desc='parameters for anatomical connectivity')
     cv_split = traits.Dict(mandatory=True, dtype=list, desc='test subjects of each fold')
@@ -281,8 +283,9 @@ class FeaturewiseModel(SimpleInterface):
             data_dict[key] = np.vstack((data_dict[key], sub_data))
         return data_dict
 
-    def _extract_data(self, subjects: list) -> tuple[dict, np.ndarray]:
+    def _extract_data(self, subjects: list) -> tuple[dict, np.ndarray, np.ndarray]:
         y = np.zeros(len(subjects))
+        conf = np.zeros(len(subjects))
         x_all = {}
 
         for i, subject in enumerate(subjects):
@@ -305,8 +308,9 @@ class FeaturewiseModel(SimpleInterface):
                     self._add_sub_data(x_all, x_curr, key, i)
             # TODO: diffusion features
             y[i] = self.inputs.phenotypes[subjects[i]]
+            conf[i] = self.inputs.conf[subject[i]]
 
-        return x_all, y
+        return x_all, y, conf
 
     def _test(
             self, train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
@@ -331,8 +335,9 @@ class FeaturewiseModel(SimpleInterface):
         test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
         train_sub = [subject for subject in all_sub if subject not in test_sub]
 
-        train_x, train_y = self._extract_data(train_sub)
-        test_x, test_y = self._extract_data(test_sub)
+        train_x, train_y, train_conf = self._extract_data(train_sub)
+        test_x, test_y, test_conf = self._extract_data(test_sub)
+        train_y, test_y = pheno_reg_conf(train_y, train_conf, test_y, test_conf)
         for i in range(len(train_x.keys())-len(self._feature_list)):
             self._feature_list.insert(4+i, f'tfc_{i+1}')
 
