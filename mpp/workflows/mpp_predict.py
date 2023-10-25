@@ -99,7 +99,7 @@ def main() -> None:
             mp_wf, init_data, cv_split, features, config, features_dir, args)
         mp_wf, conf_model = confound_wf(mp_wf, init_data, features, cv_split, config, args)
         mp_wf = integratedfeatures_wf(
-            mp_wf, init_data, cv_split, features, fw_model, conf_model, args)
+            mp_wf, init_data, cv_split, features, config, fw_model, conf_model, args)
 
     mp_wf.config['execution']['try_hard_link_datasink'] = 'false'
     mp_wf.config['execution']['crashfile_format'] = 'txt'
@@ -182,9 +182,9 @@ def confound_wf(
 
 
 def integratedfeatures_wf(
-        wf: pe.Workflow, init_data: pe.Node, cv_split: pe.Node, features: pe.Node,
+        wf: pe.Workflow, init_data: pe.Node, cv_split: pe.Node, features: pe.Node, config: dict,
         fw_model: pe.Node, conf_model: pe.Node, args) -> pe.Workflow:
-    if_model = pe.Node(IntegratedFeaturesModel(), name='if_model')
+    if_model = pe.Node(IntegratedFeaturesModel(config=config), name='if_model')
     if_save = pe.JoinNode(
         PredictionSave(
             output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
