@@ -151,7 +151,8 @@ def featurewise_wf(
         name='fw_save', joinfield=['results'], joinsource='features')
 
     wf.connect([
-        (init_data, fw_model, [('sublists', 'sublists'), ('phenotypes', 'phenotypes')]),
+        (init_data, fw_model, [
+            ('sublists', 'sublists'), ('confounds', 'confounds'), ('phenotypes', 'phenotypes')]),
         (cv_split, fw_model, [('cv_split', 'cv_split')]),
         (features, fw_model, [
             ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),

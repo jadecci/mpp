@@ -308,7 +308,7 @@ class FeaturewiseModel(SimpleInterface):
                     self._add_sub_data(x_all, x_curr, key, i)
             # TODO: diffusion features
             y[i] = self.inputs.phenotypes[subjects[i]]
-            conf[i] = self.inputs.conf[subject[i]]
+            conf[i] = self.inputs.confounds[subject[i]]
 
         return x_all, y, conf
 
