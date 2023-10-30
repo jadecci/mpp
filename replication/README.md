@@ -17,15 +17,15 @@ python3 sublist/create_allRun_sublists.py
 3. Features extraction for task, rest and structural data
 ```bash
 for dataset in HCP-YA, HCP-A, HCP-D; do
-    mfeatures ${dataset} sublist/${dataset}_allRun.csv --output_dir features/${dataset} \
-              --condordag --wrapper venv_wrapper.sh
+    mfeatures ${dataset} sublist/${dataset}_allRun.csv --output_dir ${dataset}/features \
+        --condordag --wrapper venv_wrapper.sh
 done
 ```
 4. Features extraction for diffusion data (step 3 needs to finish running first)
 ```bash
 for dataset in HCP-YA, HCP-A, HCP-D; do
-    mfeatures ${dataset} sublist/${dataset}_allRun.csv --output_dir features/${dataset} \
-              --diffusion --condordag --wrapper venv_wrapper.sh
+    mfeatures ${dataset} sublist/${dataset}_allRun.csv --output_dir ${dataset}/features \
+        --diffusion --condordag --wrapper venv_wrapper.sh
 done
 ```
 
