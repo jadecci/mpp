@@ -8,7 +8,7 @@ from statsmodels.stats.multitest import multipletests
 
 from mpp.utilities.models import (
     elastic_net, kernel_ridge_corr_cv, linear, random_forest_cv, random_patches, permutation_test)
-from mpp.utilities.data import write_h5, cv_extract_subject_data
+from mpp.utilities.data import write_h5, cv_extract_subject_data, cv_extract_all_features
 from mpp.utilities.features import pheno_reg_conf
 
 
@@ -84,25 +84,9 @@ class RegionwiseModel(SimpleInterface):
     def _extract_data(
             self, subjects: list, repeat: int, phenotypes: dict,
             permutation: bool = False) -> tuple[np.ndarray, ...]:
-        y = np.zeros(len(subjects))
-        x_all = np.array([])
-
-        for i, subject in enumerate(subjects):
-            rsfc, dfc, efc, tfc, strength, betweenness, participation, efficiency, myelin, gmv, \
-                cs, ct, gradients, ac_gmv, ac_cs, ac_ct = cv_extract_subject_data(
-                    self.inputs.sublists, subject, self.inputs.features_dir, self.inputs.level,
-                    permutation, self.inputs.embeddings, self.inputs.params, repeat)
-            x = np.vstack((
-                rsfc, dfc, efc, tfc.reshape(tfc.shape[0], tfc.shape[1] * tfc.shape[2]).T,
-                strength, betweenness, participation, efficiency,
-                myelin, gmv, np.pad(cs, (0, len(gmv) - len(cs))),
-                np.pad(ct, (0, len(gmv) - len(ct))),
-                gradients, ac_gmv,
-                np.hstack((ac_cs, np.zeros((ac_cs.shape[0], len(gmv) - len(cs))))),
-                np.hstack((ac_ct, np.zeros((ac_cs.shape[0], len(gmv) - len(ct)))))))
-            # TODO: diffusion features
-            x_all = x if i == 0 else np.dstack((x_all.T, x.T)).T  # N x F x R
-            y[i] = phenotypes[subjects[i]]
+        x_all, y = cv_extract_all_features(
+            subjects, self.inputs.sublists, self.inputs.features_dir, self.inputs.level,
+            self.inputs.embeddings, self.inputs.params, repeat, phenotypes, permutation=permutation)
 
         return x_all, y
 
@@ -534,29 +518,9 @@ class RandomPatchesModel(SimpleInterface):
     output_spec = _RandomPatchesModelOutputSpec
 
     def _extract_data(self, subjects: list) -> tuple[np.ndarray, np.ndarray,]:
-        y = np.zeros(len(subjects))
-        x_all = np.array([])
-
-        for i, subject in enumerate(subjects):
-            x = cv_extract_subject_data(
-                self.inputs.sublists, subject, self.inputs.features_dir, self.inputs.level,
-                False, self.inputs.embeddings, self.inputs.params,
-                self.inputs.repeat)
-            x_task = np.concatenate(([
-                x[4][:, :, i][np.triu_indices_from(x[4][:, :, i], k=1)]
-                for i in range(x[4].shape[2])]))
-            x_curr = np.concatenate((
-                x[0][np.triu_indices_from(x[0], k=1)], x[1][np.triu_indices_from(x[1], k=1)],
-                x[2][np.triu_indices_from(x[2], k=1)], x[3].flatten(), x_task, x[5], x[6], x[7],
-                x[8], x[9], x[10], x[11], x[12], x[13][np.triu_indices_from(x[13], k=1)],
-                x[14][np.triu_indices_from(x[14], k=1)], x[15][np.triu_indices_from(x[15], k=1)],
-                x[16][np.triu_indices_from(x[16], k=1)], x[17][np.triu_indices_from(x[17], k=1)],
-                x[19], x[20], x[21], x[22], x[23], x[24], x[25], x[26]))
-            if i == 0:
-                x_all = x_curr[np.newaxis, ...]
-            else:
-                x_all = np.vstack((x_all, x_curr[np.newaxis, ...]))
-            y[i] = self.inputs.phenotypes[subjects[i]]
+        x_all, y = cv_extract_all_features(
+            subjects, self.inputs.sublists, self.inputs.features_dir, self.inputs.level,
+            self.inputs.embeddings, self.inputs.params, self.inputs.repeat, self.inputs.phenotypes)
 
         return x_all, y
 

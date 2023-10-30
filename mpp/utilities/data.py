@@ -207,3 +207,32 @@ def cv_extract_subject_data(
         gmv, cs, ct, ac_gmv, ac_cs, ac_ct, sc_count, sc_length, sc_count_strength,
         sc_count_betweenness, sc_count_participation, sc_count_efficiency, sc_length_strength,
         sc_length_betweenness, sc_length_participation, sc_length_efficiency)
+
+
+def cv_extract_all_features(
+    subjects: list, sublists: dict, features_dir: dict, level: str, embeddings: dict,
+    params: dict, repeat: int, phenotypes: dict,
+    permutation: bool = False) -> tuple[np.ndarray, np.ndarray,]:
+    y = np.zeros(len(subjects))
+    x_all = np.array([])
+
+    for i, subject in enumerate(subjects):
+        x = cv_extract_subject_data(
+            sublists, subject, features_dir, level, permutation, embeddings, params, repeat)
+        x_task = np.concatenate(([
+            x[4][:, :, i][np.triu_indices_from(x[4][:, :, i], k=1)]
+            for i in range(x[4].shape[2])]))
+        x_curr = np.concatenate((
+            x[0][np.triu_indices_from(x[0], k=1)], x[1][np.triu_indices_from(x[1], k=1)],
+            x[2][np.triu_indices_from(x[2], k=1)], x[3].flatten(), x_task, x[5], x[6], x[7],
+            x[8], x[9], x[10], x[11], x[12], x[13][np.triu_indices_from(x[13], k=1)],
+            x[14][np.triu_indices_from(x[14], k=1)], x[15][np.triu_indices_from(x[15], k=1)],
+            x[16][np.triu_indices_from(x[16], k=1)], x[17][np.triu_indices_from(x[17], k=1)],
+            x[19], x[20], x[21], x[22], x[23], x[24], x[25], x[26]))
+        if i == 0:
+            x_all = x_curr[np.newaxis, ...]
+        else:
+            x_all = np.vstack((x_all, x_curr[np.newaxis, ...]))
+        y[i] = phenotypes[subjects[i]]
+
+    return x_all, y
