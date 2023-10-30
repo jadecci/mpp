@@ -175,6 +175,16 @@ def cv_extract_subject_data(
     gmv = read_h5(feature_file, f'/morphometry/GMV/level{level}')
     cs = read_h5(feature_file, f'/morphometry/CS/level{level}')
     ct = read_h5(feature_file, f'/morphometry/CT/level{level}')
+    sc_count = read_h5(feature_file, f'/sc/count/level{level}')
+    sc_length = read_h5(feature_file, f'/sc/length/level{level}')
+    sc_count_strength = read_h5(feature_file, f'/sc_count_stats/strength/level{level}')
+    sc_count_betweenness = read_h5(feature_file, f'/sc_count_stats/betweenness/level{level}')
+    sc_count_participation = read_h5(feature_file, f'/sc_count_stats/participation/level{level}')
+    sc_count_efficiency = read_h5(feature_file, f'/sc_count_stats/efficiency/level{level}')
+    sc_length_strength = read_h5(feature_file, f'/sc_length_stats/strength/level{level}')
+    sc_length_betweenness = read_h5(feature_file, f'/sc_length_stats/betweenness/level{level}')
+    sc_length_participation = read_h5(feature_file, f'/sc_length_stats/participation/level{level}')
+    sc_length_efficiency = read_h5(feature_file, f'/sc_length_stats/efficiency/level{level}')
 
     tfc = np.zeros((rsfc.shape[0], rsfc.shape[1], len(task_runs[dataset])))
     for run, task in enumerate(task_runs[dataset]):
@@ -193,5 +203,7 @@ def cv_extract_subject_data(
         ac_ct = score_sub(params['params'], ct)
 
     return (
-        rsfc, dfc, efc, tfc, strength, betweenness, participation, efficiency, myelin, gmv, cs, ct,
-        gradients, ac_gmv, ac_cs, ac_ct)
+        rsfc, dfc, efc, gradients, tfc, strength, betweenness, participation, efficiency, myelin,
+        gmv, cs, ct, ac_gmv, ac_cs, ac_ct, sc_count, sc_length, sc_count_strength,
+        sc_count_betweenness, sc_count_participation, sc_count_efficiency, sc_length_strength,
+        sc_length_betweenness, sc_length_participation, sc_length_efficiency)

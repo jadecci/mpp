@@ -272,8 +272,10 @@ class FeaturewiseModel(SimpleInterface):
     input_spec = _FeaturewiseModelInputSpec
     output_spec = _FeaturewiseModelOutputSpec
     _feature_list = [
-        'rsfc', 'dfc', 'efc', 'tfc', 'strength', 'betweenness', 'participation', 'efficiency',
-        'myelin', 'gmv', 'cs', 'ct', 'gradients', 'ac_gmv', 'ac_cs', 'ac_ct']
+        'rsfc', 'dfc', 'efc', 'gradients', 'tfc', 'strength', 'betweenness', 'participation',
+        'efficiency', 'myelin', 'gmv', 'cs', 'ct', 'ac_gmv', 'ac_cs', 'ac_ct', 'scc', 'scl',
+        'scc_strength', 'scc_betweenness', 'scc_participation', 'scc_efficiency', 'scl_strength',
+        'scl_betweenness', 'scl_participation', 'scl_efficiency']
 
     @staticmethod
     def _add_sub_data(data_dict, sub_data, key, ind):
@@ -294,7 +296,7 @@ class FeaturewiseModel(SimpleInterface):
                 False, self.inputs.embeddings, self.inputs.params,
                 self.inputs.repeat)
             for key, x_curr in zip(self._feature_list, x):
-                if key in ['rsfc', 'dfc', 'efc', 'ac_gmv', 'ac_cs', 'ac_ct']:
+                if key in ['rsfc', 'dfc', 'efc', 'ac_gmv', 'ac_cs', 'ac_ct', 'scc', 'scl']:
                     x_feature = x_curr[np.triu_indices_from(x_curr, k=1)]
                     self._add_sub_data(x_all, x_feature, key, i)
                 elif key == 'gradients':
@@ -306,7 +308,6 @@ class FeaturewiseModel(SimpleInterface):
                         self._add_sub_data(x_all, x_feature, f'{key}_{t_run}', i)
                 else:
                     self._add_sub_data(x_all, x_curr, key, i)
-            # TODO: diffusion features
             y[i] = self.inputs.phenotypes[subjects[i]]
             conf[i] = self.inputs.confounds[subject[i]]
 
@@ -542,18 +543,19 @@ class RandomPatchesModel(SimpleInterface):
                 False, self.inputs.embeddings, self.inputs.params,
                 self.inputs.repeat)
             x_task = np.concatenate(([
-                x[3][:, :, i][np.triu_indices_from(x[3][:, :, i], k=1)]
-                for i in range(x[3].shape[2])]))
+                x[4][:, :, i][np.triu_indices_from(x[4][:, :, i], k=1)]
+                for i in range(x[4].shape[2])]))
             x_curr = np.concatenate((
                 x[0][np.triu_indices_from(x[0], k=1)], x[1][np.triu_indices_from(x[1], k=1)],
-                x[2][np.triu_indices_from(x[2], k=1)], x_task, x[4], x[5], x[6], x[7], x[8], x[9],
-                x[10], x[11], x[12].flatten(), x[13][np.triu_indices_from(x[13], k=1)],
-                x[14][np.triu_indices_from(x[14], k=1)], x[15][np.triu_indices_from(x[15], k=1)]))
+                x[2][np.triu_indices_from(x[2], k=1)], x[3].flatten(), x_task, x[5], x[6], x[7],
+                x[8], x[9], x[10], x[11], x[12], x[13][np.triu_indices_from(x[13], k=1)],
+                x[14][np.triu_indices_from(x[14], k=1)], x[15][np.triu_indices_from(x[15], k=1)],
+                x[16][np.triu_indices_from(x[16], k=1)], x[17][np.triu_indices_from(x[17], k=1)],
+                x[19], x[20], x[21], x[22], x[23], x[24], x[25], x[26]))
             if i == 0:
                 x_all = x_curr[np.newaxis, ...]
             else:
                 x_all = np.vstack((x_all, x_curr[np.newaxis, ...]))
-            # TODO: diffusion features
             y[i] = self.inputs.phenotypes[subjects[i]]
 
         return x_all, y
