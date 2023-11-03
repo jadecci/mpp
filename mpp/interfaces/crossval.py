@@ -450,7 +450,7 @@ class IntegratedFeaturesModel(SimpleInterface):
     output_spec = _IntegratedFeaturesModelOutputSpec
 
     def _lr_nfeature(
-            self, train_y: np.ndarray, train_ypred: np.ndarray) -> tuple[np.ndarray]:
+            self, train_y: np.ndarray, train_ypred: np.ndarray, key: str) -> tuple[np.ndarray]:
         f_ranks = np.argsort(np.array([
             np.corrcoef(train_ypred[:, i], train_y)[0, 1] for i in range(train_ypred.shape[1])]))
         kf = KFold(n_splits=10, random_state=int(self.inputs.config['cv_seed']))
@@ -463,6 +463,7 @@ class IntegratedFeaturesModel(SimpleInterface):
                     train_ypred[np.ix_(train_ind, ind)], train_y[train_ind],
                     train_ypred[np.ix_(test_ind, ind)], train_y[test_ind])
                 cod[n_feature] = cod[n_feature] + cod_curr
+        self._results['results'][f'nfeature_{key}'] = np.argsort(cod)[-1] + 1
         f_ind = f_ranks[-(np.argsort(cod)[-1] + 1):]
 
         return f_ind
@@ -488,7 +489,7 @@ class IntegratedFeaturesModel(SimpleInterface):
             self.inputs.fw_ypred['test_ypred'], self.inputs.c_ypred['test_ypred']))
 
         self._results['results'] = {}
-        f_ind = self._lr_nfeature(train_y, train_ypred)
+        f_ind = self._lr_nfeature(train_y, train_ypred, key)
         self._rfr(train_y, test_y, train_ypred[:, f_ind], test_ypred[:, f_ind], key)
 
         return runtime
