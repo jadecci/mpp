@@ -271,7 +271,7 @@ class FeaturewiseModel(SimpleInterface):
 
     def _extract_data(self, subjects: list) -> tuple[dict, np.ndarray, np.ndarray]:
         y = np.zeros(len(subjects))
-        conf = np.zeros(len(subjects))
+        confounds = np.zeros((len(subjects), len(list(self.inputs.confounds.keys()))))
         x_all = {}
 
         for i, subject in enumerate(subjects):
@@ -292,10 +292,11 @@ class FeaturewiseModel(SimpleInterface):
                         self._add_sub_data(x_all, x_feature, f'{key}_{t_run}', i)
                 else:
                     self._add_sub_data(x_all, x_curr, key, i)
+            for j, conf in enumerate(list(self.inputs.confounds.keys())):
+                confounds[i, j] = self.inputs.confounds[conf][subjects[i]]
             y[i] = self.inputs.phenotypes[subjects[i]]
-            conf[i] = self.inputs.confounds[subject[i]]
 
-        return x_all, y, conf
+        return x_all, y, confounds
 
     def _test(
             self, train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
@@ -453,7 +454,7 @@ class IntegratedFeaturesModel(SimpleInterface):
             self, train_y: np.ndarray, train_ypred: np.ndarray) -> tuple[np.ndarray]:
         f_ranks = np.argsort(np.array([
             np.corrcoef(train_ypred[:, i], train_y)[0, 1] for i in range(train_ypred.shape[1])]))
-        kf = KFold(n_splits=10, random_state=int(self.inputs.config['cv_seed']))
+        kf = KFold(n_splits=10, shuffle=True, random_state=int(self.inputs.config['cv_seed']))
         cod = np.zeros(train_ypred.shape[1])
 
         for train_ind, test_ind in kf.split(train_ypred):
