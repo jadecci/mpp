@@ -300,11 +300,11 @@ class FeaturewiseModel(SimpleInterface):
 
     def _test(
             self, train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
-            feature: str) -> [np.ndarray, np.ndarray]:
+            feature: str) -> [np.ndarray, np.ndarray, float]:
         key = (f'{feature}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
                f'_level{self.inputs.level}')
 
-        r, cod, train_ypred, test_ypred = elastic_net(
+        r, cod, train_ypred, test_ypred, cod_train = elastic_net(
             train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
         self._results['results'][f'en_r_{key}'] = r
         self._results['results'][f'en_cod_{key}'] = cod
@@ -313,7 +313,7 @@ class FeaturewiseModel(SimpleInterface):
         # self._results['results'][f'krcorr_r_{key}'] = r
         # self._results['results'][f'krcorr_cod_{key}'] = cod
 
-        return train_ypred, test_ypred
+        return train_ypred, test_ypred, cod_train
 
     def _run_interface(self, runtime):
         self._results['results'] = {}
@@ -330,15 +330,17 @@ class FeaturewiseModel(SimpleInterface):
         ypred = {}
         iters = zip(train_x.values(), test_x.values(), self._feature_list)
         for train_curr, test_curr, feature in iters:
-            train_pred, test_pred = self._test(train_curr, train_y, test_curr, test_y, feature)
+            train_pred, test_pred, cod = self._test(train_curr, train_y, test_curr, test_y, feature)
             if feature == 'rsfc':
-                ypred = {'train_ypred': train_pred, 'test_ypred': test_pred}
+                ypred = {'train_ypred': train_pred, 'test_ypred': test_pred, 'train_cod': cod}
             else:
                 ypred = {
                     'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
-                    'test_ypred': np.vstack((ypred['test_ypred'], test_pred))}
+                    'test_ypred': np.vstack((ypred['test_ypred'], test_pred)),
+                    'train_cod': np.concatenate((ypred['train_cod'], cod))}
         self._results['fw_ypred'] = {
-            'train_ypred': ypred['train_ypred'].T, 'test_ypred': ypred['test_ypred'].T}
+            'train_ypred': ypred['train_ypred'].T, 'test_ypred': ypred['test_ypred'].T,
+            'train_cod': ypred['train_cod']}
 
         return runtime
 
@@ -375,15 +377,15 @@ class ConfoundsModel(SimpleInterface):
 
     def _test(
             self, train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
-            confound: str) -> tuple[np.ndarray, ...]:
+            confound: str) -> tuple[np.ndarray, np.ndarray, float]:
         key = f'{confound}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
 
-        r, cod, train_ypred, test_ypred = elastic_net(
+        r, cod, train_ypred, test_ypred, cod_train = elastic_net(
             train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
         self._results['results'][f'en_r_{key}'] = r
         self._results['results'][f'en_cod_{key}'] = cod
 
-        return train_ypred, test_ypred
+        return train_ypred, test_ypred, cod_train
 
     def _run_interface(self, runtime):
         self._results['results'] = {}
@@ -397,14 +399,15 @@ class ConfoundsModel(SimpleInterface):
 
         # Single-confound models
         for i, conf in enumerate(list(self.inputs.confounds.keys())):
-            train_pred, test_pred = self._test(
+            train_pred, test_pred, cod = self._test(
                 train_x[:, i].reshape(-1, 1), train_y, test_x[:, i].reshape(-1, 1), test_y, conf)
             if i == 0:
-                ypred = {'train_ypred': train_pred, 'test_ypred': test_pred}
+                ypred = {'train_ypred': train_pred, 'test_ypred': test_pred, 'train_cod': cod}
             else:
                 ypred = {
                     'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
-                    'test_ypred': np.vstack((ypred['test_ypred'], test_pred))}
+                    'test_ypred': np.vstack((ypred['test_ypred'], test_pred)),
+                    'train_cod': np.concatenate((ypred['train_cod'], cod))}
 
         # Grouped-confound models
         # conf_group = {'demo': [0, 1, 5, 6, 7], 'brain': [3, 4], 'qn': [0, 1, 2]}
@@ -416,13 +419,15 @@ class ConfoundsModel(SimpleInterface):
         #         'test_ypred': np.vstack((ypred['test_ypred'], test_pred))}
 
         # All-confound models
-        train_pred, test_pred = self._test(train_x, train_y, test_x, test_y, 'all')
+        train_pred, test_pred, cod = self._test(train_x, train_y, test_x, test_y, 'all')
         ypred = {
             'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
-            'test_ypred': np.vstack((ypred['test_ypred'], test_pred))}
+            'test_ypred': np.vstack((ypred['test_ypred'], test_pred)),
+            'train_cod': np.concatenate((ypred['train_cod'], cod))}
 
         self._results['c_ypred'] = {
-            'train_ypred': ypred['train_ypred'].T, 'test_ypred': ypred['test_ypred'].T}
+            'train_ypred': ypred['train_ypred'].T, 'test_ypred': ypred['test_ypred'].T,
+            'train_cod': ypred['train_cod']}
 
         return runtime
 
@@ -450,25 +455,6 @@ class IntegratedFeaturesModel(SimpleInterface):
     input_spec = _IntegratedFeaturesModelInputSpec
     output_spec = _IntegratedFeaturesModelOutputSpec
 
-    def _lr_nfeature(
-            self, train_y: np.ndarray, train_ypred: np.ndarray, key: str) -> tuple[np.ndarray]:
-        f_ranks = np.argsort(np.array([
-            np.corrcoef(train_ypred[:, i], train_y)[0, 1] for i in range(train_ypred.shape[1])]))
-        kf = KFold(n_splits=10, shuffle=True, random_state=int(self.inputs.config['cv_seed']))
-        cod = np.zeros(train_ypred.shape[1])
-
-        for train_ind, test_ind in kf.split(train_ypred):
-            for n_feature in range(train_ypred.shape[1]):
-                ind = f_ranks[-n_feature:]
-                _, cod_curr = linear(
-                    train_ypred[np.ix_(train_ind, ind)], train_y[train_ind],
-                    train_ypred[np.ix_(test_ind, ind)], train_y[test_ind])
-                cod[n_feature] = cod[n_feature] + cod_curr
-        self._results['results'][f'nfeature_{key}'] = np.argsort(cod)[-1] + 1
-        f_ind = f_ranks[-(np.argsort(cod)[-1] + 1):]
-
-        return f_ind
-
     def _rfr(
             self, train_y: np.ndarray, test_y: np.ndarray, train_ypred: np.ndarray,
             test_ypred: np.ndarray, key: str) -> None:
@@ -480,7 +466,6 @@ class IntegratedFeaturesModel(SimpleInterface):
         all_sub = sum(self.inputs.sublists.values(), [])
         test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
         train_sub = [subject for subject in all_sub if subject not in test_sub]
-        key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}'
 
         train_y = np.array([self.inputs.phenotypes[sub] for sub in train_sub])
         test_y = np.array([self.inputs.phenotypes[sub] for sub in test_sub])
@@ -488,10 +473,17 @@ class IntegratedFeaturesModel(SimpleInterface):
             self.inputs.fw_ypred['train_ypred'], self.inputs.c_ypred['train_ypred']))
         test_ypred = np.hstack((
             self.inputs.fw_ypred['test_ypred'], self.inputs.c_ypred['test_ypred']))
+        train_cod = np.concatenate((
+            self.inputs.fw_ypred['train_cod'], self.inputs.c_ypred['train_cod']))
+        f_ranks = -np.argsort(-train_cod)
 
         self._results['results'] = {}
-        f_ind = self._lr_nfeature(train_y, train_ypred, key)
-        self._rfr(train_y, test_y, train_ypred[:, f_ind], test_ypred[:, f_ind], key)
+        for n_feature in range(2, train_ypred.shape[1]+1):
+            key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}_level{self.inputs.level}' \
+                  f'_{n_feature}features'
+            self._rfr(
+                train_y, test_y, train_ypred[:, f_ranks[:n_feature]],
+                test_ypred[:, f_ranks[:n_feature]], key)
 
         return runtime
 

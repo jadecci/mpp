@@ -7,7 +7,7 @@ from sklearn.model_selection import GridSearchCV
 
 def elastic_net(
         train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
-        n_alphas: int) -> tuple[float, float, np.ndarray, np.ndarray]:
+        n_alphas: int) -> tuple[float, float, np.ndarray, np.ndarray, float]:
     # see https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNetCV.html
     l1_ratio = [.1, .5, .7, .9, .95, .99, 1]
 
@@ -18,8 +18,9 @@ def elastic_net(
     test_ypred = en.predict(test_x)
     r = np.corrcoef(test_y, test_ypred)[0, 1]
     cod = en.score(test_x, test_y)
+    cod_train = en.score(train_x, train_y)
 
-    return r, cod, train_ypred, test_ypred
+    return r, cod, train_ypred, test_ypred, cod_train
 
 
 def kernel_ridge_corr_cv(
@@ -55,8 +56,9 @@ def random_forest_cv(
         test_y: np.ndarray) -> tuple[float, float]:
     params = {
         'n_estimators': np.linspace(100, 1000, 4, dtype=int),
-        'min_samples_split': np.linspace(0.01, 0.1, 10),
-        'max_features': np.linspace(1, train_x.shape[1], train_x.shape[1], dtype=int)}
+        'min_samples_split': np.linspace(0.01, 0.05, 5),
+        'max_features': np.linspace(
+            np.floor(train_x.shape[1]/2), train_x.shape[1], train_x.shape[1], dtype=int)}
     rfr_cv = GridSearchCV(
         estimator=RandomForestRegressor(criterion='friedman_mse'), param_grid=params)
     rfr_cv.fit(train_x, train_y)
