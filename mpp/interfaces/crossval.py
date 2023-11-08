@@ -332,12 +332,12 @@ class FeaturewiseModel(SimpleInterface):
         for train_curr, test_curr, feature in iters:
             train_pred, test_pred, cod = self._test(train_curr, train_y, test_curr, test_y, feature)
             if feature == 'rsfc':
-                ypred = {'train_ypred': train_pred, 'test_ypred': test_pred, 'train_cod': cod}
+                ypred = {'train_ypred': train_pred, 'test_ypred': test_pred, 'train_cod': [cod]}
             else:
                 ypred = {
                     'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
                     'test_ypred': np.vstack((ypred['test_ypred'], test_pred)),
-                    'train_cod': np.concatenate((ypred['train_cod'], cod))}
+                    'train_cod': np.concatenate((ypred['train_cod'], [cod]))}
         self._results['fw_ypred'] = {
             'train_ypred': ypred['train_ypred'].T, 'test_ypred': ypred['test_ypred'].T,
             'train_cod': ypred['train_cod']}
@@ -402,12 +402,12 @@ class ConfoundsModel(SimpleInterface):
             train_pred, test_pred, cod = self._test(
                 train_x[:, i].reshape(-1, 1), train_y, test_x[:, i].reshape(-1, 1), test_y, conf)
             if i == 0:
-                ypred = {'train_ypred': train_pred, 'test_ypred': test_pred, 'train_cod': cod}
+                ypred = {'train_ypred': train_pred, 'test_ypred': test_pred, 'train_cod': [cod]}
             else:
                 ypred = {
                     'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
                     'test_ypred': np.vstack((ypred['test_ypred'], test_pred)),
-                    'train_cod': np.concatenate((ypred['train_cod'], cod))}
+                    'train_cod': np.concatenate((ypred['train_cod'], [cod]))}
 
         # Grouped-confound models
         # conf_group = {'demo': [0, 1, 5, 6, 7], 'brain': [3, 4], 'qn': [0, 1, 2]}
@@ -423,7 +423,7 @@ class ConfoundsModel(SimpleInterface):
         ypred = {
             'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
             'test_ypred': np.vstack((ypred['test_ypred'], test_pred)),
-            'train_cod': np.concatenate((ypred['train_cod'], cod))}
+            'train_cod': np.concatenate((ypred['train_cod'], [cod]))}
 
         self._results['c_ypred'] = {
             'train_ypred': ypred['train_ypred'].T, 'test_ypred': ypred['test_ypred'].T,
