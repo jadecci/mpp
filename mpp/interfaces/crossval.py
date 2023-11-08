@@ -7,7 +7,8 @@ from sklearn.model_selection import RepeatedStratifiedKFold, KFold
 from statsmodels.stats.multitest import multipletests
 
 from mpp.utilities.models import (
-    elastic_net, kernel_ridge_corr_cv, linear, random_forest_cv, random_patches, permutation_test)
+    elastic_net, kernel_ridge_corr_cv, linear, random_forest_cv, lasso_cv, random_patches,
+    permutation_test)
 from mpp.utilities.data import write_h5, cv_extract_subject_data, cv_extract_all_features
 from mpp.utilities.features import pheno_reg_conf
 
@@ -458,9 +459,19 @@ class IntegratedFeaturesModel(SimpleInterface):
     def _rfr(
             self, train_y: np.ndarray, test_y: np.ndarray, train_ypred: np.ndarray,
             test_ypred: np.ndarray, key: str) -> None:
-        r, cod = random_forest_cv(train_ypred, train_y, test_ypred, test_y)
+        r, cod, f_import = random_forest_cv(train_ypred, train_y, test_ypred, test_y)
         self._results['results'][f'rfr_r_{key}'] = r
         self._results['results'][f'rfr_cod_{key}'] = cod
+        self._results['results'][f'rfr_fimport_{key}'] = f_import
+
+    def _lasso(
+            self, train_y: np.ndarray, test_y: np.ndarray, train_ypred: np.ndarray,
+            test_ypred: np.ndarray, key: str) -> None:
+        r, cod, f_import = lasso_cv(
+            train_ypred, train_y, test_ypred, test_y, int(self.inputs.config['n_alphas']))
+        self._results['results'][f'lasso_r_{key}'] = r
+        self._results['results'][f'lasso_cod_{key}'] = cod
+        self._results['results'][f'lasso_fimport_{key}'] = f_import
 
     def _run_interface(self, runtime):
         all_sub = sum(self.inputs.sublists.values(), [])

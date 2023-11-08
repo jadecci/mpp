@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.linear_model import ElasticNetCV, LinearRegression
+from sklearn.linear_model import ElasticNetCV, LinearRegression, LassoCV
 from sklearn.ensemble import RandomForestRegressor, BaggingRegressor
 from mpp.interfaces.models import KernelRidgeCorr
 from sklearn.model_selection import GridSearchCV
@@ -53,7 +53,7 @@ def linear(
 
 def random_forest_cv(
         train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray,
-        test_y: np.ndarray) -> tuple[float, float]:
+        test_y: np.ndarray) -> tuple[float, float, np.ndarray]:
     params = {
         'n_estimators': np.linspace(100, 1000, 4, dtype=int),
         'min_samples_split': np.linspace(0.01, 0.05, 5),
@@ -67,7 +67,20 @@ def random_forest_cv(
     r = np.corrcoef(test_y, test_ybar)[0, 1]
     cod = rfr_cv.score(test_x, test_y)
 
-    return r, cod
+    return r, cod, rfr_cv.best_estimator_.feature_importances_
+
+
+def lasso_cv(
+        train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
+        n_alphas: int) -> tuple[float, float, np.ndarray]:
+    lcv = LassoCV(n_alphas=n_alphas)
+    lcv.fit(train_x, train_y)
+
+    test_ypred = lcv.predict(test_x)
+    r = np.corrcoef(test_y, test_ypred)[0, 1]
+    cod = lcv.score(test_x, test_y)
+
+    return r, cod, lcv.coef_
 
 
 def random_patches(
