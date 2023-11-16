@@ -459,19 +459,9 @@ class IntegratedFeaturesModel(SimpleInterface):
     def _rfr(
             self, train_y: np.ndarray, test_y: np.ndarray, train_ypred: np.ndarray,
             test_ypred: np.ndarray, key: str) -> None:
-        r, cod, f_import = random_forest_cv(train_ypred, train_y, test_ypred, test_y)
+        r, cod, _ = random_forest_cv(train_ypred, train_y, test_ypred, test_y)
         self._results['results'][f'rfr_r_{key}'] = r
         self._results['results'][f'rfr_cod_{key}'] = cod
-        self._results['results'][f'rfr_fimport_{key}'] = f_import
-
-    def _lasso(
-            self, train_y: np.ndarray, test_y: np.ndarray, train_ypred: np.ndarray,
-            test_ypred: np.ndarray, key: str) -> None:
-        r, cod, f_import = lasso_cv(
-            train_ypred, train_y, test_ypred, test_y, int(self.inputs.config['n_alphas']))
-        self._results['results'][f'lasso_r_{key}'] = r
-        self._results['results'][f'lasso_cod_{key}'] = cod
-        self._results['results'][f'lasso_fimport_{key}'] = f_import
 
     def _run_interface(self, runtime):
         all_sub = sum(self.inputs.sublists.values(), [])
