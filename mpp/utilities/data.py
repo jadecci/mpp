@@ -12,13 +12,11 @@ from mpp.utilities.features import diffusion_mapping_sub, score_sub
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
 task_runs = {
-    'HCP-YA': ['tfMRI_EMOTION_LR', 'tfMRI_EMOTION_RL', 'tfMRI_GAMBLING_LR', 'tfMRI_GAMBLING_RL',
-               'tfMRI_LANGUAGE_LR', 'tfMRI_LANGUAGE_RL', 'tfMRI_MOTOR_LR', 'tfMRI_MOTOR_RL',
-               'tfMRI_RELATIONAL_LR', 'tfMRI_RELATIONAL_RL', 'tfMRI_SOCIAL_LR', 'tfMRI_SOCIAL_RL',
-               'tfMRI_WM_LR', 'tfMRI_WM_RL'],
+    'HCP-YA': [
+        'tfMRI_EMOTION', 'tfMRI_GAMBLING', 'tfMRI_LANGUAGE', 'tfMRI_MOTOR', 'tfMRI_RELATIONA',
+        'tfMRI_SOCIAL', 'tfMRI_WM'],
     'HCP-A': ['tfMRI_CARIT_PA', 'tfMRI_FACENAME_PA', 'tfMRI_VISMOTOR_PA'],
-    'HCP-D': ['tfMRI_CARIT_AP', 'tfMRI_CARIT_PA', 'tfMRI_EMOTION_PA', 'tfMRI_GUESSING_AP',
-              'tfMRI_GUESSING_PA']}
+    'HCP-D': ['tfMRI_CARIT', 'tfMRI_EMOTION_PA', 'tfMRI_GUESSING']}
 
 
 def write_h5(h5_file: Union[Path, str], dataset: str, data: np.ndarray, overwrite: bool) -> None:
