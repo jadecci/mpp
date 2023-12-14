@@ -7,20 +7,19 @@ from sklearn.model_selection import GridSearchCV
 
 def elastic_net(
         train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
-        n_alphas: int) -> tuple[float, float, np.ndarray, np.ndarray, float]:
+        n_alphas: int) -> tuple[float, float, np.ndarray, float]:
     # see https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNetCV.html
     l1_ratio = [.1, .5, .7, .9, .95, .99, 1]
 
     en = ElasticNetCV(l1_ratio=l1_ratio, n_alphas=n_alphas)
     en.fit(train_x, train_y)
 
-    train_ypred = en.predict(train_x)
-    test_ypred = en.predict(test_x)
-    r = np.corrcoef(test_y, test_ypred)[0, 1]
+    ypred = en.predict(test_x)
+    r = np.corrcoef(test_y, ypred)[0, 1]
     cod = en.score(test_x, test_y)
-    cod_train = en.score(train_x, train_y)
+    train_cod = en.score(train_x, train_y)
 
-    return r, cod, train_ypred, test_ypred, cod_train
+    return r, cod, ypred, train_cod
 
 
 def kernel_ridge_corr_cv(

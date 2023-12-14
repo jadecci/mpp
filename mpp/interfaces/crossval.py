@@ -2,7 +2,7 @@ import itertools
 
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 import numpy as np
-from sklearn.model_selection import RepeatedStratifiedKFold, KFold
+from sklearn.model_selection import RepeatedStratifiedKFold, StratifiedKFold
 
 from mpp.utilities.models import elastic_net, random_forest_cv
 from mpp.utilities.data import cv_extract_subject_data
@@ -12,11 +12,10 @@ from mpp.utilities.features import pheno_reg_conf
 class _CrossValSplitInputSpec(BaseInterfaceInputSpec):
     sublists = traits.Dict(mandatory=True, dtype=list, desc='availabel subjects in each dataset')
     config = traits.Dict(mandatory=True, desc='configuration settings')
-    permutation = traits.Bool(False, desc='use n_repeats_perm instead')
 
 
 class _CrossValSplitOutputSpec(TraitedSpec):
-    cv_split = traits.Dict(dtype=list, desc='list of subjects in the test split of each fold')
+    cv_split = traits.Dict(dtype=list, desc='list of subjects in the training split of each fold')
 
 
 class CrossValSplit(SimpleInterface):
@@ -30,16 +29,21 @@ class CrossValSplit(SimpleInterface):
         datasets = list(itertools.chain.from_iterable(datasets))
 
         self._results['cv_split'] = {}
-        if self.inputs.permutation:
-            n_repeats = int(self.inputs.config['n_repeats_perm'])
-        else:
-            n_repeats = int(self.inputs.config['n_repeats'])
+        n_repeats = int(self.inputs.config['n_repeats'])
         n_folds = int(self.inputs.config['n_folds'])
         rskf = RepeatedStratifiedKFold(
             n_splits=n_folds, n_repeats=n_repeats, random_state=int(self.inputs.config['cv_seed']))
-        for fold, (_, test_ind) in enumerate(rskf.split(subjects, datasets)):
-            key = f'repeat{int(np.floor(fold/n_folds))}_fold{int(fold%n_folds)}'
-            self._results['cv_split'][key] = np.array(subjects)[test_ind]
+        for fold, (train_ind, _) in enumerate(rskf.split(subjects, datasets)):
+            key = f'repeat{int(np.floor(fold / n_folds))}_fold{int(fold % n_folds)}'
+            train_sub = subjects[train_ind]
+            self._results['cv_split'][key] = train_sub
+
+            skf = StratifiedKFold(n_splits=5)
+            for inner, (train_i, test_i) in enumerate(skf.split(train_sub, datasets[train_ind])):
+                key_inner = f'{key}_inner{inner}'
+                self._results['cv_split'][key_inner] = train_sub[train_i]
+                self._results['cv_split'][f'{key_inner}_train'] = train_i
+                self._results['cv_split'][f'{key_inner}_test'] = test_i
 
         return runtime
 
@@ -111,24 +115,12 @@ class FeaturewiseModel(SimpleInterface):
 
         return x_all, y, confounds
 
-    def _test(
-            self, train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
-            feature: str) -> [np.ndarray, np.ndarray, float]:
-        key = (f'{feature}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
-               f'_level{self.inputs.level}')
-
-        r, cod, train_ypred, test_ypred, cod_train = elastic_net(
-            train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
-        self._results['results'][f'en_r_{key}'] = r
-        self._results['results'][f'en_cod_{key}'] = cod
-
-        return train_ypred, test_ypred, cod_train
-
     def _run_interface(self, runtime):
         self._results['results'] = {}
+        key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}'
         all_sub = sum(self.inputs.sublists.values(), [])
-        test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
-        train_sub = [subject for subject in all_sub if subject not in test_sub]
+        train_sub = self.inputs.cv_split[key]
+        test_sub = [subject for subject in all_sub if subject not in train_sub]
 
         train_x, train_y, train_conf = self._extract_data(train_sub)
         test_x, test_y, test_conf = self._extract_data(test_sub)
@@ -136,20 +128,29 @@ class FeaturewiseModel(SimpleInterface):
         for i in range(len(train_x.keys())-len(self._feature_list)):
             self._feature_list.insert(4+i, f'tfc_{i+1}')
 
-        ypred = {}
-        iters = zip(train_x.values(), test_x.values(), self._feature_list)
-        for train_curr, test_curr, feature in iters:
-            train_pred, test_pred, cod = self._test(train_curr, train_y, test_curr, test_y, feature)
-            if feature == 'rsfc':
-                ypred = {'train_ypred': train_pred, 'test_ypred': test_pred, 'train_cod': [cod]}
-            else:
-                ypred = {
-                    'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
-                    'test_ypred': np.vstack((ypred['test_ypred'], test_pred)),
-                    'train_cod': np.concatenate((ypred['train_cod'], [cod]))}
-        self._results['fw_ypred'] = {
-            'train_ypred': ypred['train_ypred'].T, 'test_ypred': ypred['test_ypred'].T,
-            'train_cod': ypred['train_cod']}
+        train_ypred = np.zeros((len(train_sub), len(self._feature_list)))
+        test_ypred = np.zeros((len(test_sub), len(self._feature_list)))
+        train_cod = np.zeros(len(self._feature_list))
+        iters = zip(train_x.values(), test_x.values(), enumerate(self._feature_list))
+        for train_curr, test_curr, (i, feature) in iters:
+            key_out = [f'{feature}_{key}_level{self.inputs.level}']
+            for inner in range(5):
+                train_ind = self.inputs.cv_split[f'{key}_inner{inner}_train']
+                test_ind = self.inputs.cv_split[f'{key}_inner{inner}_test']
+                _, cod, train_pred, _= elastic_net(
+                    train_curr[train_ind, :], train_y[train_ind], train_curr[test_ind, :],
+                    train_y[test_ind], int(self.inputs.config['n_alphas']))
+                train_ypred[test_ind, i] = train_pred
+
+            r, cod, test_pred, train_cod_curr = elastic_net(
+                train_curr, train_y, test_curr, test_y, int(self.inputs.config['n_alphas']))
+            test_ypred[:, i] = test_pred
+            train_cod[i] = train_cod_curr
+            self._results['results'][f'en_r_{key_out}'] = r
+            self._results['results'][f'en_cod_{key_out}'] = cod
+
+        self._results['results']['fw_ypred'] = {
+            'train_ypred': train_ypred, 'test_ypred': test_ypred, 'train_cod': train_cod}
 
         return runtime
 
@@ -184,50 +185,41 @@ class ConfoundsModel(SimpleInterface):
 
         return x, y
 
-    def _test(
-            self, train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
-            confound: str) -> tuple[np.ndarray, np.ndarray, float]:
-        key = f'{confound}_repeat{self.inputs.repeat}_fold{self.inputs.fold}'
-
-        r, cod, train_ypred, test_ypred, cod_train = elastic_net(
-            train_x, train_y, test_x, test_y, int(self.inputs.config['n_alphas']))
-        self._results['results'][f'en_r_{key}'] = r
-        self._results['results'][f'en_cod_{key}'] = cod
-
-        return train_ypred, test_ypred, cod_train
-
     def _run_interface(self, runtime):
         self._results['results'] = {}
-        ypred = {}
+        key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}'
+        conf_list = list(self.inputs.confounds.keys())
         all_sub = sum(self.inputs.sublists.values(), [])
-        test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
-        train_sub = [subject for subject in all_sub if subject not in test_sub]
+        train_sub = self.inputs.cv_split[key]
+        test_sub = [subject for subject in all_sub if subject not in train_sub]
 
         train_x, train_y = self._extract_data(train_sub)
         test_x, test_y = self._extract_data(test_sub)
 
-        # Single-confound models
-        for i, conf in enumerate(list(self.inputs.confounds.keys())):
-            train_pred, test_pred, cod = self._test(
-                train_x[:, i].reshape(-1, 1), train_y, test_x[:, i].reshape(-1, 1), test_y, conf)
-            if i == 0:
-                ypred = {'train_ypred': train_pred, 'test_ypred': test_pred, 'train_cod': [cod]}
-            else:
-                ypred = {
-                    'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
-                    'test_ypred': np.vstack((ypred['test_ypred'], test_pred)),
-                    'train_cod': np.concatenate((ypred['train_cod'], [cod]))}
+        train_ypred = np.zeros((len(train_sub), len(conf_list)))
+        test_ypred = np.zeros((len(test_sub), len(conf_list)))
+        train_cod = np.zeros(len(conf_list))
+        for i, conf in enumerate(conf_list):
+            key_out = [f'{conf}_{key}']
+            for inner in range(5):
+                train_ind = self.inputs.cv_split[f'{key}_inner{inner}_train']
+                test_ind = self.inputs.cv_split[f'{key}_inner{inner}_test']
+                _, cod, train_pred, _ = elastic_net(
+                    train_x[train_ind, i].reshape(-1, 1), train_y[train_ind],
+                    train_x[test_ind, i].reshape(-1, 1), train_y[test_ind],
+                    int(self.inputs.config['n_alphas']))
+                train_ypred[test_ind, i] = train_pred
 
-        # All-confound models
-        train_pred, test_pred, cod = self._test(train_x, train_y, test_x, test_y, 'all')
-        ypred = {
-            'train_ypred': np.vstack((ypred['train_ypred'], train_pred)),
-            'test_ypred': np.vstack((ypred['test_ypred'], test_pred)),
-            'train_cod': np.concatenate((ypred['train_cod'], [cod]))}
+            r, cod, test_pred, train_cod_curr = elastic_net(
+                train_x[:, i].reshape(-1, 1), train_y, test_x[:, i].reshape(-1, 1), test_y,
+                int(self.inputs.config['n_alphas']))
+            test_ypred[:, i] = test_pred
+            train_cod[i] = train_cod_curr
+            self._results['results'][f'en_r_{key_out}'] = r
+            self._results['results'][f'en_cod_{key_out}'] = cod
 
-        self._results['c_ypred'] = {
-            'train_ypred': ypred['train_ypred'].T, 'test_ypred': ypred['test_ypred'].T,
-            'train_cod': ypred['train_cod']}
+        self._results['results']['c_ypred'] = {
+            'train_ypred': train_ypred, 'test_ypred': test_ypred, 'train_cod': train_cod}
 
         return runtime
 
@@ -264,8 +256,8 @@ class IntegratedFeaturesModel(SimpleInterface):
 
     def _run_interface(self, runtime):
         all_sub = sum(self.inputs.sublists.values(), [])
-        test_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
-        train_sub = [subject for subject in all_sub if subject not in test_sub]
+        train_sub = self.inputs.cv_split[f'repeat{self.inputs.repeat}_fold{self.inputs.fold}']
+        test_sub = [subject for subject in all_sub if subject not in train_sub]
 
         train_y = np.array([self.inputs.phenotypes[sub] for sub in train_sub])
         test_y = np.array([self.inputs.phenotypes[sub] for sub in test_sub])

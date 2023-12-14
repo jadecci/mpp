@@ -318,7 +318,6 @@ class _CVFeaturesInputSpec(BaseInterfaceInputSpec):
         mandatory=True, dtype=list, desc='list of subjects available in each dataset')
     cv_split = traits.Dict(
         mandatory=True, dtype=list, desc='list of subjects in the test split of each fold')
-    # cv_split_perm = traits.Dict(mandatory=True, dtype=list, desc='list of permuted subjects')
     repeat = traits.Int(mandatory=True, desc='current repeat of cross-validation')
     fold = traits.Int(mandatory=True, desc='current fold in the repeat')
     level = traits.Str(mandatory=True, desc='parcellation level')
@@ -362,17 +361,8 @@ class CVFeatures(SimpleInterface):
 
         return image_features
 
-    def _compute_features(
-            self, image_features: dict, cv_split: dict,
-            repeat: int) -> tuple[np.ndarray, pd.DataFrame]:
-        all_sub = sum(self.inputs.sublists.values(), [])
-        n_folds = int(self.inputs.config['n_folds'])
-
-        test_sub = cv_split[f'repeat{repeat}_fold{self.inputs.fold}']
-        val_sub = cv_split[f'repeat{repeat}_fold{(self.inputs.fold+1)%n_folds}']
-        testval_sub = np.concatenate((val_sub, test_sub))
-        train_sub = [subject for subject in all_sub if subject not in testval_sub]
-
+    def _compute_features(self, image_features: dict, key: str) -> tuple[np.ndarray, pd.DataFrame]:
+        train_sub = self.inputs.cv_split[key]
         embed = diffusion_mapping(image_features, train_sub, 'rsfc')
         for feature in ['GMV', 'CS', 'CT', 'myelin']:
             params = score(image_features, train_sub, feature)
@@ -384,20 +374,15 @@ class CVFeatures(SimpleInterface):
         self._results['embeddings'] = {}
         self._results['params'] = {}
 
-        embed, params = self._compute_features(
-            image_features, self.inputs.cv_split, self.inputs.repeat)
+        key = f'repeat{self.inputs.repeat}_fold{self.inputs.fold}'
+        embed, params = self._compute_features(image_features, key)
         self._results['embeddings']['embedding'] = embed
         self._results['params']['params'] = params
 
-        # assuming n_repeats_perm = n_repeats x 10
-        # n_perm_check = int(self.inputs.config['n_repeats']) * 10
-        # if int(self.inputs.config['n_repeats_perm']) == n_perm_check:
-        #    for repeat_split in range(10):
-        #        repeat = int(self.inputs.repeat) * 10 + repeat_split
-        #        embed, params = self._compute_features(
-        #            image_features, self.inputs.cv_split_perm, repeat)
-        #        self._results['embeddings'][f'repeat{repeat}'] = embed
-        #        self._results['params'][f'repeat{repeat}'] = params
+        for inner in range(5):
+            embed, params = self._compute_features(image_features, f'{key}_inner{inner}')
+            self._results['embeddings'][f'embedding_inner{inner}'] = embed
+            self._results['params'][f'params_inner{inner}'] = params
 
         self._results['repeat'] = self.inputs.repeat
         self._results['fold'] = self.inputs.fold
