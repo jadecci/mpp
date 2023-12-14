@@ -113,7 +113,7 @@ def main() -> None:
             plugin_args={
                 'wrapper_cmd': args.wrapper,
                 'dagman_args': f'-outfile_dir {args.work_dir} -import_env',
-                'override_specs': 'request_memory = 5 GB\nrequest_cpus = 1'})
+                'override_specs': 'request_memory = 10 GB\nrequest_cpus = 1'})
     else:
         mp_wf.run()
 

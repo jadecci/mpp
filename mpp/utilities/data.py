@@ -13,7 +13,7 @@ logging.getLogger('datalad').setLevel(logging.WARNING)
 
 task_runs = {
     'HCP-YA': [
-        'tfMRI_EMOTION', 'tfMRI_GAMBLING', 'tfMRI_LANGUAGE', 'tfMRI_MOTOR', 'tfMRI_RELATIONA',
+        'tfMRI_EMOTION', 'tfMRI_GAMBLING', 'tfMRI_LANGUAGE', 'tfMRI_MOTOR', 'tfMRI_RELATIONAL',
         'tfMRI_SOCIAL', 'tfMRI_WM'],
     'HCP-A': ['tfMRI_CARIT_PA', 'tfMRI_FACENAME_PA', 'tfMRI_VISMOTOR_PA'],
     'HCP-D': ['tfMRI_CARIT', 'tfMRI_EMOTION_PA', 'tfMRI_GUESSING']}
