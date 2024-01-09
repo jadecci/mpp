@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mpp"
+authors = [
+    {name = "Jianxiao Wu", email = "j.wu@fz-juelich.de"}
+]
+description = "Multimodal brain-based psychometric prediction"
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.9"
+keywords = ["neuroimaging", "multimodal"]
+license = {file = "LICENSE"}
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Topic :: Neuroscience :: Neuroimaging",
+]
+dependencies = [
+    "nipype ~= 1.8.5",
+    "h5py ~= 3.7.0",
+    "numpy ~= 1.21.6",
+    "scipy ~= 1.7.3",
+    "scikit-learn ~= 1.0.2",
+]
+dynamic = ["version"]
+
+[project.scripts]
+mpp = "mpp.main:main"
+
+[project.urls]
+repository = "https://github.com/jadecci/mpp"
+repository-gin = "https://gin.g-node.org/jadecci/MPP"
+
+[tool.setuptools]
+packages = ["mpp"]
+
+[tool.setuptools.dynamic]
+version = {attr = "mpp.VERSION"}
