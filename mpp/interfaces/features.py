@@ -1,24 +1,11 @@
-import subprocess
-from os import environ
 from pathlib import Path
-import sys
-from typing import Union
 
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
-import nipype.pipeline as pe
-from nipype.interfaces import utility as niu
 import numpy as np
-import nibabel as nib
 import pandas as pd
-from nipype.interfaces import fsl, freesurfer
-import bct
-import datalad.api as dl
 
-from mpp.utilities.features import (
-    parcellate, fc, diffusion_mapping, score, add_subdir, atlas_files, add_annot)
 from mpp.utilities.data import read_h5
-from mpp.utilities.preproc import t1_files_type, fs_files_aparc, combine_4strings
-from mpp.exceptions import DatasetError
+from mpp.utilities.features import diffusion_mapping, score
 
 base_dir = Path(__file__).resolve().parent.parent
 

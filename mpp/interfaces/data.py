@@ -1,30 +1,19 @@
-import subprocess
 from pathlib import Path
-import logging
 
-import pandas as pd
-import numpy as np
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
-import datalad.api as dl
+import numpy as np
+import pandas as pd
 
-from mpp.utilities.data import write_h5, pheno_hcp
-from mpp.utilities.features import pheno_conf_hcp
 from mpp.exceptions import DatasetError
+from mpp.utilities.data import dataset_params, write_h5
 
 
 class _InitFeaturesInputSpec(BaseInterfaceInputSpec):
-    features_dir = traits.Dict(
-        mandatory=True, dtype=str, desc='absolute path to extracted features for each dataset')
-    phenotypes_dir = traits.Dict(
-        mandatory=True, desc='absolute path to phenotype files for each dataset')
-    phenotype = traits.Str(mandatory=True, desc='phenotype to use as prediction target')
+    config = traits.Dict(mandatory=True, desc="Workflow configurations")
 
 
 class _InitFeaturesOutputSpec(TraitedSpec):
-    sublists = traits.Dict(dtype=list, desc='list of subjects available in each dataset')
-    confounds = traits.Dict(dtype=dict, desc='confound values from subjects in sublists')
-    phenotypes = traits.Dict(dtype=float, desc='phenotype values from subjects in sublists')
-    phenotypes_perm = traits.Dict(dtype=float, desc='shuffled phenotype values for permutation')
+    sublists = traits.Dict(dtype=list, desc="list of subjects available in each dataset")
 
 
 class InitFeatures(SimpleInterface):
@@ -32,27 +21,24 @@ class InitFeatures(SimpleInterface):
     input_spec = _InitFeaturesInputSpec
     output_spec = _InitFeaturesOutputSpec
 
-    def _run_interface(self, runtime):
-        self._results['sublists'] = dict.fromkeys(self.inputs.features_dir)
-        self._results['confounds'] = {}
+    def _check_pheno_conf(self, subject_file: Path):
+        return
 
-        for dataset in self.inputs.features_dir:
-            features_files = list(Path(self.inputs.features_dir[dataset]).iterdir())
-            if dataset in ['HCP-A', 'HCP-D']:
-                sublist = [str(file)[-19:-9] for file in features_files]
-            else:
-                sublist = [str(file)[-9:-3] for file in features_files]
-            sublist, _ = pheno_conf_hcp(
-                dataset, self.inputs.phenotypes_dir[dataset], self.inputs.features_dir[dataset],
-                sublist)
-            sublist, pheno, pheno_perm = pheno_hcp(
-                dataset, self.inputs.phenotypes_dir[dataset], self.inputs.phenotype, sublist)
-            _, self._results['confounds'] = pheno_conf_hcp(
-                dataset, self.inputs.phenotypes_dir[dataset], self.inputs.features_dir[dataset],
-                sublist)
-            self._results['phenotypes'] = pheno
-            self._results['phenotypes_perm'] = pheno_perm
-            self._results['sublists'][dataset] = sublist
+    def _run_interface(self, runtime):
+        self._results["sublists"] = {}
+
+        for dataset in Path(self.inputs.config["features_dir"]).iterdir():
+            if not dataset.name.startswith("."):
+                sublist = []
+                for subject_file in dataset.iterdir():
+                    if dataset in ["HCP-A", "HCP-D"]:
+                        subject = subject_file.stem.split("_V1_MR")[0]
+                    elif dataset == "HCP-YA":
+                        subject = subject_file.stem
+                    else:
+                        raise DatasetError()
+                    sublist.append(subject)
+                self._results["sublists"][dataset] = sublist
 
         return runtime
 

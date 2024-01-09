@@ -267,6 +267,42 @@ class SubDirAnnot(SimpleInterface):
         return runtime
 
 
+class _PhenotypesInputSpec(BaseInterfaceInputSpec):
+    config = traits.Dict(mandatory=True, desc="Workflow configurations")
+
+
+class _PhenotypesOutputSpec(TraitedSpec):
+    pheno = traits.Dict(dtype=float, desc="phenotypes")
+
+
+class Phenotypes(SimpleInterface):
+    """Extract phenotype data"""
+    input_spec = _PhenotypesInputSpec
+    output_spec = _PhenotypesOutputSpec
+
+    def _run_interface(self, runtime):
+        self._results["pheno"] = dict.fromkeys(self.inputs.config["param"]["col_names"].keys())
+        for key, val in self.inputs.config["param"]["col_names"].items():
+            if self.inputs.config["dataset"] == "HCP-YA":
+                pheno_file = self.inputs.config["param"]["pheno_file"]
+                pheno_data = pd.read_csv(
+                    pheno_file, usecols=["Subject", val], dtype={"Subject": str, val: float})
+                pheno_data = pheno_data.loc[pheno_data["Subject"] == self.inputs.config["subject"]]
+            elif self.inputs.config["dataset"] in ["HCP-A", "HCP-D"]:
+                pheno_file = self.inputs.config["params"]["pheno_files"][key]
+                subject = self.inputs.config["subject"].split("_V1_MR")[0]
+                pheno_data = pd.read_table(
+                    pheno_file, sep="\t", header=0, skiprows=[1],
+                    usecols=[4, self.inputs.config["params"]["pheno_cols"][key]],
+                    dtype={"src_subject_id": str, val: float})[["src_subject_id", val]]
+                pheno_data = pheno_data.loc[pheno_data["src_subject_id"] == subject]
+            else:
+                raise DatasetError()
+            self._results["pheno"][key] = pheno_data[val][0]
+
+        return runtime
+
+
 class _SaveFeaturesInputSpec(BaseInterfaceInputSpec):
     config = traits.Dict(mandatory=True, desc="Workflow configurations")
     s_rsfc = traits.Dict(dtype=float, desc="resting-state functional connectivity")
@@ -278,6 +314,7 @@ class _SaveFeaturesInputSpec(BaseInterfaceInputSpec):
     scc_files = traits.Dict(dtype=Path, desc="SC based on streamline count")
     scl_files = traits.Dict(dtype=Path, desc="SC based on streamline length")
     conf = traits.Dict(desc="confounding variables")
+    pheno = traits.Dict(dtype=float, desc="phenotypes")
     dataset_dir = traits.Directory(mandatory=True, desc="absolute path to installed root dataset")
 
 
@@ -292,36 +329,40 @@ class SaveFeatures(SimpleInterface):
             l_key = f"level{level+1}"
 
             if "rfMRI" in self.inputs.config["modality"]:
-                write_h5(output, f"/rsfc/{l_key}", self.inputs.s_rsfc[l_key], overwrite=True)
-                write_h5(output, f"/dfc/{l_key}", self.inputs.dfc[l_key], overwrite=True)
+                write_h5(output, f"/rsfc/{l_key}", self.inputs.s_rsfc[l_key], True)
+                write_h5(output, f"/dfc/{l_key}", self.inputs.dfc[l_key], True)
                 for stat in ["strength", "betweenness", "participation", "efficiency"]:
                     write_h5(
                         output, f"/rs_stats/{stat}/{l_key}",
-                        self.inputs.rs_stats[f"{l_key}_{stat}"], overwrite=True)
+                        self.inputs.rs_stats[f"{l_key}_{stat}"], True)
 
             if "tfMRI" in self.inputs.config["modality"]:
                 for key, _ in self.inputs.tfc.items():
                     write_h5(
-                        output, f"/tfc/{key}/{l_key}", self.inputs.tfc[key][l_key], overwrite=True)
+                        output, f"/tfc/{key}/{l_key}", self.inputs.tfc[key][l_key], True)
 
             if "sMRI" in self.inputs.config["modality"]:
-                write_h5(output, f"/myelin/{l_key}", self.inputs.myelin[l_key], overwrite=True)
+                write_h5(output, f"/myelin/{l_key}", self.inputs.myelin[l_key], True)
                 for stat in ["GMV", "CS", "CT"]:
                     write_h5(
                         output, f"/morphometry/{stat}/{l_key}",
-                        self.inputs.morph[f"{l_key}_{stat}"], overwrite=True)
+                        self.inputs.morph[f"{l_key}_{stat}"], True)
 
             if "dMRI" in self.inputs.config["modality"]:
                 write_h5(
                     output, f"/sc_count/{l_key}",
-                    pd.read_csv(self.inputs.scc_files[l_key], header=None), overwrite=True)
+                    pd.read_csv(self.inputs.scc_files[l_key], header=None), True)
                 write_h5(
                     output, f"/sc_length/{l_key}",
-                    pd.read_csv(self.inputs.scl_files[l_key], header=None), overwrite=True)
+                    pd.read_csv(self.inputs.scl_files[l_key], header=None), True)
 
         if "conf" in self.inputs.config["modality"]:
-            for key, val in self.inputs.conf.keys():
-                write_h5(output, f"/{key}", val)
+            for key, val in self.inputs.conf.items():
+                write_h5(output, f"/{key}", val, True)
+
+        if "pheno" in self.inputs.config["modality"]:
+            for key, val in self.inputs.pheno.items():
+                write_h5(output, f"/{key}", val, True)
 
         dl.remove(dataset=self.inputs.dataset_dir, reckless="kill")
 

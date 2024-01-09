@@ -20,69 +20,6 @@ base_dir = Path(__file__).resolve().parent.parent
 logging.getLogger('datalad').setLevel(logging.WARNING)
 
 
-def pheno_conf_hcp(
-        dataset: str, pheno_dir: Union[Path, str], features_dir: Union[Path, str],
-        sublist: list) -> tuple[list, dict]:
-    # primary vairables
-    if dataset == 'HCP-YA':
-        unres_file = sorted(Path(pheno_dir).glob('unrestricted_*.csv'))[0]
-        res_file = sorted(Path(pheno_dir).glob('RESTRICTED_*.csv'))[0]
-        unres_conf = pd.read_csv(
-            unres_file, usecols=['Subject', 'Gender', 'FS_BrainSeg_Vol', 'FS_IntraCranial_Vol'],
-            dtype={
-                'Subject': str, 'Gender': str, 'FS_BrainSeg_Vol': float,
-                'FS_IntraCranial_Vol': float})
-        res_conf = pd.read_csv(
-            res_file, usecols=['Subject', 'Age_in_Yrs', 'Handedness'],
-            dtype={'Subject': str, 'Age_in_Yrs': int, 'Handedness': int})
-        conf = unres_conf.merge(res_conf, on='Subject', how='inner').dropna()
-        conf = conf[[
-            'Subject', 'Age_in_Yrs', 'Gender', 'Handedness', 'FS_BrainSeg_Vol',
-            'FS_IntraCranial_Vol']]
-
-    elif dataset == 'HCP-A' or dataset == 'HCP-D':
-        conf = pd.read_table(
-            Path(pheno_dir, 'ssaga_cover_demo01.txt'), sep='\t', header=0, skiprows=[1],
-            usecols=[4, 5, 7], dtype={'src_subject_id': str, 'interview_age': int, 'sex': str})
-        conf = conf.merge(pd.read_table(
-            Path(pheno_dir, 'edinburgh_hand01.txt'), sep='\t', header=0, skiprows=[1],
-            usecols=[5, 70], dtype={'src_subject_id': str, 'hcp_handedness_score': int}),
-            on='src_subject_id', how='inner')
-
-        brainseg_vols = []
-        icv_vols = []
-        for subject in conf['src_subject_id']:
-            astats_file = Path(features_dir, f'{dataset}_astats', f'{subject}_V1_MR.txt')
-            aseg_stats = pd.read_csv(str(astats_file), sep='\t', index_col=0)
-            brainseg_vols.append(aseg_stats['BrainSegVol'][0])
-            icv_vols.append(aseg_stats['EstimatedTotalIntraCranialVol'][0])
-        conf['brainseg_vol'] = brainseg_vols
-        conf['icv_vol'] = icv_vols
-
-        conf = conf[[
-            'src_subject_id', 'interview_age', 'sex', 'hcp_handedness_score', 'brainseg_vol',
-            'icv_vol']]
-
-    else:
-        raise DatasetError()
-
-    conf.columns = ['subject', 'age', 'gender', 'handedness', 'brainseg_vol', 'icv_vol']
-    conf = conf.dropna().drop_duplicates(subset='subject')
-    conf = conf[conf['subject'].isin(sublist)]
-
-    # gender coding: 1 for Female, 2 for Male
-    conf['gender'] = [1 if item == 'F' else 2 for item in conf['gender']]
-    # secondary variables
-    conf['age2'] = np.power(conf['age'], 2)
-    conf['ageGender'] = conf['age'] * conf['gender']
-    conf['age2Gender'] = conf['age2'] * conf['gender']
-
-    sublist_out = conf['subject'].to_list()
-    conf_dict = conf.set_index('subject').to_dict()
-
-    return sublist_out, conf_dict
-
-
 def diffusion_mapping(image_features: dict, sublist: list, input_key: str) -> np.ndarray:
     n_parcels = image_features[sublist[0]][input_key].shape[0]
     rsfc = np.zeros((n_parcels, n_parcels, len(sublist)))

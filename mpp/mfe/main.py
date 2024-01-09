@@ -5,7 +5,7 @@ import nipype.pipeline as pe
 from nipype.interfaces import fsl, freesurfer
 from nipype.interfaces import utility as niu
 
-from mpp.mfe.interfaces.data import InitData, PickAtlas, SubDirAnnot, SaveFeatures
+from mpp.mfe.interfaces.data import InitData, PickAtlas, SubDirAnnot, SaveFeatures, Phenotypes
 from mpp.mfe.interfaces.diffusion import ProbTract
 from mpp.mfe.interfaces.features import FC, NetworkStats, Anat, SC, Confounds
 from mpp.mfe.utilities import SimgCmd, dataset_params, add_subdir, CombineStrings, CombineAtlas
@@ -23,7 +23,7 @@ def main() -> None:
     required.add_argument("subject", type=str, required=True, help="Subject ID")
     required.add_argument(
         "--modality", nargs="+", required=True,
-        help="List of modalities (rfMRI, tfMRI, sMRI, dMRI, conf)")
+        help="List of modalities (rfMRI, tfMRI, sMRI, dMRI, conf, pheno)")
     optional = parser.add_argument_group("optional arguments")
     optional.add_argument(
         "--diff_dir", type=Path, default=None,
@@ -163,6 +163,11 @@ def main() -> None:
         mfe_wf.connect([
             (init_data, conf, [("data_files", "data_files")]),
             (conf, save_features, [("conf", "conf")])])
+
+    # Phenotypes
+    if "pheno" in config["modality"]:
+        pheno = pe.Node(Phenotypes(config=config), "pheno")
+        mfe_wf.connect([(pheno, save_features, [("pheno", "pheno")])])
 
     # Run workflow
     mfe_wf.write_graph()
