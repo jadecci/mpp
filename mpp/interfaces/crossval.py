@@ -35,11 +35,12 @@ class CrossValSplit(SimpleInterface):
             n_splits=n_folds, n_repeats=n_repeats, random_state=int(self.inputs.config['cv_seed']))
         for fold, (train_ind, _) in enumerate(rskf.split(subjects, datasets)):
             key = f'repeat{int(np.floor(fold / n_folds))}_fold{int(fold % n_folds)}'
-            train_sub = subjects[train_ind]
+            train_sub = np.array(subjects)[train_ind]
             self._results['cv_split'][key] = train_sub
 
             skf = StratifiedKFold(n_splits=5)
-            for inner, (train_i, test_i) in enumerate(skf.split(train_sub, datasets[train_ind])):
+            inner_cv = enumerate(skf.split(train_sub, np.array(datasets)[train_ind]))
+            for inner, (train_i, test_i) in inner_cv:
                 key_inner = f'{key}_inner{inner}'
                 self._results['cv_split'][key_inner] = train_sub[train_i]
                 self._results['cv_split'][f'{key_inner}_train'] = train_i
@@ -149,7 +150,7 @@ class FeaturewiseModel(SimpleInterface):
             self._results['results'][f'en_r_{key_out}'] = r
             self._results['results'][f'en_cod_{key_out}'] = cod
 
-        self._results['results']['fw_ypred'] = {
+        self._results['fw_ypred'] = {
             'train_ypred': train_ypred, 'test_ypred': test_ypred, 'train_cod': train_cod}
 
         return runtime
@@ -218,7 +219,7 @@ class ConfoundsModel(SimpleInterface):
             self._results['results'][f'en_r_{key_out}'] = r
             self._results['results'][f'en_cod_{key_out}'] = cod
 
-        self._results['results']['c_ypred'] = {
+        self._results['c_ypred'] = {
             'train_ypred': train_ypred, 'test_ypred': test_ypred, 'train_cod': train_cod}
 
         return runtime

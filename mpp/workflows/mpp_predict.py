@@ -113,18 +113,19 @@ def main() -> None:
         (conf_model, conf_save, [('results', 'results')])])
 
     # Integrated-features set models
-    conf_model = pe.Node(ConfoundsModel(config=config), name='conf_model')
-    conf_save = pe.JoinNode(
+    if_model = pe.Node(IntegratedFeaturesModel(config=config), name='if_model')
+    if_save = pe.JoinNode(
         PredictionSave(
             output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
-            type='confounds'),
-        name='conf_save', joinfield=['results'], joinsource='features')
+            type='integratedfeatures'),
+        name='if_save', joinfield=['results'], joinsource='features')
     mp_wf.connect([
-        (init_data, conf_model, [
-            ('sublists', 'sublists'), ('confounds', 'confounds'), ('phenotypes', 'phenotypes')]),
-        (features, conf_model, [('repeat', 'repeat'), ('fold', 'fold')]),
-        (cv_split, conf_model, [('cv_split', 'cv_split')]),
-        (conf_model, conf_save, [('results', 'results')])])
+        (init_data, if_model, [('sublists', 'sublists'),('phenotypes', 'phenotypes')]),
+        (cv_split, if_model, [('cv_split', 'cv_split')]),
+        (features, if_model, [('level', 'level'), ('repeat', 'repeat'), ('fold', 'fold')]),
+        (fw_model, if_model, [('fw_ypred', 'fw_ypred')]),
+        (conf_model, if_model, [('c_ypred', 'c_ypred')]),
+        (if_model, if_save, [('results', 'results')])])
 
     mp_wf.config['execution']['try_hard_link_datasink'] = 'false'
     mp_wf.config['execution']['crashfile_format'] = 'txt'
