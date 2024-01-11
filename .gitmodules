@@ -1,5 +1,0 @@
-[submodule "replication/HCP-A"]
-	path = replication/HCP-A
-	url = /data/project/hcpa_dwi_proc/hcpa_dwi_features
-	datalad-id = 8df5806f-a8aa-4fe4-b160-625f9e63eb5a
-	datalad-url = /data/project/hcpa_dwi_proc/hcpa_dwi_features
