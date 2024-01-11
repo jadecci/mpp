@@ -5,10 +5,8 @@ import logging
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 import datalad.api as dl
 import pandas as pd
-import numpy as np
 
 from mpp.exceptions import DatasetError
-from mpp.utilities.data import write_h5
 
 base_dir = Path(__file__).resolve().parent
 logging.getLogger("datalad").setLevel(logging.WARNING)
@@ -327,47 +325,58 @@ class SaveFeatures(SimpleInterface):
     """Save extracted features"""
     input_spec = _SaveFeaturesInputSpec
 
+    def _read_diff_data(self, level: int) -> tuple[dict, dict]:
+        scc = pd.read_csv(self.inputs.scc_files[f"level{level}"], header=None)
+        scl = pd.read_csv(self.inputs.scl_files[f"level{level}"], header=None)
+        return {f"level{level}": scc}, {f"level{level}": scl}
+
+    def _write_data_level(self, level: int, data_in: dict, prefix: str, type: str) -> None:
+        data = {}
+        for parcel_i in range(level * 100):
+            if type == "conn_sym":
+                for parcel_j in range(parcel_i + 1, level * 100):
+                    data[f"{prefix}_{parcel_i}_{parcel_j}"] = data_in[f"level{level}"]
+            elif type == "conn_asym":
+                for parcel_j in range(level * 100):
+                    data[f"{prefix}_{parcel_i}_{parcel_j}"] = data_in[f"level{level}"]
+            else:
+                data[f"{prefix}_{parcel_i}"] = data_in[f"level{level}"]
+
+        self._write_data(data, f"{prefix}_level{level}")
+
+    def _write_data(self, data: dict, key: str) -> None:
+        data_pd = pd.DataFrame(data, index=[self.inputs.config["subject"]])
+        data_pd.to_hdf(self._output, key, mode="a", format="table")
+
     def _run_interface(self, runtime):
-        output = Path(self.inputs.config["output_dir"], f"{self.inputs.config['subject']}.h5")
+        self._output = Path(self.inputs.config["output_dir"], f"{self.inputs.config['subject']}.h5")
 
-        for level in range(4):
-            l_key = f"level{level+1}"
-
+        for level in [1, 2, 3, 4]:
             if "rfMRI" in self.inputs.config["modality"]:
-                write_h5(output, f"/s_rsfc/{l_key}", self.inputs.s_rsfc[l_key], True)
-                write_h5(output, f"/d_rsfc/{l_key}", self.inputs.d_rsfc[l_key], True)
-                for stat in ["strength", "betweenness", "participation", "efficiency"]:
-                    write_h5(
-                        output, f"/rs_stats/{stat}/{l_key}",
-                        self.inputs.rs_stats[f"{l_key}_{stat}"], True)
+                self._write_data_level(level, self.inputs.s_rsfc, "rs_sfc", "conn_sym")
+                self._write_data_level(level, self.inputs.d_rsfc, "rs_dfc", "conn_asym")
+                for stat in ["str", "bet", "par", "eff"]:
+                    self._write_data_level(level, self.inputs.rs_stats, f"rs_{stat}", "array")
 
             if "tfMRI" in self.inputs.config["modality"]:
                 for key, _ in self.inputs.tfc.items():
-                    write_h5(
-                        output, f"/tfc/{key}/{l_key}", self.inputs.tfc[key][l_key], True)
+                    self._write_data_level(level, self.inputs.tfc[key], f"{key}_sfc", "conn_sym")
 
             if "sMRI" in self.inputs.config["modality"]:
-                write_h5(output, f"/myelin/{l_key}", self.inputs.myelin[l_key], True)
-                for stat in ["GMV", "CS", "CT"]:
-                    write_h5(
-                        output, f"/morphometry/{stat}/{l_key}",
-                        self.inputs.morph[f"{l_key}_{stat}"], True)
+                self._write_data_level(level, self.inputs.myelin, "s_myelin", "array")
+                for stat in ["gmv", "cs", "ct"]:
+                    self._write_data_level(level, self.inputs.morph[stat], f"s_{stat}", "array")
 
             if "dMRI" in self.inputs.config["modality"]:
-                write_h5(
-                    output, f"/sc_count/{l_key}",
-                    pd.read_csv(self.inputs.scc_files[l_key], header=None), True)
-                write_h5(
-                    output, f"/sc_length/{l_key}",
-                    pd.read_csv(self.inputs.scl_files[l_key], header=None), True)
+                scc, scl = self._read_diff_data(level)
+                self._write_data_level(level, scc, "d_scc", "conn_asym")
+                self._write_data_level(level, scl, "d_scl", "conn_asym")
 
         if "conf" in self.inputs.config["modality"]:
-            for key, val in self.inputs.conf.items():
-                write_h5(output, f"/confound/{key}", np.array(val), True)
+            self._write_data(self.inputs.conf, "confound")
 
         if "pheno" in self.inputs.config["modality"]:
-            for key, val in self.inputs.pheno.items():
-                write_h5(output, f"/phenotype/{key}", np.array(val), True)
+            self._write_data(self.inputs.pheno, "phenotype")
 
         dl.remove(dataset=self.inputs.dataset_dir, reckless="kill")
 

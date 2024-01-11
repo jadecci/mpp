@@ -232,11 +232,11 @@ class NetworkStats(SimpleInterface):
                 conn_file = f"{str(self.inputs.conn_files[0])[:-5]}{int(level)-1}.csv"
                 conn = np.array(pd.read_csv(conn_file, header=None))
 
-            self._results["stats"][f"{l_key}_strength"] = bct.strengths_und(conn)
-            self._results["stats"][f"{l_key}_betweenness"] = bct.betweenness_wei(conn)
-            self._results["stats"][f"{l_key}_participation"] = bct.participation_coef(
+            self._results["stats"]["str"][l_key] = bct.strengths_und(conn)
+            self._results["stats"]["bet"][l_key] = bct.betweenness_wei(conn)
+            self._results["stats"]["par"][l_key] = bct.participation_coef(
                 conn, bct.community_louvain(conn, B="negative_sym")[0])
-            self._results["stats"][f"{l_key}_efficiency"] = bct.efficiency_wei(conn, local=True)
+            self._results["stats"]["eff"][l_key] = bct.efficiency_wei(conn, local=True)
 
         return runtime
 
@@ -322,8 +322,8 @@ class Anat(SimpleInterface):
                     stats_surf = hemi_stats
                 else:
                     stats_surf = pd.concat([stats_surf, hemi_stats])
-            self._results["morph"][f"level{level+1}_CS"] = stats_surf["SurfArea"].values
-            self._results["morph"][f"level{level+1}_CT"] = stats_surf["ThickAvg"].values
+            self._results["morph"]["cs"][f"level{level+1}"] = stats_surf["SurfArea"].values
+            self._results["morph"]["ct"][f"level{level+1}"] = stats_surf["ThickAvg"].values
 
             # GMV
             seg_up_file = Path(tmp_dir, f"{subject}_S{level}_up.nii.gz")
@@ -342,7 +342,7 @@ class Anat(SimpleInterface):
             stats_vol = pd.read_table(
                 sub_table, header=0, skiprows=np.arange(50), delim_whitespace=True)
             stats_vol.drop([0], inplace=True)
-            self._results["morph"][f"level{level+1}_GMV"] = np.concatenate((
+            self._results["morph"]["gmv"][f"level{level+1}"] = np.concatenate((
                 stats_surf["GrayVol"].values, stats_vol["Volume_mm3"].values))
 
         return runtime
@@ -357,7 +357,7 @@ class _SCInputSpec(BaseInterfaceInputSpec):
 
 
 class _SCOutputSpec(TraitedSpec):
-    coundata_files = traits.Dict(dtype=Path, desc="SC based on streamline count")
+    count_files = traits.Dict(dtype=Path, desc="SC based on streamline count")
     length_files = traits.Dict(dtype=Path, desc="SC based on streamline length")
 
 
@@ -370,7 +370,7 @@ class SC(SimpleInterface):
         work_dir = self.inputs.config["work_dir"]
         for atlas_file in self.inputs.atlas_files:
             key = f"level{atlas_file.name.split('flirt')[0][-2]}"
-            self._results["coundata_files"][key] = Path(work_dir, f"sc_count_{key}.csv")
+            self._results["count_files"][key] = Path(work_dir, f"sc_count_{key}.csv")
             subprocess.run(
                 self.inputs.simg_cmd.cmd("tck2connectome").split() + [
                     "-assignment_radial_search", "2", "-symmetric", "-nthreads", "0",
