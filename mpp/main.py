@@ -17,8 +17,7 @@ def main() -> None:
         description="Multimodal brain-based psychometric prediction",
         formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog, width=100))
     required = parser.add_argument_group("required arguments")
-    required.add_argument(
-        "--target", type=str, dest="target", required=True, help="Prediction target")
+    required.add_argument("target", type=str, help="Prediction target")
     required.add_argument(
         "--features_dir", type=Path, dest="features_dir", required=True,
         help="Absolute paths to extracted features")

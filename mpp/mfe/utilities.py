@@ -19,9 +19,7 @@ class SimgCmd:
         else:
             self._cmd = (
                 f"singularity run -B {config['work_dir']}:{config['work_dir']},"
-                f"{config['out_dir']}:{config['out_dir']},{base_dir}:{base_dir}")
-            if config["int_dir"] is not None:
-                self._cmd = f"{self._cmd},{config['int_dir']}:{config['int_dir']}"
+                f"{config['output_dir']}:{config['output_dir']},{base_dir}:{base_dir}")
             self._simg = config["simg"]
 
     def cmd(self, cmd: str, options: Union[str, None] = None) -> str:
@@ -66,8 +64,8 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
                 "endurance": "Endurance_AgeAdj", "gaitspeed": "GaitSpeed_Comp",
                 "strength": "Strength_AgeAdj", "neoffi_n": "NEOFAC_N", "neoffi_e": "NEOFAC_E",
                 "neoffi_o": "NEOFAC_O", "neoffi_a": "NEOFAC_A", "neoffi_c": "NEOFAC_C"},
-            "pheno_file": sorted(Path(pheno_dir).glob("unrestricted_*.csv"))[0],
-            "restricted_file": sorted(Path(pheno_dir).glob('RESTRICTED_*.csv'))[0]},
+            "pheno_file": Path(pheno_dir, "unrestricted_hcpya.csv"),
+            "restricted_file": Path(pheno_dir, "restricted_hcpya.csv")},
         "HCP-A": {
             "url": "git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git",
             "source": "inm7-storage",

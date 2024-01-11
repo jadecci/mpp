@@ -5,11 +5,12 @@ import logging
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 import datalad.api as dl
 import pandas as pd
+import numpy as np
 
 from mpp.exceptions import DatasetError
 from mpp.utilities.data import write_h5
 
-base_dir = Path(__file__).resolve().parent.parent
+base_dir = Path(__file__).resolve().parent
 logging.getLogger("datalad").setLevel(logging.WARNING)
 
 
@@ -19,6 +20,7 @@ class _InitDataInputSpec(BaseInterfaceInputSpec):
 
 
 class _InitDataOutputSpec(TraitedSpec):
+    fs_dir = traits.Directory(desc="absolute path to the FreeSurfer output directory")
     anat_dir = traits.Directory(desc="absolute path to installed subject T1w directory")
     rs_runs = traits.List(desc="resting-state run names")
     t_runs = traits.List(desc="task run names")
@@ -60,9 +62,10 @@ class InitData(SimpleInterface):
             mni_dir = Path(param["sub_dir"], "MNINonLinear")
             func_dir = Path(mni_dir, "Results")
             anat_dir = Path(param["sub_dir"], "T1w")
-            fs_dir = Path(anat_dir, self.inputs.subject)
+            fs_dir = Path(anat_dir, self.inputs.config["subject"])
             d_dir = self.inputs.config["diff_dir"]
             self._results["anat_dir"] = anat_dir
+            self._results["fs_dir"] = fs_dir
             dl.get(mni_dir, dataset=param["sub_dir"], get_data=False, source=param["source"])
             dl.get(anat_dir, dataset=param["sub_dir"], get_data=False, source=param["source"])
 
@@ -112,10 +115,10 @@ class InitData(SimpleInterface):
                     "t1_vol": Path(mni_dir, "T1w.nii.gz"),
                     "myelin_l": Path(
                         mni_dir, "fsaverage_LR32k",
-                        f"{self.inputs.subject}.L.MyelinMap.32k_fs_LR.func.gii"),
+                        f"{self.inputs.config['subject']}.L.MyelinMap.32k_fs_LR.func.gii"),
                     "myelin_r": Path(
                         mni_dir, 'fsaverage_LR32k',
-                        f"{self.inputs.subject}.R.MyelinMap.32k_fs_LR.func.gii"),
+                        f"{self.inputs.config['subject']}.R.MyelinMap.32k_fs_LR.func.gii"),
                     "wm_vol": Path(fs_dir, "mri", "wm.mgz"),
                     "white_l": Path(fs_dir, "surf", "lh.white"),
                     "white_r": Path(fs_dir, "surf", "rh.white"),
@@ -201,7 +204,7 @@ class InitData(SimpleInterface):
             if "conf" in self.inputs.config["modality"]:
                 if self.inputs.config["dataset"] in ["HCP-A", "HCP-D"]:
                     astats = Path(fs_dir, "stats", "aseg.stats")
-                    dl.get(astats, dataset=mni_dir, source=param["source"])
+                    dl.get(astats, dataset=anat_dir, source=param["source"])
                     self._results["data_files"]["astats"] = astats
 
         else:
@@ -215,6 +218,7 @@ class _PickAtlasInputSpec(BaseInterfaceInputSpec):
 
 
 class _PickAtlasOutputSpec(TraitedSpec):
+    level = traits.Int(desc="granularity level")
     parc_sch = traits.File(exists=True, desc="Schaefer cortex atlas")
     parc_mel = traits.File(exists=True, desc="Melbourne subcortex atlas")
     lh_annot = traits.File(exists=True, desc="left annot of Schafer cortex atlas")
@@ -227,6 +231,7 @@ class PickAtlas(SimpleInterface):
     output_spec = _PickAtlasOutputSpec
 
     def _run_interface(self, runtime):
+        self._results["level"] = self.inputs.level
         data_dir = Path(base_dir, "data")
         self._results["parc_sch"] = Path(
             data_dir, f"Schaefer2018_{self.inputs.level+1}00Parcels_17Networks_order.dlabel.nii")
@@ -289,16 +294,16 @@ class Phenotypes(SimpleInterface):
                     pheno_file, usecols=["Subject", val], dtype={"Subject": str, val: float})
                 pheno_data = pheno_data.loc[pheno_data["Subject"] == self.inputs.config["subject"]]
             elif self.inputs.config["dataset"] in ["HCP-A", "HCP-D"]:
-                pheno_file = self.inputs.config["params"]["pheno_files"][key]
+                pheno_file = self.inputs.config["param"]["pheno_files"][key]
                 subject = self.inputs.config["subject"].split("_V1_MR")[0]
                 pheno_data = pd.read_table(
                     pheno_file, sep="\t", header=0, skiprows=[1],
-                    usecols=[4, self.inputs.config["params"]["pheno_cols"][key]],
+                    usecols=[4, self.inputs.config["param"]["pheno_cols"][key]],
                     dtype={"src_subject_id": str, val: float})[["src_subject_id", val]]
                 pheno_data = pheno_data.loc[pheno_data["src_subject_id"] == subject]
             else:
                 raise DatasetError()
-            self._results["pheno"][key] = pheno_data[val][0]
+            self._results["pheno"][key] = pheno_data[val].values[0]
 
         return runtime
 
@@ -329,8 +334,8 @@ class SaveFeatures(SimpleInterface):
             l_key = f"level{level+1}"
 
             if "rfMRI" in self.inputs.config["modality"]:
-                write_h5(output, f"/rsfc/{l_key}", self.inputs.s_rsfc[l_key], True)
-                write_h5(output, f"/dfc/{l_key}", self.inputs.dfc[l_key], True)
+                write_h5(output, f"/s_rsfc/{l_key}", self.inputs.s_rsfc[l_key], True)
+                write_h5(output, f"/d_rsfc/{l_key}", self.inputs.d_rsfc[l_key], True)
                 for stat in ["strength", "betweenness", "participation", "efficiency"]:
                     write_h5(
                         output, f"/rs_stats/{stat}/{l_key}",
@@ -358,11 +363,11 @@ class SaveFeatures(SimpleInterface):
 
         if "conf" in self.inputs.config["modality"]:
             for key, val in self.inputs.conf.items():
-                write_h5(output, f"/{key}", val, True)
+                write_h5(output, f"/confound/{key}", np.array(val), True)
 
         if "pheno" in self.inputs.config["modality"]:
             for key, val in self.inputs.pheno.items():
-                write_h5(output, f"/{key}", val, True)
+                write_h5(output, f"/phenotype/{key}", np.array(val), True)
 
         dl.remove(dataset=self.inputs.dataset_dir, reckless="kill")
 

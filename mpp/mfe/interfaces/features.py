@@ -16,7 +16,7 @@ from scipy.stats import zscore
 from mpp.exceptions import DatasetError
 from mpp.mfe.utilities import add_subdir
 
-base_dir = Path(__file__).resolve().parent.parent
+base_dir = Path(__file__).resolve().parent.parent.parent
 
 
 class _FCInputSpec(BaseInterfaceInputSpec):
@@ -84,10 +84,9 @@ class FC(SimpleInterface):
 
         tavg_dict = {}
         for level in range(4):
-            key = f"level{level+1}"
             parc_sch_file = Path(
-                base_dir, "data", f"Schaefer2018_{key}00Parcels_17Networks_order.dlabel.nii")
-            parc_mel_file = Path(base_dir, "data", f"Tian_Subcortex_S{key}_3T.nii.gz")
+                base_dir, "data", f"Schaefer2018_{level+1}00Parcels_17Networks_order.dlabel.nii")
+            parc_mel_file = Path(base_dir, "data", f"Tian_Subcortex_S{level+1}_3T.nii.gz")
             parc_sch = nib.load(parc_sch_file).get_fdata()
             parc_mel = nib.load(parc_mel_file).get_fdata()
 
@@ -114,7 +113,7 @@ class FC(SimpleInterface):
                            :, np.where(np.abs(selected.mean(axis=0)) >= sys.float_info.epsilon)[0]]
                 parc_vol[parcel - 1, :] = selected.mean(axis=1)
 
-            tavg_dict[key] = np.vstack((parc_surf, parc_vol))
+            tavg_dict[f"level{level+1}"] = np.vstack((parc_surf, parc_vol))
         return tavg_dict
 
     def _sfc(self) -> dict:
@@ -153,7 +152,7 @@ class FC(SimpleInterface):
             n_runs = len(self.inputs.rs_runs) + self.inputs.hcpd_b_runs
             self._tavg_dict = {}
             for i in range(n_runs):
-                if self.inputs.dataset == "HCP-D" and i >= 4:
+                if self.inputs.config["dataset"] == "HCP-D" and i >= 4:
                     run = self.inputs.rs_runs[i-3]
                     key_surf = f"{run}_surfb"
                     key_vol = f"{run}_volb"
@@ -177,31 +176,31 @@ class FC(SimpleInterface):
         elif self.inputs.modality == "tfMRI":
             self._results["sfc"] = {}
             for run in self.inputs.config["param"]["task_runs"]:
-                if self.inputs.dataset == "HCP-YA":
+                if self.inputs.config["dataset"] == "HCP-YA":
                     self._tavg_dict = self._concat(
                         self._parcellate(
-                            nib.load(self.inputs.t_files[f"{run}_LR_surf"]).get_fdata(),
-                            nib.load(self.inputs.t_files[f"{run}_LR_vol"]).get_fdata()),
+                            nib.load(self.inputs.data_files[f"{run}_LR_surf"]).get_fdata(),
+                            nib.load(self.inputs.data_files[f"{run}_LR_vol"]).get_fdata()),
                         self._parcellate(
-                            nib.load(self.inputs.t_files[f"{run}_RL_surf"]).get_fdata(),
-                            nib.load(self.inputs.t_files[f"{run}_RL_vol"]).get_fdata()))
-                elif self.inputs.dataset == "HCP-D":
+                            nib.load(self.inputs.data_files[f"{run}_RL_surf"]).get_fdata(),
+                            nib.load(self.inputs.data_files[f"{run}_RL_vol"]).get_fdata()))
+                elif self.inputs.config["dataset"] == "HCP-D":
                     if run == "tfMRI_EMOTION":
                         self._tavg_dict = self._parcellate(
-                            nib.load(self.inputs.t_files[f"{run}_PA_surf"]).get_fdata(),
-                            nib.load(self.inputs.t_files[f"{run}_PA_vol"]).get_fdata())
+                            nib.load(self.inputs.data_files[f"{run}_PA_surf"]).get_fdata(),
+                            nib.load(self.inputs.data_files[f"{run}_PA_vol"]).get_fdata())
                     else:
                         self._tavg_dict = self._concat(
                             self._parcellate(
-                                nib.load(self.inputs.t_files[f"{run}_PA_surf"]).get_fdata(),
-                                nib.load(self.inputs.t_files[f"{run}_PA_vol"]).get_fdata()),
+                                nib.load(self.inputs.data_files[f"{run}_PA_surf"]).get_fdata(),
+                                nib.load(self.inputs.data_files[f"{run}_PA_vol"]).get_fdata()),
                             self._parcellate(
-                                nib.load(self.inputs.t_files[f"{run}_AP_surf"]).get_fdata(),
-                                nib.load(self.inputs.t_files[f"{run}_AP_vol"]).get_fdata()))
-                elif self.inputs.dataset == "HCP-A":
+                                nib.load(self.inputs.data_files[f"{run}_AP_surf"]).get_fdata(),
+                                nib.load(self.inputs.data_files[f"{run}_AP_vol"]).get_fdata()))
+                elif self.inputs.config["dataset"] == "HCP-A":
                     self._tavg_dict = self._parcellate(
-                        nib.load(self.inputs.t_files[f"{run}_surf"]).get_fdata(),
-                        nib.load(self.inputs.t_files[f"{run}_vol"]).get_fdata())
+                        nib.load(self.inputs.data_files[f"{run}_surf"]).get_fdata(),
+                        nib.load(self.inputs.data_files[f"{run}_vol"]).get_fdata())
                 else:
                     raise DatasetError()
                 self._results["sfc"][run] = self._sfc()
@@ -311,10 +310,10 @@ class Anat(SimpleInterface):
                     source_subject="fsaverage", target_subject=subject, subjects_dir=tmp_dir)
                 annot_fs2sub.run()
                 hemi_table = Path(tmp_dir, f"{hemi}.{subject}_fs_stats")
-                options = f"--env SUBJECTS_DIR={self.inputs.anat_dir}".split() + [
-                    "-a", str(annot_sub), "-noglobal", "-f", str(hemi_table), subject, hemi]
+                options = f"--env SUBJECTS_DIR={self.inputs.anat_dir}"
                 subprocess.run(
-                    self.inputs.simg_cmd.cmd("mris_anatomical_stats", options=options),
+                    self.inputs.simg_cmd.cmd("mris_anatomical_stats", options=options).split() + [
+                        "-a", str(annot_sub), "-noglobal", "-f", str(hemi_table), subject, hemi],
                     env=dict(environ, **{"SUBJECTS_DIR": self.inputs.anat_dir}), check=True)
                 hemi_stats = pd.read_table(
                     hemi_table, header=0, skiprows=np.arange(51), delim_whitespace=True)
@@ -331,7 +330,7 @@ class Anat(SimpleInterface):
             flt = fsl.FLIRT(
                 command=self.inputs.simg_cmd.cmd(cmd="flirt"), in_file=parc_mel_file,
                 reference=self.inputs.data_files["t1_vol"], out_file=seg_up_file,
-                apply_isoxfm=self.inputs.config["t1_res"], interp="nearestneighbour")
+                apply_isoxfm=self.inputs.config["param"]["t1_res"], interp="nearestneighbour")
             flt.run()
             sub_table = "subcortex.stats"
             ss = freesurfer.SegStats(
@@ -358,7 +357,7 @@ class _SCInputSpec(BaseInterfaceInputSpec):
 
 
 class _SCOutputSpec(TraitedSpec):
-    count_files = traits.Dict(dtype=Path, desc="SC based on streamline count")
+    coundata_files = traits.Dict(dtype=Path, desc="SC based on streamline count")
     length_files = traits.Dict(dtype=Path, desc="SC based on streamline length")
 
 
@@ -371,7 +370,7 @@ class SC(SimpleInterface):
         work_dir = self.inputs.config["work_dir"]
         for atlas_file in self.inputs.atlas_files:
             key = f"level{atlas_file.name.split('flirt')[0][-2]}"
-            self._results["count_files"][key] = Path(work_dir, f"sc_count_{key}.csv")
+            self._results["coundata_files"][key] = Path(work_dir, f"sc_count_{key}.csv")
             subprocess.run(
                 self.inputs.simg_cmd.cmd("tck2connectome").split() + [
                     "-assignment_radial_search", "2", "-symmetric", "-nthreads", "0",
@@ -419,10 +418,10 @@ class Confounds(SimpleInterface):
                 dtype={"Subject": str, "Age_in_Yrs": int, "Handedness": int})
             res_conf = res_conf.loc[res_conf["Subject"] == self.inputs.config["subject"]]
             conf = {
-                "age": res_conf["Age_in_Yrs"][0], "gender": unres_conf["Gender"][0],
-                "handedness": res_conf["Handedness"][0],
-                "brainseg_vol": unres_conf["FS_BrainSeg_Vol"][0],
-                "icv_vol": unres_conf["FS_IntraCranial_Vol"][0]}
+                "age": res_conf["Age_in_Yrs"].values[0], "gender": unres_conf["Gender"].values[0],
+                "handedness": res_conf["Handedness"].values[0],
+                "brainseg_vol": unres_conf["FS_BrainSeg_Vol"].values[0],
+                "icv_vol": unres_conf["FS_IntraCranial_Vol"].values[0]}
         elif self.inputs.config["dataset"] in ["HCP-A", "HCP-D"]:
             subject = self.inputs.config["subject"].split("_V1_MR")[0]
             demo = pd.read_table(
@@ -434,24 +433,24 @@ class Confounds(SimpleInterface):
                 usecols=[5, 70], dtype={"src_subject_id": str, "hcp_handedness_score": int})
             handedness = handedness.loc[handedness["src_subject_id"] == subject]
             conf = {
-                "age": demo["interview_age"][0], "gender": demo["sex"][0],
-                "handedness": handedness["hcp_handedness_score"][0]}
+                "age": demo["interview_age"].values[0], "gender": demo["sex"].values[0],
+                "handedness": handedness["hcp_handedness_score"].values[0]}
 
             tmp_dir = Path(self.inputs.config["work_dir"], "astats_tmp")
             tmp_dir.mkdir(parents=True, exist_ok=True)
             astats_file = Path(tmp_dir, f"{subject}_astats.txt")
             subprocess.run(
-                self.inputs.simg_cmf.cmd("asegstats2table").split()
+                self.inputs.simg_cmd.cmd("asegstats2table").split()
                 + ["--meas", "volume", "--tablefile", str(astats_file)]
                 + ["--inputs", str(self.inputs.data_files["astats"])], check=True)
             aseg_stats = pd.read_csv(str(astats_file), sep="\t", index_col=0)
-            conf["brainseg_vol"] = aseg_stats["BrainSegVol"][0]
-            conf["icv_vol"] = aseg_stats["EstimatedTotalIntraCranialVol"][0]
+            conf["brainseg_vol"] = aseg_stats["BrainSegVol"].values[0]
+            conf["icv_vol"] = aseg_stats["EstimatedTotalIntraCranialVol"].values[0]
         else:
             raise DatasetError()
 
         # gender coding: 1 for Female, 2 for Male
-        conf["gender"] = [1 if item == "F" else 2 for item in conf["gender"]]
+        conf["gender"] = 1 if conf["gender"] == "F" else 2
         # secondary variables
         conf["age2"] = np.power(conf["age"], 2)
         conf["ageGender"] = conf["age"] * conf["gender"]

@@ -18,9 +18,8 @@ def main() -> None:
         description="Multimodal neuroimaging feature extraction",
         formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog, width=100))
     required = parser.add_argument_group("required arguments")
-    required.add_argument(
-        "dataset", type=str, required=True, help="Dataset (HCP-YA, HCP-A, HCP-D, ABCD)")
-    required.add_argument("subject", type=str, required=True, help="Subject ID")
+    required.add_argument("dataset", type=str, help="Dataset (HCP-YA, HCP-A, HCP-D, ABCD)")
+    required.add_argument("subject", type=str, help="Subject ID")
     required.add_argument(
         "--modality", nargs="+", required=True,
         help="List of modalities (rfMRI, tfMRI, sMRI, dMRI, conf, pheno)")
@@ -29,8 +28,8 @@ def main() -> None:
         "--diff_dir", type=Path, default=None,
         help="Directory containing preprocessed diffusion files")
     optional.add_argument(
-        "--pheno_dir", dtype=Path, default=None, help="Directory containing phenotype data")
-    optional.add_argument("--workdir", type=Path, default=Path.cwd(), help="Work directory")
+        "--pheno_dir", type=Path, default=None, help="Directory containing phenotype data")
+    optional.add_argument("--work_dir", type=Path, default=Path.cwd(), help="Work directory")
     optional.add_argument("--output_dir", type=Path, default=Path.cwd(), help="Output directory")
     optional.add_argument("--simg", type=Path, default=None, help="singularity image")
     optional.add_argument("--condordag", action="store_true", help="Submit as DAG to HTCondor")
@@ -106,13 +105,13 @@ def main() -> None:
 
         # Schaefer cortex atlas to aseg in subject T1 space
         lannot_sub = pe.Node(freesurfer.SurfaceTransform(
-            command=simg_cmd.cmd("mri_surf2surf"), options=fs_opt, hemi="lh",
+            command=simg_cmd.cmd("mri_surf2surf", options=fs_opt), hemi="lh",
             source_subject="fsaverage", target_subject=config["subject"]), "lannot_sub")
         rannot_sub = pe.Node(freesurfer.SurfaceTransform(
-            command=simg_cmd.cmd("mri_surf2surf"), options=fs_opt, hemi="rh",
+            command=simg_cmd.cmd("mri_surf2surf", options=fs_opt), hemi="rh",
             source_subject="fsaverage", target_subject=config["subject"]), "rannot_sub")
         sch_aseg = pe.Node(freesurfer.Aparc2Aseg(
-            command=simg_cmd.cmd("mri_aparc2aseg"), options=fs_opt, subject_id=config["subject"]),
+            command=simg_cmd.cmd("mri_aparc2aseg", options=fs_opt), subject_id=config["subject"]),
             "sch_aseg")
         sch_t1 = pe.Node(
             fsl.FLIRT(command=simg_cmd.cmd("flirt"), interp="nearestneighbour"), "sch_t1")

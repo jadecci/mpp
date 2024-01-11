@@ -4,7 +4,6 @@ from typing import Union
 import h5py
 import numpy as np
 
-from mpp.exceptions import DatasetError
 from mpp.utilities.features import diffusion_mapping_sub, score_sub
 
 
