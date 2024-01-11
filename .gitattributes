@@ -1,4 +1,5 @@
 * annex.backend=MD5E
+**/.nii.gz annex.largefiles=anything
 ** annex.largefiles=(largerthan=100kb)
 **/.git* annex.largefiles=nothing
 *.py annex.largefiles=nothing
