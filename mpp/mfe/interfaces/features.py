@@ -223,7 +223,7 @@ class NetworkStats(SimpleInterface):
     output_spec = _NetworkStatsOutputSpec
 
     def _run_interface(self, runtime):
-        self._results["stats"] = {}
+        self._results["stats"] = {"str": {}, "bet": {}, "par": {}, "eff": {}}
         for level in ["1", "2", "3", "4"]:
             l_key = f"level{level}"
             if self.inputs.conn:
@@ -263,7 +263,7 @@ class Anat(SimpleInterface):
         tmp_dir.mkdir(parents=True, exist_ok=True)
         subject = self.inputs.config["subject"]
         self._results["myelin"] = {}
-        self._results["morph"] = {}
+        self._results["morph"] = {"gmv": {}, "cs": {}, "ct": {}}
 
         myelin_l = nib.load(self.inputs.data_files["myelin_l"]).agg_data()
         myelin_r = nib.load(self.inputs.data_files["myelin_r"]).agg_data()

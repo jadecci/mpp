@@ -333,20 +333,21 @@ class SaveFeatures(SimpleInterface):
     def _write_data_level(self, level: int, data_in: dict, prefix: str, type: str) -> None:
         data = {}
         for parcel_i in range(level * 100):
+            prefix_i = f"{prefix}_{parcel_i}"
             if type == "conn_sym":
                 for parcel_j in range(parcel_i + 1, level * 100):
-                    data[f"{prefix}_{parcel_i}_{parcel_j}"] = data_in[f"level{level}"]
+                    data[f"{prefix_i}_{parcel_j}"] = data_in[f"level{level}"][parcel_i][parcel_j]
             elif type == "conn_asym":
                 for parcel_j in range(level * 100):
-                    data[f"{prefix}_{parcel_i}_{parcel_j}"] = data_in[f"level{level}"]
+                    data[f"{prefix_i}_{parcel_j}"] = data_in[f"level{level}"][parcel_i][parcel_j]
             else:
-                data[f"{prefix}_{parcel_i}"] = data_in[f"level{level}"]
+                data[prefix_i] = data_in[f"level{level}"][parcel_i]
 
         self._write_data(data, f"{prefix}_level{level}")
 
     def _write_data(self, data: dict, key: str) -> None:
         data_pd = pd.DataFrame(data, index=[self.inputs.config["subject"]])
-        data_pd.to_hdf(self._output, key, mode="a", format="table")
+        data_pd.to_hdf(self._output, key, mode="a", format="fixed")
 
     def _run_interface(self, runtime):
         self._output = Path(self.inputs.config["output_dir"], f"{self.inputs.config['subject']}.h5")
@@ -356,7 +357,7 @@ class SaveFeatures(SimpleInterface):
                 self._write_data_level(level, self.inputs.s_rsfc, "rs_sfc", "conn_sym")
                 self._write_data_level(level, self.inputs.d_rsfc, "rs_dfc", "conn_asym")
                 for stat in ["str", "bet", "par", "eff"]:
-                    self._write_data_level(level, self.inputs.rs_stats, f"rs_{stat}", "array")
+                    self._write_data_level(level, self.inputs.rs_stats[stat], f"rs_{stat}", "array")
 
             if "tfMRI" in self.inputs.config["modality"]:
                 for key, _ in self.inputs.tfc.items():
