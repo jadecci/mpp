@@ -431,33 +431,60 @@ class SC(SimpleInterface):
         return runtime
 
 
-class _DTIFeaturesInputSpec(BaseInterfaceInputSpec):
-    fa_file = traits.File(mandatory=True, exists=True, desc="FA file")
-    md_file = traits.File(mandatory=True, exists=True, desc="MD file")
-    l1_file = traits.File(mandatory=True, exists=True, desc="1st eigenvalue file")
+class _RDInputSpec(BaseInterfaceInputSpec):
+    config = traits.Dict(mandatory=True, desc="Workflow configurations")
     l2_file = traits.File(mandatory=True, exists=True, desc="2nd eigenvalue file")
     l3_file = traits.File(mandatory=True, exists=True, desc="3rd eigenvalue file")
-    atlas_files = traits.List(mandatory=True, dtype=Path, desc="Atlas files")
+    subject = traits.Str(mandatory=True, desc="Subject ID")
+
+
+class _RDOutputSpec(TraitedSpec):
+    rd_file = traits.File(exists=True, desc="RD file")
+
+
+class RD(SimpleInterface):
+    """Compute RD image based on L2 and L3 images"""
+    input_spec = _RDInputSpec
+    output_spec = _RDOutputSpec
+
+    def _run_interface(self, runtime):
+        rd_dir = Path(self.inputs.config["work_dir"], "rd_tmp")
+        rd_dir.mkdir(parents=True, exist_ok=True)
+        rd_file = Path(rd_dir, f"{self.inputs.subject}_rd.nii.gz")
+
+        img_l2 = nib.load(self.inputs.l2_file)
+        data_rd = np.divide(img_l2.get_fdata() + nib.load(self.inputs.l3_file).get_fdata(), 2)
+        nib.save(nib.Nifti1Image(data_rd, img_l2.affine, img_l2.header), rd_file)
+
+        return runtime
+
+
+class _DTIFeaturesInputSpec(BaseInterfaceInputSpec):
+    config = traits.Dict(mandatory=True, desc="Workflow configurations")
+    fa_skeleton_file = traits.File(mandatory=True, exists=True, desc="skeletonised FA file")
+    md_skeleton_file = traits.File(mandatory=True, exists=True, desc="skeletonised MD file")
+    ad_skeleton_file = traits.File(mandatory=True, exists=True, desc="skeletonised AD file")
+    rd_skeleton_file = traits.File(mandatory=True, exists=True, desc="skeletonised RD file")
 
 
 class _DTIFeaturesOutputSpec(TraitedSpec):
-    fa = traits.Dict(desc="FA values")
-    md = traits.Dict(desc="MD values")
+    fa = traits.Dict(desc="region-wise FA values")
+    md = traits.Dict(desc="region-wise MD values")
+    ad = traits.Dict(desc="region-wise AD values")
+    rd = traits.Dict(desc="region-wise RD values")
 
 
 class DTIFeatures(SimpleInterface):
-    """Compute DTI features: FA, MD, AD, RD"""
+    """Extract DTI features"""
     input_spec = _DTIFeaturesInputSpec
     output_spec = _DTIFeaturesOutputSpec
 
     def _run_interface(self, runtime):
-        data_fa = nib.load(self.inputs.fa_file).get_fdata()
-        data_md = nib.load(self.inputs.md_file).get_fdata()
-        data_ad = nib.load(self.inputs.l1_file).get_fdata()
-        data_l2 = nib.load(self.inputs.l2_file).get_fdata()
-        data_l3 = nib.load(self.inputs.l3_file).get_fdata()
-        data_rd = np.divide(data_l2 + data_l3, 2)
-
+        in_files = {
+            "FA": self.inputs.fa_skeleton_file, "MD": self.inputs.md_skeleton_file,
+            "AD": self.inputs.ad_skeleton_file, "RD": self.inputs.rd_skeleton_file}
+        for file_type, file_in in in_files.items():
+            data = nib.load(file_in).get_fdata()
 
         return runtime
 
