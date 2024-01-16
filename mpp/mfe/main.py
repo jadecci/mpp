@@ -160,7 +160,7 @@ def main() -> None:
     if "rfMRI" in config["modality"] and "dMRI" in config["modality"]:
         mfe_wf.connect([(sc, rsfc, [("sc_count", "sc_count")])])
     if "tfMRI" in config["modality"] and "dMRI" in config["modality"]:
-        mfe_wf.connect([sc, tfc, [("sc_count", "sc_count")]])
+        mfe_wf.connect([(sc, tfc, [("sc_count", "sc_count")])])
 
     # Confounds and phenotypes are always computed
     conf = pe.Node(Confounds(config=config, simg_cmd=simg_cmd), "conf")

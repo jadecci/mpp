@@ -8,7 +8,7 @@ import pandas as pd
 
 from mpp.exceptions import DatasetError
 
-base_dir = Path(__file__).resolve().parent
+base_dir = Path(__file__).resolve().parent.parent.parent
 logging.getLogger("datalad").setLevel(logging.WARNING)
 
 
