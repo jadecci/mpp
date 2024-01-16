@@ -65,7 +65,12 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
                 "strength": "Strength_AgeAdj", "neoffi_n": "NEOFAC_N", "neoffi_e": "NEOFAC_E",
                 "neoffi_o": "NEOFAC_O", "neoffi_a": "NEOFAC_A", "neoffi_c": "NEOFAC_C"},
             "pheno_file": Path(pheno_dir, "unrestricted_hcpya.csv"),
-            "restricted_file": Path(pheno_dir, "restricted_hcpya.csv")},
+            "restricted_file": Path(pheno_dir, "restricted_hcpya.csv"),
+            "tr": 0.72,
+            "ev_files": {
+                "tfMRI_EMOTION": {"fear.txt", "neut.txt"}, "tfMRI_GAMBLING": {},
+                "tfMRI_LANGUAGE": {}, "tfMRI_MOTOR": {},
+                "tfMRI_WM": {}, "tfMRI_RELATIONAL": {}, "tfMRI_SOCIAL": {}}},
         "HCP-A": {
             "url": "git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git",
             "source": "inm7-storage",
@@ -111,7 +116,9 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
                 "endurance": 16, "gaitspeed": 30, "strength": 22, "neoffi_n": 77,
                 "neoffi_e": 76, "neoffi_o": 78, "neoffi_a": 74, "neoffi_c": 75},
             "demo_file": Path(pheno_dir, "ssaga_cover_demo01.txt"),
-            "hand_file": Path(pheno_dir, "edinburgh_hand01.txt")},
+            "hand_file": Path(pheno_dir, "edinburgh_hand01.txt"),
+            "tr": 0.8,
+            "ev_files": {"tfMRI_CARIT_PA": {}, "tfMRI_FACENAME_PA":{}, "tfMRI_VISMOTOR_PA":{}}},
         "HCP-D": {
             "url": "git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git",
             "source": "inm7-storage",
@@ -134,7 +141,9 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
                 "endurance": 13, "gaitspeed": 18, "strength": 14, "neoffi_n": 71,
                 "neoffi_e": 70, "neoffi_o": 72, "neoffi_a": 68, "neoffi_c": 69},
             "demo_file": Path(pheno_dir, "ssaga_cover_demo01.txt"),
-            "hand_file": Path(pheno_dir, "edinburgh_hand01.txt")}}
+            "hand_file": Path(pheno_dir, "edinburgh_hand01.txt"),
+            "tr": 0.8,
+            "ev_files": {"tfMRI_CARIT": {}, "tfMRI_EMOTION": {}, "tfMRI_GUESSING": {}}}}
     for key, val in params["HCP-A"]["pheno_files"].items():
         params["HCP-A"]["pheno_files"][key] = Path(pheno_dir, val)
     params["HCP-D"]["col_names"] = params["HCP-A"]["col_names"]

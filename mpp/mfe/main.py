@@ -22,7 +22,7 @@ def main() -> None:
     required.add_argument("subject", type=str, help="Subject ID")
     required.add_argument(
         "--modality", nargs="+", required=True,
-        help="List of modalities (rfMRI, tfMRI, sMRI, dMRI, conf, pheno)")
+        help="List of modalities (rfMRI, tfMRI, sMRI, dMRI)")
     optional = parser.add_argument_group("optional arguments")
     optional.add_argument(
         "--diff_dir", type=Path, default=None,
@@ -154,19 +154,21 @@ def main() -> None:
             (init_data, sc, [("data_files", "data_files"), ("fs_dir", "fs_dir")]),
             (downsamp, sc, [("out_file", "atlas_files")]),
             (prob_track, sc, [("tck_file", "tck_file")]),
-            (sc, save_features, [("count_files", "scc_files"), ("length_files", "scl_files")])])
+            (sc, save_features, [("sc_count", "sc_count"), ("sc_length", "sc_length")])])
 
-    # Confounding features
-    if "conf" in config["modality"]:
-        conf = pe.Node(Confounds(config=config, simg_cmd=simg_cmd), "conf")
-        mfe_wf.connect([
-            (init_data, conf, [("data_files", "data_files")]),
-            (conf, save_features, [("conf", "conf")])])
+    # Compute effective connectivity if both functional and diffusion features are requested
+    if "rfMRI" in config["modality"] and "dMRI" in config["modality"]:
+        mfe_wf.connect([(sc, rsfc, [("sc_count", "sc_count")])])
+    if "tfMRI" in config["modality"] and "dMRI" in config["modality"]:
+        mfe_wf.connect([sc, tfc, [("sc_count", "sc_count")]])
 
-    # Phenotypes
-    if "pheno" in config["modality"]:
-        pheno = pe.Node(Phenotypes(config=config), "pheno")
-        mfe_wf.connect([(pheno, save_features, [("pheno", "pheno")])])
+    # Confounds and phenotypes are always computed
+    conf = pe.Node(Confounds(config=config, simg_cmd=simg_cmd), "conf")
+    pheno = pe.Node(Phenotypes(config=config), "pheno")
+    mfe_wf.connect([
+        (init_data, conf, [("data_files", "data_files")]),
+        (conf, save_features, [("conf", "conf")]),
+        (pheno, save_features, [("pheno", "pheno")])])
 
     # Run workflow
     mfe_wf.write_graph()

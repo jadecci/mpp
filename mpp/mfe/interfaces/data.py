@@ -198,6 +198,10 @@ class InitData(SimpleInterface):
                 self._results["lh_white"] = self._results["data_files"]["lh_white"]
                 self._results["rh_white"] = self._results["data_files"]["rh_white"]
                 self._results["ribbon"] = self._results["data_files"]["ribbon"]
+                self._results["dwi"] = self._results["data_files"]["dwi"]
+                self._results["bval"] = self._results["data_files"]["bval"]
+                self._results["bvec"] = self._results["data_files"]["bvec"]
+                self._results["nodif_mask"] = self._results["data_files"]["nodif_mask"]
 
             if "conf" in self.inputs.config["modality"]:
                 if self.inputs.config["dataset"] in ["HCP-A", "HCP-D"]:
@@ -314,8 +318,8 @@ class _SaveFeaturesInputSpec(BaseInterfaceInputSpec):
     tfc = traits.Dict({}, dtype=dict, desc="task-based functional connectivity")
     myelin = traits.Dict(dtype=float, desc="myelin content estimates")
     morph = traits.Dict(dtype=float, desc="morphometry features")
-    scc_files = traits.Dict(dtype=Path, desc="SC based on streamline count")
-    scl_files = traits.Dict(dtype=Path, desc="SC based on streamline length")
+    sc_count = traits.Dict(desc="structural connectome based on streamline counts")
+    sc_length = traits.Dict(desc="structural connectome based on streamline length")
     conf = traits.Dict(desc="confounding variables")
     pheno = traits.Dict(dtype=float, desc="phenotypes")
     dataset_dir = traits.Directory(mandatory=True, desc="absolute path to installed root dataset")
@@ -324,11 +328,6 @@ class _SaveFeaturesInputSpec(BaseInterfaceInputSpec):
 class SaveFeatures(SimpleInterface):
     """Save extracted features"""
     input_spec = _SaveFeaturesInputSpec
-
-    def _read_diff_data(self, level: int) -> tuple[dict, dict]:
-        scc = pd.read_csv(self.inputs.scc_files[f"level{level}"], header=None)
-        scl = pd.read_csv(self.inputs.scl_files[f"level{level}"], header=None)
-        return {f"level{level}": scc}, {f"level{level}": scl}
 
     def _write_data_level(self, level: int, data_in: dict, prefix: str, type: str) -> None:
         data = {}
@@ -352,12 +351,16 @@ class SaveFeatures(SimpleInterface):
     def _run_interface(self, runtime):
         self._output = Path(self.inputs.config["output_dir"], f"{self.inputs.config['subject']}.h5")
 
+        self._write_data(self.inputs.conf, "confound")
+        self._write_data(self.inputs.pheno, "phenotype")
+
         for level in [1, 2, 3, 4]:
             if "rfMRI" in self.inputs.config["modality"]:
                 self._write_data_level(level, self.inputs.s_rsfc, "rs_sfc", "conn_sym")
                 self._write_data_level(level, self.inputs.d_rsfc, "rs_dfc", "conn_asym")
-                for stat in ["str", "bet", "par", "eff"]:
-                    self._write_data_level(level, self.inputs.rs_stats[stat], f"rs_{stat}", "array")
+                for stat in ["cpl", "eff", "mod"]:
+                    self._write_data(self.inputs.rs_stats[stat], f"rs_{stat}")
+                self._write_data_level(level, self.inputs.rs_stats["par"], f"rs_par", "array")
 
             if "tfMRI" in self.inputs.config["modality"]:
                 for key, _ in self.inputs.tfc.items():
@@ -369,15 +372,8 @@ class SaveFeatures(SimpleInterface):
                     self._write_data_level(level, self.inputs.morph[stat], f"s_{stat}", "array")
 
             if "dMRI" in self.inputs.config["modality"]:
-                scc, scl = self._read_diff_data(level)
-                self._write_data_level(level, scc, "d_scc", "conn_asym")
-                self._write_data_level(level, scl, "d_scl", "conn_asym")
-
-        if "conf" in self.inputs.config["modality"]:
-            self._write_data(self.inputs.conf, "confound")
-
-        if "pheno" in self.inputs.config["modality"]:
-            self._write_data(self.inputs.pheno, "phenotype")
+                self._write_data_level(level, self.inputs.sc_count, "d_scc", "conn_asym")
+                self._write_data_level(level, self.inputs.sc_length, "d_scl", "conn_asym")
 
         dl.remove(dataset=self.inputs.dataset_dir, reckless="kill")
 

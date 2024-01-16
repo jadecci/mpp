@@ -1,17 +1,19 @@
 from os import environ
 from pathlib import Path
+from typing import Optional
 import sys
 import subprocess
 
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 from nipype.interfaces import fsl, freesurfer
+from rdcmpy import RegressionDCM
+from scipy.ndimage import binary_erosion
+from scipy.stats import zscore
 import bct
 import datalad.api as dl
 import nibabel as nib
 import numpy as np
 import pandas as pd
-from scipy.ndimage import binary_erosion
-from scipy.stats import zscore
 
 from mpp.exceptions import DatasetError
 from mpp.mfe.utilities import add_subdir
@@ -26,15 +28,18 @@ class _FCInputSpec(BaseInterfaceInputSpec):
     rs_runs = traits.List(desc="resting-state run names")
     t_runs = traits.List(desc="task run names")
     hcpd_b_runs = traits.Int(0, usedefault=True, desc="number of b runs added for HCP-D subject")
+    sc_count = traits.Dict({}, usedefault=True, desc="structural connectome")
 
 
 class _FCOutputSpec(TraitedSpec):
     sfc = traits.Dict(dtype=float, desc="static FC")
     dfc = traits.Dict(dtype=float, desc="dynamic FC")
+    ec = traits.Dict(dtype=float, desc="effective connectivity")
 
 
 class FC(SimpleInterface):
-    """Compute resting-state static and dynamic functional connectivity"""
+    """Compute resting-state static and dynamic functional connectivity.
+    If structural connectivity was computed, then also estimate effective connectivity"""
     input_spec = _FCInputSpec
     output_spec = _FCOutputSpec
 
@@ -140,6 +145,16 @@ class FC(SimpleInterface):
             b = np.linalg.lstsq((z @ z.T).T, (y @ z.T).T, rcond=None)[0].T
             self._results["dfc"][f"level{level+1}"] = b[:, range(1, b.shape[1])]
 
+    def _ec(self, task_reg: Optional[np.ndarray] = None) -> None:
+        # effective connectivity: regression DCM
+        self._results["ec"] = {}
+        for level in range(4):
+            rdcm = RegressionDCM(
+                self._tavg_dict[f"level{level+1}"].T, self.inputs.config["param"]["tr"],
+                task_reg, prior_a=self.inputs.sc_count[f"level{level+1}"])
+            rdcm.estimate()
+            self._results["ec"][f"level{level+1}"] = rdcm.params["mu_connectivity"]
+
     @staticmethod
     def _concat(tavg1: dict, tavg2: dict) -> dict:
         tavg = {}
@@ -148,11 +163,12 @@ class FC(SimpleInterface):
         return tavg
 
     def _run_interface(self, runtime):
+        dataset = self.inputs.config["dataset"]
         if self.inputs.modality == "rfMRI":
             n_runs = len(self.inputs.rs_runs) + self.inputs.hcpd_b_runs
             self._tavg_dict = {}
             for i in range(n_runs):
-                if self.inputs.config["dataset"] == "HCP-D" and i >= 4:
+                if dataset == "HCP-D" and i >= 4:
                     run = self.inputs.rs_runs[i-3]
                     key_surf = f"{run}_surfb"
                     key_vol = f"{run}_volb"
@@ -172,11 +188,13 @@ class FC(SimpleInterface):
                             self._tavg_dict[key] = val
             self._results["sfc"] = self._sfc()
             self._dfc()
+            if self.inputs.sc_count:
+                self._ec()
 
         elif self.inputs.modality == "tfMRI":
             self._results["sfc"] = {}
             for run in self.inputs.config["param"]["task_runs"]:
-                if self.inputs.config["dataset"] == "HCP-YA":
+                if dataset == "HCP-YA":
                     self._tavg_dict = self._concat(
                         self._parcellate(
                             nib.load(self.inputs.data_files[f"{run}_LR_surf"]).get_fdata(),
@@ -184,7 +202,7 @@ class FC(SimpleInterface):
                         self._parcellate(
                             nib.load(self.inputs.data_files[f"{run}_RL_surf"]).get_fdata(),
                             nib.load(self.inputs.data_files[f"{run}_RL_vol"]).get_fdata()))
-                elif self.inputs.config["dataset"] == "HCP-D":
+                elif dataset == "HCP-D":
                     if run == "tfMRI_EMOTION":
                         self._tavg_dict = self._parcellate(
                             nib.load(self.inputs.data_files[f"{run}_PA_surf"]).get_fdata(),
@@ -197,7 +215,7 @@ class FC(SimpleInterface):
                             self._parcellate(
                                 nib.load(self.inputs.data_files[f"{run}_AP_surf"]).get_fdata(),
                                 nib.load(self.inputs.data_files[f"{run}_AP_vol"]).get_fdata()))
-                elif self.inputs.config["dataset"] == "HCP-A":
+                elif dataset == "HCP-A":
                     self._tavg_dict = self._parcellate(
                         nib.load(self.inputs.data_files[f"{run}_surf"]).get_fdata(),
                         nib.load(self.inputs.data_files[f"{run}_vol"]).get_fdata())
@@ -205,12 +223,27 @@ class FC(SimpleInterface):
                     raise DatasetError()
                 self._results["sfc"][run] = self._sfc()
 
+                if self.inputs.sc_count:
+                    ev_files = self.inputs.config["param"]["ev_files"][run]
+                    task_reg = np.zeros((self._tavg_dict[f"level1"].shape[1], len(ev_files)))
+                    for ev_i, ev_file in enumerate(ev_files):
+                        ev = pd.read_table(ev_file, header=None, sep=" ")
+                        for block_i, block in ev.iterrows():
+                            block_start = int(
+                                round(block[0] / self.inputs.config["param"]["tr"])) - 1
+                            block_len = int(round(block[1] / self.inputs.config["param"]["tr"]))
+                            task_reg[block_start:(block_start + block_len), ev_i] = 1
+                            if dataset == "HCP-YA" \
+                                    or (dataset == "HCP-D" and run != "tfMRI_EMOTION"):
+                                acq2_start = block_start + task_reg.shape[0] / 2
+                                task_reg[acq2_start:(acq2_start + block_len), ev_i] = 1
+                    self._ec(task_reg)
+
         return runtime
 
 
 class _NetworkStatsInputSpec(BaseInterfaceInputSpec):
     conn = traits.Dict({}, usedefault=True, dtype=float, desc="connectivity matrix")
-    conn_files = traits.List("", usedefault=True, desc="connectivity matrix file")
 
 
 class _NetworkStatsOutputSpec(TraitedSpec):
@@ -223,20 +256,18 @@ class NetworkStats(SimpleInterface):
     output_spec = _NetworkStatsOutputSpec
 
     def _run_interface(self, runtime):
-        self._results["stats"] = {"str": {}, "bet": {}, "par": {}, "eff": {}}
+        self._results["stats"] = {"cpl": {}, "eff": {}, "mod": {}, "par": {}}
         for level in ["1", "2", "3", "4"]:
-            l_key = f"level{level}"
-            if self.inputs.conn:
-                conn = self.inputs.conn[l_key]
-            else:
-                conn_file = f"{str(self.inputs.conn_files[0])[:-5]}{int(level)-1}.csv"
-                conn = np.array(pd.read_csv(conn_file, header=None))
+            dist, _ = bct.distance_wei(bct.invert(self.inputs.conn[f"level{level}"]))
+            comm, _ = bct.community_louvain(self.inputs.conn[f"level{level}"], B="negative_sym")
+            cpl, eff, _, _, _ = bct.charpath(dist)
+            _, mod = bct.modularity_und(comm)
+            par = bct.participation_coef(self.inputs.conn[f"level{level}"], comm)
 
-            self._results["stats"]["str"][l_key] = bct.strengths_und(conn)
-            self._results["stats"]["bet"][l_key] = bct.betweenness_wei(conn)
-            self._results["stats"]["par"][l_key] = bct.participation_coef(
-                conn, bct.community_louvain(conn, B="negative_sym")[0])
-            self._results["stats"]["eff"][l_key] = bct.efficiency_wei(conn, local=True)
+            self._results["stats"]["cpl"][f"level{level}"] = cpl
+            self._results["stats"]["eff"][f"level{level}"] = eff
+            self._results["stats"]["mod"][f"level{level}"] = mod
+            self._results["stats"]["par"][f"level{level}"] = par
 
         return runtime
 
@@ -245,6 +276,7 @@ class _AnatInputSpec(BaseInterfaceInputSpec):
     config = traits.Dict(mandatory=True, desc="Workflow configurations")
     data_files = traits.Dict(mandatory=True, dtype=Path, desc="collection of filenames")
     anat_dir = traits.Str(mandatory=True, desc="absolute path to installed subject T1w directory")
+    conf = traits.Dict(mandatory=True, desc="confounding variables")
     simg_cmd = traits.Any(mandatory=True, desc="command for using singularity image (or not)")
 
 
@@ -322,8 +354,12 @@ class Anat(SimpleInterface):
                     stats_surf = hemi_stats
                 else:
                     stats_surf = pd.concat([stats_surf, hemi_stats])
-            self._results["morph"]["cs"][f"level{level+1}"] = stats_surf["SurfArea"].values
-            self._results["morph"]["ct"][f"level{level+1}"] = stats_surf["ThickAvg"].values
+            # Divide CS by ICV^(2/3)
+            self._results["morph"]["cs"][f"level{level+1}"] = np.divide(
+                stats_surf["SurfArea"].values, np.power(self.inputs.conf["icv_vol"], 2/3))
+            # Divide CT by mean CT
+            self._results["morph"]["ct"][f"level{level+1}"] = np.divide(
+                stats_surf["ThickAvg"].values, stats_surf["ThickAvg"].mean())
 
             # GMV
             seg_up_file = Path(tmp_dir, f"{subject}_S{level}_up.nii.gz")
@@ -342,8 +378,10 @@ class Anat(SimpleInterface):
             stats_vol = pd.read_table(
                 sub_table, header=0, skiprows=np.arange(50), delim_whitespace=True)
             stats_vol.drop([0], inplace=True)
-            self._results["morph"]["gmv"][f"level{level+1}"] = np.concatenate((
-                stats_surf["GrayVol"].values, stats_vol["Volume_mm3"].values))
+            # Divide GMV by ICV
+            self._results["morph"]["gmv"][f"level{level+1}"] = np.divide(
+                np.concatenate((stats_surf["GrayVol"].values, stats_vol["Volume_mm3"].values)),
+                self.inputs.conf["icv_vol"])
 
         return runtime
 
@@ -357,8 +395,8 @@ class _SCInputSpec(BaseInterfaceInputSpec):
 
 
 class _SCOutputSpec(TraitedSpec):
-    count_files = traits.Dict(dtype=Path, desc="SC based on streamline count")
-    length_files = traits.Dict(dtype=Path, desc="SC based on streamline length")
+    sc_count = traits.Dict(desc="structural connectome based on streamline counts")
+    sc_length = traits.Dict(desc="structural connectome based on streamline length")
 
 
 class SC(SimpleInterface):
@@ -368,22 +406,58 @@ class SC(SimpleInterface):
 
     def _run_interface(self, runtime):
         work_dir = self.inputs.config["work_dir"]
+        self._results["sc_count"] = {}
+        self._results["sc_length"] = {}
+
         for atlas_file in self.inputs.atlas_files:
             key = f"level{atlas_file.name.split('flirt')[0][-2]}"
-            self._results["count_files"][key] = Path(work_dir, f"sc_count_{key}.csv")
+            count_file = Path(work_dir, f"sc_count_{key}.csv")
             subprocess.run(
                 self.inputs.simg_cmd.cmd("tck2connectome").split() + [
                     "-assignment_radial_search", "2", "-symmetric", "-nthreads", "0",
-                    str(self.inputs.tck_file), str(atlas_file), str(self._results["count_file"])],
+                    str(self.inputs.tck_file), str(atlas_file), str(count_file)],
                 check=True)
+            self._results["sc_count"][key] = np.log(pd.read_csv(count_file, header=None))
 
-            self._results["length_files"][key] = Path(work_dir, f"sc_length_{key}.csv")
+            length_file = Path(work_dir, f"sc_length_{key}.csv")
             subprocess.run(
                 self.inputs.simg_cmd.cmd("tck2connectome").split() + [
                     "-assignment_radial_search", "2", "-scale_length", "-stat_edge", "mean",
                     "-symmetric", "-nthreads", "0", str(self.inputs.tck_file), str(atlas_file),
-                    str(self._results["length_file"])],
+                    str(length_file)],
                 check=True)
+            self._results["sc_length"][key] = pd.read_csv(length_file, header=None)
+
+        return runtime
+
+
+class _DTIFeaturesInputSpec(BaseInterfaceInputSpec):
+    fa_file = traits.File(mandatory=True, exists=True, desc="FA file")
+    md_file = traits.File(mandatory=True, exists=True, desc="MD file")
+    l1_file = traits.File(mandatory=True, exists=True, desc="1st eigenvalue file")
+    l2_file = traits.File(mandatory=True, exists=True, desc="2nd eigenvalue file")
+    l3_file = traits.File(mandatory=True, exists=True, desc="3rd eigenvalue file")
+    atlas_files = traits.List(mandatory=True, dtype=Path, desc="Atlas files")
+
+
+class _DTIFeaturesOutputSpec(TraitedSpec):
+    fa = traits.Dict(desc="FA values")
+    md = traits.Dict(desc="MD values")
+
+
+class DTIFeatures(SimpleInterface):
+    """Compute DTI features: FA, MD, AD, RD"""
+    input_spec = _DTIFeaturesInputSpec
+    output_spec = _DTIFeaturesOutputSpec
+
+    def _run_interface(self, runtime):
+        data_fa = nib.load(self.inputs.fa_file).get_fdata()
+        data_md = nib.load(self.inputs.md_file).get_fdata()
+        data_ad = nib.load(self.inputs.l1_file).get_fdata()
+        data_l2 = nib.load(self.inputs.l2_file).get_fdata()
+        data_l3 = nib.load(self.inputs.l3_file).get_fdata()
+        data_rd = np.divide(data_l2 + data_l3, 2)
+
 
         return runtime
 
