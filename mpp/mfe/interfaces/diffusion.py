@@ -1,7 +1,13 @@
+from os import chdir
 from pathlib import Path
+from shutil import copyfile, rmtree
+import logging
 import subprocess
 
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
+import datalad.api as dl
+
+logging.getLogger("datalad").setLevel(logging.WARNING)
 
 
 class _ProbTractInputSpec(BaseInterfaceInputSpec):
@@ -68,5 +74,61 @@ class ProbTract(SimpleInterface):
             "-fslgrad", str(self.inputs.bvec), str(self.inputs.bval),
             str(self.inputs.fod_wm_file), str(self._results["tck_file"])]
         subprocess.run(tck, check=True)
+
+        return runtime
+
+
+class _TBSSInputSpec(BaseInterfaceInputSpec):
+    config = traits.Dict(mandatory=True, desc="Workflow configurations")
+    fa_files = traits.List(mandatory=True, desc="list of FA files")
+    md_files = traits.List(mandatory=True, desc="list of MD files")
+    ad_files = traits.List(mandatory=True, desc="list of AD files")
+    rd_files = traits.List(mandatory=True, desc="list of RD files")
+    subjects = traits.List(mandatory=True, desc="list of subjects")
+    dataset_dir = traits.Directory(mandatory=True, desc="absolute path to installed root dataset")
+    simg_cmd = traits.Any(mandatory=True, desc="command for using singularity image (or not)")
+
+
+class _TBSSOutputSpec(TraitedSpec):
+    fa_skeleton_file = traits.File(exists=True, desc="skeletonised FA file")
+    md_skeleton_file = traits.File(exists=True, desc="skeletonised MD file")
+    ad_skeleton_file = traits.File(exists=True, desc="skeletonised AD file")
+    rd_skeleton_file = traits.File(exists=True, desc="skeletonised RD file")
+
+
+class TBSS(SimpleInterface):
+    """Create group skeleton map based on FA maps"""
+    input_spec = _TBSSInputSpec
+    output_spec = _TBSSOutputSpec
+
+    def _copy_files(self, files_in: list, dir_out: Path) -> list:
+        files_out = []
+        for subject, nonfa_file in zip(self.inputs.subjects, files_in):
+            copyfile(nonfa_file, Path(dir_out, f"{subject}_FA.nii.gz"))
+            files_out.append(Path())
+        return files_out
+
+    def _run_interface(self, runtime):
+        dl.remove(dataset=self.inputs.dataset_dir, reckless="kill")
+        fa_dir = Path(self.inputs.config["work_dir"], "tbss_fa")
+        fa_dir.mkdir(parents=True, exist_ok=True)
+        chdir(fa_dir)
+
+        fa_list = self._copy_files(self.inputs.fa_files, fa_dir)
+        subprocess.run(self.inputs.simg_cmd.cmd("tbss_1_preproc").split() + fa_list, check=True)
+        subprocess.run(self.inputs.simg_cmd.cmd("tbss_2_reg").split() + ["-n"], check=True)
+        subprocess.run(self.inputs.simg_cmd.cmd("tbss_3_postreg") + ["-S"], check=True)
+        subprocess.run(self.inputs.simg_cmd.cmd("tbss_4_prestats") + ["0.2"], check=True)
+        self._results["fa_skeleton_file"] = Path(fa_dir, "stats", "all_FA_skeletonised.nii.gz")
+
+        files_in_dict = {
+            "MD": self.inputs.md_files, "AD": self.inputs.ad_files, "RD": self.inputs.rd_files}
+        for file_type, files_in in files_in_dict.items():
+            _ = self._copy_files(files_in, Path(fa_dir, file_type))
+            subprocess.run(self.inputs.simg_cmd.cmd("tbss_non_FA").split() + [file_type], check=True)
+            rmtree(Path(fa_dir, file_type))
+        self._results["md_skeleton_file"] = Path(fa_dir, "stats", "all_MD_skeletonised.nii.gz")
+        self._results["ad_skeleton_file"] = Path(fa_dir, "stats", "all_AD_skeletonised.nii.gz")
+        self._results["rd_skeleton_file"] = Path(fa_dir, "stats", "all_RD_skeletonised.nii.gz")
 
         return runtime
