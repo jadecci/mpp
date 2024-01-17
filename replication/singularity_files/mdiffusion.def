@@ -7,9 +7,9 @@ From: debian:11
 
 %post -c /bin/bash
     apt-get update
-    apt-get install python3 python3-pip python-is-python3 python2 curl unzip tcsh -y
-    apt-get install git clang libeigen3-dev zlib1g-dev libqt5opengl5-dev libqt5svg5-dev libgl1-mesa-dev libfftw3-dev libtiff5-dev libpng-dev -y
-    apt-get install libxmu6 -y
+    apt-get install python3 python3-pip python-is-python3 python2 curl unzip tcsh dc -y
+    apt-get install git clang libeigen3-dev zlib1g-dev libqt5opengl5-dev libqt5svg5-dev -y
+    apt-get install libgl1-mesa-dev libfftw3-dev libtiff5-dev libpng-dev libxmu6 -y
 
     mkdir -p /usr/local/freesurfer
     curl -fL --retry 5 ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.3.2/freesurfer-linux-centos8_x86_64-7.3.2.tar.gz | tar -xz -C /usr/local/freesurfer --strip-components 1

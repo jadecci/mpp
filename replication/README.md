@@ -57,7 +57,7 @@ vagrant plugin install vagrant-disksize
 # end
 vagrant up && vagrant ssh
 # add the available disk space
-sudo cfdisk /dev/sda
+sudo cfdisk /dev/sda #[Resize] /dev/sda1 [Write]
 sudo pvresize /dev/sda1
 sudo lvextend -r -l +100%FREE /dev/mapper/vagrant--vg-root
 # build singularity image
