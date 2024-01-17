@@ -8,7 +8,7 @@ from nipype.interfaces import utility as niu
 from mpp.mfe.interfaces.data import InitData, PickAtlas, SubDirAnnot, SaveFeatures, Phenotypes
 from mpp.mfe.interfaces.diffusion import ProbTract
 from mpp.mfe.interfaces.features import FC, NetworkStats, Anat, SC, Confounds
-from mpp.mfe.utilities import SimgCmd, dataset_params, add_subdir, CombineStrings, CombineAtlas
+from mpp.mfe.utilities import SimgCmd, dataset_params, AddSubDir, CombineStrings, CombineAtlas
 
 base_dir = Path(__file__).resolve().parent.parent
 
@@ -81,10 +81,8 @@ def main() -> None:
         tmp_dir = Path(config["work_dir"], "sc_tmp")
         tmp_dir.mkdir(parents=True, exist_ok=True)
         fs_opt = f"--env SUBJECTS_DIR={tmp_dir}"
-        sub_dir = pe.Node(niu.Function(function=add_subdir, output_names=["sub_dir"]), "sub_dir")
-        sub_dir.inputs.sub_dir = tmp_dir
-        sub_dir.inputs.subject = config["subject"]
-        pick_atlas = pe.Node(PickAtlas(), "pick_atlas", iterables=[("level", [0, 1, 2, 3])])
+        sub_dir = pe.Node(AddSubDir(sub_dir=tmp_dir, subject=config["subject"]), "sub_dir")
+        pick_atlas = pe.Node(PickAtlas(), "pick_atlas", iterables=[("level", ["1", "2", "3", "4"])])
         add_annot = pe.Node(SubDirAnnot(config=config), "add_annot")
         aseg = pe.Node(
             CombineStrings(input1=str(tmp_dir), input2="/aparc2aseg_", input4=".nii.gz"), "aseg")
@@ -98,7 +96,7 @@ def main() -> None:
         mel_t1 = pe.Node(
             fsl.ApplyWarp(command=simg_cmd.cmd("applywarp"), interp="nn", relwarp=True), "mel_t1")
         mfe_wf.connect([
-            (init_data, std2t1, [("talairach_xfm", "warp"), ("t1_restore_brain", "reference")]),
+            (init_data, std2t1, [("t1_to_mni", "warp"), ("t1_restore_brain", "reference")]),
             (init_data, mel_t1, [("t1_restore_brain", "ref_file")]),
             (pick_atlas, mel_t1, [("parc_mel", "in_file")]),
             (std2t1, mel_t1, [("inverse_warp", "field_file")])])

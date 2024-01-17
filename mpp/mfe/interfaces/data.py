@@ -9,7 +9,7 @@ import pandas as pd
 from mpp.exceptions import DatasetError
 from mpp.mfe.utilities import dataset_params
 
-base_dir = Path(__file__).resolve().parent
+base_dir = Path(__file__).resolve().parent.parent.parent
 logging.getLogger("datalad").setLevel(logging.WARNING)
 
 
@@ -26,7 +26,6 @@ class _InitDataOutputSpec(TraitedSpec):
     data_files = traits.Dict(dtype=Path, desc="collection of files")
     hcpd_b_runs = traits.Int(desc="number of HCP-D b runs")
     dataset_dir = traits.Directory(desc="absolute path to installed root dataset")
-    talairach_xfm = traits.File(exists=True, desc="Talairach transform")
     t1_restore_brain = traits.File(exists=True, desc="T1 restored brain file")
     lh_aparc = traits.File(exists=True, desc="left aparc annot")
     rh_aparc = traits.File(exists=True, desc="right aparc annot")
@@ -37,6 +36,7 @@ class _InitDataOutputSpec(TraitedSpec):
     lh_white = traits.File(exists=True, desc="left white surface")
     rh_white = traits.File(exists=True, desc="right white surface")
     ribbon = traits.File(exists=True, desc="ribbon in volume")
+    t1_to_mni = traits.File(exists=True, desc="T1-to-MNI transform")
 
 
 class InitData(SimpleInterface):
@@ -62,7 +62,6 @@ class InitData(SimpleInterface):
             func_dir = Path(mni_dir, "Results")
             anat_dir = Path(param["sub_dir"], "T1w")
             fs_dir = Path(anat_dir, self.inputs.config["subject"])
-            d_dir = self.inputs.config["diff_dir"]
             self._results["anat_dir"] = anat_dir
             self._results["fs_dir"] = fs_dir
             dl.get(mni_dir, dataset=param["sub_dir"], get_data=False, source=param["source"])
@@ -139,7 +138,11 @@ class InitData(SimpleInterface):
 
             if "dMRI" in self.inputs.config["modality"]:
                 if self.inputs.config["dataset"] == "HCP-YA":
-                    dl.get(d_dir.parent, param["sub_dir"], get_data=False, source=param["source"])
+                    d_dir = Path(param["sub_dir"], "T1w", "Diffusion")
+                    dl.get(d_dir.parent, dataset=param["sub_dir"], get_data=False,
+                           source=param["source"])
+                else:
+                    d_dir = self.inputs.config["diff_dir"]
                 d_files = {
                     "dwi": Path(d_dir, "data.nii.gz"), "bval": Path(d_dir, "bvals"),
                     "bvec": Path(d_dir, "bvecs"),
@@ -167,7 +170,12 @@ class InitData(SimpleInterface):
                     "talaraich_xfm": Path(fs_dir, "mri", "transforms", "talairach.xfm"),
                     "norm": Path(fs_dir, "mri", "norm.mgz"),
                     "lh_thickness": Path(fs_dir, "surf", "lh.thickness"),
-                    "rh_thickness": Path(fs_dir, "surf", "rh.thickness")}
+                    "rh_thickness": Path(fs_dir, "surf", "rh.thickness"),
+                    "aseg": Path(fs_dir, "mri", "aseg.mgz"),
+                    "aparc_aseg": Path(fs_dir, "mri", "aparc+aseg.mgz"),
+                    "talairach_xfm": Path(fs_dir, "mri", "transforms", "talairach.xfm"),
+                    "norm": Path(fs_dir, "mri", "norm.mgz"),
+                    "brain_mask": Path(fs_dir, "mri", "brainmask.mgz")}
                 for key, val in fs_files.items():
                     dl.get(val, dataset=anat_dir, source=param["source"])
                 self._results["data_files"].update(fs_files)
@@ -178,17 +186,10 @@ class InitData(SimpleInterface):
                     dl.get(val, dataset=anat_dir, source=param["source"])
                 self._results["data_files"].update(anat_files)
 
-                mni_files = {
-                    "t1_to_mni": Path(mni_dir, "xfms", "acpc_dc2standard.nii.gz"),
-                    "aseg": Path(fs_dir, "mri", "aseg.mgz"),
-                    "aparc_aseg": Path(fs_dir, "mri", "aparc+aseg.mgz"),
-                    "talairach_xfm": Path(fs_dir, "mri", "xfms", "talairach.xfm"),
-                    "norm": Path(fs_dir, "mri", "norm.mgz")}
-                for key, val in mni_files.items():
-                    dl.get(val, dataset=mni_dir, source=param["source"])
-                self._results["data_files"].update(mni_files)
+                t1mni_file = Path(mni_dir, "xfms", "acpc_dc2standard.nii.gz")
+                dl.get(t1mni_file, dataset=mni_dir, source=param["source"])
+                self._results["data_files"]["t1_to_mni"] = t1mni_file
 
-                self._results["talairach_xfm"] = self._results["data_files"]["talairach_xfm"]
                 self._results["t1_restore_brain"] = self._results["data_files"]["t1_restore_brain"]
                 self._results["lh_aparc"] = self._results["data_files"]["lh_aparc"]
                 self._results["rh_aparc"] = self._results["data_files"]["rh_aparc"]
@@ -199,6 +200,7 @@ class InitData(SimpleInterface):
                 self._results["lh_white"] = self._results["data_files"]["lh_white"]
                 self._results["rh_white"] = self._results["data_files"]["rh_white"]
                 self._results["ribbon"] = self._results["data_files"]["ribbon"]
+                self._results["t1_to_mni"] = self._results["data_files"]["t1_to_mni"]
 
             if "conf" in self.inputs.config["modality"]:
                 if self.inputs.config["dataset"] in ["HCP-A", "HCP-D"]:
@@ -234,8 +236,7 @@ class InitDTIData(SimpleInterface):
     def _run_interface(self, runtime):
         root_data_dir = Path(self.inputs.config["work_dir"], self.inputs.subject)
         param = dataset_params(
-            self.inputs.config["dataset"], root_data_dir, self.inputs.config["pheno_dir"],
-            self.inputs.subject)
+            self.inputs.config["dataset"], root_data_dir, Path(), self.inputs.subject)
         self._results["dataset_dir"] = root_data_dir
 
         dl.install(root_data_dir, source=param["url"])
@@ -245,7 +246,8 @@ class InitDTIData(SimpleInterface):
         if self.inputs.config["dataset"] in ["HCP-YA", "HCP-A", "HCP-D"]:
             if self.inputs.config["dataset"] == "HCP-YA":
                 d_dir = Path(param["sub_dir"], "T1w", "Diffusion")
-                dl.get(d_dir.parent, param["sub_dir"], get_data=False, source=param["source"])
+                dl.get(d_dir.parent, dataset=param["sub_dir"], get_data=False,
+                       source=param["source"])
             else:
                 d_dir = self.inputs.config["diff_dir"]
 
@@ -269,11 +271,11 @@ class InitDTIData(SimpleInterface):
 
 
 class _PickAtlasInputSpec(BaseInterfaceInputSpec):
-    level = traits.Int(mandatory=True, desc="granularity level")
+    level = traits.Str(mandatory=True, desc="granularity level")
 
 
 class _PickAtlasOutputSpec(TraitedSpec):
-    level = traits.Int(desc="granularity level")
+    level = traits.Str(desc="granularity level")
     parc_sch = traits.File(exists=True, desc="Schaefer cortex atlas")
     parc_mel = traits.File(exists=True, desc="Melbourne subcortex atlas")
     lh_annot = traits.File(exists=True, desc="left annot of Schafer cortex atlas")
@@ -289,13 +291,13 @@ class PickAtlas(SimpleInterface):
         self._results["level"] = self.inputs.level
         data_dir = Path(base_dir, "data")
         self._results["parc_sch"] = Path(
-            data_dir, f"Schaefer2018_{self.inputs.level+1}00Parcels_17Networks_order.dlabel.nii")
+            data_dir, f"Schaefer2018_{self.inputs.level}00Parcels_17Networks_order.dlabel.nii")
         self._results["parc_mel"] = Path(
-            data_dir, f"Tian_Subcortex_S{self.inputs.level+1}_3T.nii.gz")
+            data_dir, f"Tian_Subcortex_S{self.inputs.level}_3T.nii.gz")
         self._results["lh_annot"] = Path(
-            data_dir, f"lh.Schaefer2018_{self.inputs.level+1}00Parcels_17Networks_order.annot")
+            data_dir, f"lh.Schaefer2018_{self.inputs.level}00Parcels_17Networks_order.annot")
         self._results["rh_annot"] = Path(
-            data_dir, f"rh.Schaefer2018_{self.inputs.level+1}00Parcels_17Networks_order.annot")
+            data_dir, f"rh.Schaefer2018_{self.inputs.level}00Parcels_17Networks_order.annot")
 
         return runtime
 
@@ -318,9 +320,9 @@ class SubDirAnnot(SimpleInterface):
 
     def _run_interface(self, runtime):
         out_dir = Path(self.inputs.sub_dir, self.inputs.config["subject"], "label")
-        copyfile(self.inputs.lh_annot, Path(out_dir, self.inputs.lh_annot.name))
-        copyfile(self.inputs.rh_annot, Path(out_dir, self.inputs.rh_annot.name))
-        annot_name = str(self.inputs.lh_annot.name).split(".")[1:-1]
+        copyfile(self.inputs.lh_annot, Path(out_dir, Path(self.inputs.lh_annot).name))
+        copyfile(self.inputs.rh_annot, Path(out_dir, Path(self.inputs.rh_annot).name))
+        annot_name = str(Path(self.inputs.lh_annot).name).split(".")[1:-1]
         annot_name = ".".join(annot_name)
         self._results["args"] = f"--annot {annot_name}"
 

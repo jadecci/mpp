@@ -58,8 +58,8 @@ class ProbTract(SimpleInterface):
         # Tracktography
         params = {
             # default parameters of tckgen
-            "algorithm": "iFOD2", "step": str(0.5 * self.inputs.config["param"]["voxel_size"]),
-            "angle": "45", "minlength": str(2 * self.inputs.config["param"]["voxel_size"]),
+            "algorithm": "iFOD2", "step": str(0.5 * self.inputs.config["param"]["diff_res"]),
+            "angle": "45", "minlength": str(2 * self.inputs.config["param"]["diff_res"]),
             "cutoff": "0.05", "trials": "1000", "samples": "4", "downsample": "3", "power": "0.33",
             # parameters different from default (Jung et al. 2021)
             "maxlength": "250", "max_attempts_per_seed": "50", "select": "10000000"}
@@ -102,10 +102,11 @@ class TBSS(SimpleInterface):
     output_spec = _TBSSOutputSpec
 
     def _copy_files(self, files_in: list, dir_out: Path) -> list:
+        dir_out.mkdir(parents=True, exist_ok=True)
         files_out = []
         for subject, nonfa_file in zip(self.inputs.subjects, files_in):
             copyfile(nonfa_file, Path(dir_out, f"{subject}_FA.nii.gz"))
-            files_out.append(Path())
+            files_out.append(Path(Path(dir_out, f"{subject}_FA.nii.gz")))
         return files_out
 
     def _run_interface(self, runtime):

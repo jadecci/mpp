@@ -50,7 +50,7 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
                 "tfMRI_EMOTION", "tfMRI_GAMBLING", "tfMRI_LANGUAGE", "tfMRI_MOTOR", "tfMRI_WM",
                 "tfMRI_RELATIONAL", "tfMRI_SOCIAL"],
             "t1_res": 0.7,
-            "shells": "1500,3000",
+            "shells": "1000,2000,3000",
             "diff_res": 1.25,
             "col_names": {
                 "totalcogcomp": "CogTotalComp_AgeAdj", "fluidcogcomp": "CogFluidComp_AgeAdj",
@@ -87,7 +87,7 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
             "rests": ['rfMRI_REST1_AP', 'rfMRI_REST1_PA', 'rfMRI_REST2_AP', 'rfMRI_REST2_PA'],
             "task_runs": ["tfMRI_CARIT_PA", "tfMRI_FACENAME_PA", "tfMRI_VISMOTOR_PA"],
             "t1_res": 0.8,
-            "shells": "1000,2000,3000",
+            "shells": "1500,3000",
             "diff_res": 1.5,
             "col_names": {
                 "totalcogcomp": "nih_totalcogcomp_ageadjusted",
@@ -140,7 +140,7 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
             "rests": ['rfMRI_REST1_AP', 'rfMRI_REST1_PA', 'rfMRI_REST2_AP', 'rfMRI_REST2_PA'],
             "task_runs": ["tfMRI_CARIT", "tfMRI_EMOTION", "tfMRI_GUESSING"],
             "t1_res": 0.8,
-            "shells": "1000,2000,3000",
+            "shells": "1500,3000",
             "diff_res": 1.5,
             "pheno_cols": {
                 "totalcogcomp": 18, "fluidcogcomp": 9, "crycogcomp": 12, "cardsort": 41,
@@ -169,16 +169,31 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
         return params[dataset]
 
 
-def add_subdir(sub_dir: Path, subject: str, fs_dir: Path) -> Path:
-    sub_dir.mkdir(parents=True, exist_ok=True)
-    if not Path(sub_dir, subject).is_symlink():
-        symlink(fs_dir, Path(sub_dir, subject))
-    if not Path(sub_dir, "fsaverage").is_dir():
-        copytree(
-            Path(getenv("FREESURFER_HOME"), "subjects", "fsaverage"), Path(sub_dir, "fsaverage"),
-            dirs_exist_ok=True)
+class _AddSubDirInputSpec(BaseInterfaceInputSpec):
+    sub_dir = traits.Directory(mandatory=True, desc="Subject directory to create")
+    subject = traits.Str(mandatory=True, desc="Subject ID")
+    fs_dir = traits.Directory(mandatory=True, desc="Subject FreeSurfer ouptut directory")
 
-    return sub_dir
+
+class _AddSubDirOutputSpec(TraitedSpec):
+    sub_dir = traits.Directory(exists=True, desc="Subject directory to create")
+
+
+class AddSubDir(SimpleInterface):
+    """Create a subject directory with subject and fsaverage data"""
+    input_spec = _AddSubDirInputSpec
+    output_spec = _AddSubDirOutputSpec
+
+    def _run_interface(self, runtime):
+        Path(self.inputs.sub_dir).mkdir(parents=True, exist_ok=True)
+        if not Path(self.inputs.sub_dir, self.inputs.subject).is_symlink():
+            symlink(self.inputs.fs_dir, Path(self.inputs.sub_dir, self.inputs.subject))
+        if not Path(self.inputs.sub_dir, "fsaverage").is_dir():
+            copytree(
+                Path(getenv("FREESURFER_HOME"), "subjects", "fsaverage"),
+                Path(self.inputs.sub_dir, "fsaverage"), dirs_exist_ok=True)
+        self._results["sub_dir"] = self.inputs.sub_dir
+        return runtime
 
 
 class _CombineStringsInputSpec(BaseInterfaceInputSpec):
@@ -207,7 +222,7 @@ class _CombineAtlasInputSpec(BaseInterfaceInputSpec):
     config = traits.Dict(mandatory=True, desc="Workflow configurations")
     cort_file = traits.File(mandatory=True, exists=True, desc='cortex atlas in T1 space')
     subcort_file = traits.File(mandatory=True, exists=True, desc='subcortex atlas in t1 space')
-    level = traits.Int(mandatory=True, desc='parcellation level (0 to 3)')
+    level = traits.Str(mandatory=True, desc='parcellation level (0 to 3)')
 
 
 class _CombineAtlasOutputSpec(TraitedSpec):
@@ -234,7 +249,7 @@ class CombineAtlas(SimpleInterface):
 
         for parcel in np.unique(atlas_subcort):
             if parcel != 0:
-                atlas[atlas_subcort == parcel] = parcel + 100 * (self.inputs.level + 1)
+                atlas[atlas_subcort == parcel] = parcel + 100 * int(self.inputs.level)
 
         self._results["combined_file"] = Path(
             self.inputs.config["work_dir"], f"atlas_combine_level{self.inputs.level}.nii.gz")
