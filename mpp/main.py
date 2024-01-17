@@ -6,7 +6,7 @@ import nipype.pipeline as pe
 
 from mpp.interfaces.crossval import (
     CrossValSplit, FeaturewiseModel, ConfoundsModel, IntegratedFeaturesModel)
-from mpp.interfaces.data import InitFeatures, PredictionSave
+from mpp.interfaces.data import PredictSublist, PredictionSave
 from mpp.interfaces.features import CVFeatures
 
 base_dir = Path(__file__).resolve().parent.parent
@@ -17,13 +17,15 @@ def main() -> None:
         description="Multimodal brain-based psychometric prediction",
         formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog, width=100))
     required = parser.add_argument_group("required arguments")
-    required.add_argument("target", type=str, help="Prediction target")
+    required.add_argument("--targets", nargs="+", dest="targets", required=True, help="Targets")
+    required.add_argument("--features", nargs="+", dest="features", required=True, help="features")
+    required.add_argument("--datasets", nargs="+", desc="datasets", required=True, help="Datasets")
     required.add_argument(
         "--features_dir", type=Path, dest="features_dir", required=True,
         help="Absolute paths to extracted features")
     required.add_argument(
-        '--pheno_dir', nargs='+', dest='pheno_dir', required=True,
-        help='Absolute paths to phenotype directories')
+        "--pheno_dir", nargs="+", dest="pheno_dir", required=True,
+        help="Absolute paths to phenotype directories")
     optional = parser.add_argument_group("optional arguments")
     optional.add_argument(
         "--levels", nargs="+", dest="levels", default=["4"], help="Parcellation levels.")
@@ -40,31 +42,32 @@ def main() -> None:
         "--condordag", dest="condordag", action="store_true", help="submit graph to HTCondor")
     config = vars(parser.parse_args())
 
-    # Configuration file
+    # Set-up
+    config["output_dir"].mkdir(parents=True, exist_ok=True)
     config_parse = configparser.ConfigParser()
     config_parse.read(config["config"])
     config.update({option: config_parse["USER"][option] for option in config_parse["USER"]})
+    mpp_wf = pe.Workflow(f"mpp_wf", base_dir=config["work_dir"])
+    mpp_wf.config["execution"]["try_hard_link_datasink"] = "false"
+    mpp_wf.config["execution"]["crashfile_format"] = "txt"
+    mpp_wf.config["execution"]["stop_on_first_crash"] = "true"
 
     # Preparations
-    mpp_wf = pe.Workflow("mpp_wf", base_dir=config["work_dir"])
-    init_data = pe.Node(InitFeatures(config=config), "init_data")
-    cv_split = pe.Node(CrossValSplit(config=config), name='cv_split')
-    mpp_wf.connect([(init_data, cv_split, [('sublists', 'sublists')])])
-
-    # Features to estimate during cross-validation
-    features_iterables = [
-        ('repeat', list(range(int(config['n_repeats'])))),
-        ('fold', list(range(int(config['n_folds'])))),
-        ('level', args.levels)]
-    features = pe.Node(
-        CVFeatures(config=config, features_dir=features_dir),
-        name='features', iterables=features_iterables)
+    sublist = pe.Node(
+        PredictSublist(config=config), "sublist", iterables=[("target", config["targets"])])
+    cv_split = pe.Node(CrossValSplit(config=config), "cv_split")
+    cv_iterables = [
+        ("repeat", list(range(int(config["n_repeats"])))),
+        ("fold", list(range(int(config["n_folds"])))), ("level", config["levels"])]
+    features = pe.Node(CVFeatures(config=config), "features", iterables=cv_iterables)
     mpp_wf.connect([
-        (init_data, features, [('sublists', 'sublists')]),
+        (sublist, cv_split, [('sublists', 'sublists')]),
+        (sublist, features, [('sublists', 'sublists')]),
         (cv_split, features, [('cv_split', 'cv_split')])])
 
     # Feature-wise models
-    fw_model = pe.Node(FeaturewiseModel(config=config, features_dir=features_dir), name='fw_model')
+    features_iterables = [("feature_type", config["features"])]
+    fw_model = pe.Node(FeaturewiseModel(config=config), "fw_model", iterables=features_iterables)
     fw_save = pe.JoinNode(
         PredictionSave(
             output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
@@ -108,19 +111,14 @@ def main() -> None:
         (conf_model, if_model, [('c_ypred', 'c_ypred')]),
         (if_model, if_save, [('results', 'results')])])
 
-    mpp_wf.config['execution']['try_hard_link_datasink'] = 'false'
-    mpp_wf.config['execution']['crashfile_format'] = 'txt'
-    mpp_wf.config['execution']['stop_on_first_crash'] = 'true'
-    mpp_wf.config['monitoring']['enabled'] = 'true'
-
     mpp_wf.write_graph()
-    if args.condordag:
+    if config["condordag"]:
         mpp_wf.run(
-            plugin='CondorDAGMan',
+            plugin="CondorDAGMan",
             plugin_args={
-                'wrapper_cmd': args.wrapper,
-                'dagman_args': f'-outfile_dir {args.work_dir} -import_env',
-                'override_specs': 'request_memory = 10 GB\nrequest_cpus = 1'})
+                "dagman_args": f"-outfile_dir {config['work_dir']} -import_env",
+                "wrapper_cmd": Path(base_dir, "venv_wrapper.sh"),
+                "override_specs": "request_memory = 10 GB\nrequest_cpus = 1"})
     else:
         mpp_wf.run()
 

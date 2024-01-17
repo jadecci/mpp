@@ -1,44 +1,48 @@
 from pathlib import Path
 
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
-import numpy as np
 import pandas as pd
+import numpy as np
 
 from mpp.exceptions import DatasetError
-from mpp.utilities.data import dataset_params, write_h5
 
 
-class _InitFeaturesInputSpec(BaseInterfaceInputSpec):
+class _PredictSublistInputSpec(BaseInterfaceInputSpec):
     config = traits.Dict(mandatory=True, desc="Workflow configurations")
+    target = traits.Str(mandatory=True, desc="target phenotype to predict")
 
 
-class _InitFeaturesOutputSpec(TraitedSpec):
-    sublists = traits.Dict(dtype=list, desc="list of subjects available in each dataset")
+class _PredictSublistOutputSpec(TraitedSpec):
+    sublists = traits.Dict(dtype=list, desc="availabel subjects in each dataset")
 
 
-class InitFeatures(SimpleInterface):
+class PredictSublist(SimpleInterface):
     """Extract available phenotype data and required list of subjects"""
-    input_spec = _InitFeaturesInputSpec
-    output_spec = _InitFeaturesOutputSpec
+    input_spec = _PredictSublistInputSpec
+    output_spec = _PredictSublistOutputSpec
 
-    def _check_pheno_conf(self, subject_file: Path):
-        return
+    def _check_sub(self, subject_file: Path) -> bool:
+        pheno = pd.DataFrame(pd.read_hdf(subject_file, "phenotype"))
+        conf = pd.DataFrame(pd.read_hdf(subject_file, "confound"))
+        if pheno[self.inputs.target].isnull().values[0]:
+            return False
+        if conf.isnull().values.any():
+            return False
 
     def _run_interface(self, runtime):
         self._results["sublists"] = {}
-
-        for dataset in Path(self.inputs.config["features_dir"]).iterdir():
-            if not dataset.name.startswith("."):
-                sublist = []
-                for subject_file in dataset.iterdir():
-                    if dataset in ["HCP-A", "HCP-D"]:
-                        subject = subject_file.stem.split("_V1_MR")[0]
-                    elif dataset == "HCP-YA":
-                        subject = subject_file.stem
-                    else:
-                        raise DatasetError()
-                    sublist.append(subject)
-                self._results["sublists"][dataset] = sublist
+        for dataset in self.inputs.config["datasets"]:
+            self._results["sublists"][dataset] = []
+            for subject_file in Path(self.inputs.config["features_dir"][dataset]).iterdir():
+                if dataset in ["HCP-A", "HCP-D"]:
+                    subject = subject_file.stem.split("_V1_MR")[0]
+                elif dataset == "HCP-YA":
+                    subject = subject_file.stem
+                else:
+                    raise DatasetError()
+                check = self._check_sub(subject_file)
+                if check:
+                    self._results["sublists"][dataset].append(subject)
 
         return runtime
 
