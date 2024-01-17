@@ -14,6 +14,7 @@ class _PredictSublistInputSpec(BaseInterfaceInputSpec):
 
 class _PredictSublistOutputSpec(TraitedSpec):
     sublists = traits.Dict(dtype=list, desc="availabel subjects in each dataset")
+    target = traits.Str(desc="target phenotype to predict")
 
 
 class PredictSublist(SimpleInterface):
@@ -43,16 +44,38 @@ class PredictSublist(SimpleInterface):
                 check = self._check_sub(subject_file)
                 if check:
                     self._results["sublists"][dataset].append(subject)
+        self._results["target"] = self.inputs.target
+
+        return runtime
+
+
+class _PredictionCombineInputSpec(BaseInterfaceInputSpec):
+    config = traits.Dict(mandatory=True, desc="Workflow configurations")
+    results = traits.List(dtype=dict, desc="accuracy results")
+    targets = traits.List(dtype=str, mandatory=True, desc="target phenotype to predict")
+
+
+class _PredictionCombineOutputSpec(TraitedSpec):
+    results = traits.Dict(desc="accuracy results")
+
+
+class PredictionCombine(SimpleInterface):
+    """Combine prediction results across prediction targets"""
+    input_spec = _PredictionCombineInputSpec
+    output_spec = _PredictionCombineOutputSpec
+
+    def _run_interface(self, runtime):
+        for target, results in zip(self.inputs.targets, self.inputs.results):
+            for key, val in results:
+                self._results["results"][f"{key}_{target}"] = val
 
         return runtime
 
 
 class _PredictionSaveInputSpec(BaseInterfaceInputSpec):
-    results = traits.List(dtype=dict, desc='accuracy results')
-    output_dir = traits.Directory(mandatory=True, desc='absolute path to output directory')
-    overwrite = traits.Bool(mandatory=True, desc='whether to overwrite existing results')
-    phenotype = traits.Str(mandatory=True, desc='phenotype to use as prediction target')
-    type = traits.Str(mandatory=True, desc='type of model used in prediction')
+    config = traits.Dict(mandatory=True, desc="Workflow configurations")
+    results = traits.List(dtype=dict, desc="accuracy results")
+    type = traits.Str(mandatory=True, desc="type of model used in prediction")
 
 
 class PredictionSave(SimpleInterface):
@@ -60,11 +83,12 @@ class PredictionSave(SimpleInterface):
     input_spec = _PredictionSaveInputSpec
 
     def _run_interface(self, runtime):
-        Path(self.inputs.output_dir).mkdir(parents=True, exist_ok=True)
-        output_file = Path(
-            self.inputs.output_dir, f'{self.inputs.type}_results_{self.inputs.phenotype}.h5')
-        results = {key: item for d in self.inputs.results for key, item in d.items()}
+        output_file = Path(self.inputs.config["output_dir"], f"{self.inputs.type}.h5")
+        results = {key: val for d in self.inputs.results for key, val in d.items()}
         for key, val in results.items():
             write_h5(output_file, f'/{key}', np.array(val), self.inputs.overwrite)
+            
+        self._results["results"] = {
+            f"r_{key_out}": r, f"cod_{key_out}": cod, f"ypred_{key_out}": test_ypred}
 
         return runtime

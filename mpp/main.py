@@ -6,8 +6,9 @@ import nipype.pipeline as pe
 
 from mpp.interfaces.crossval import (
     CrossValSplit, FeaturewiseModel, ConfoundsModel, IntegratedFeaturesModel)
-from mpp.interfaces.data import PredictSublist, PredictionSave
+from mpp.interfaces.data import PredictSublist, PredictionCombine, PredictionSave
 from mpp.interfaces.features import CVFeatures
+from mpp.utilities import feature_list
 
 base_dir = Path(__file__).resolve().parent.parent
 
@@ -18,7 +19,6 @@ def main() -> None:
         formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog, width=100))
     required = parser.add_argument_group("required arguments")
     required.add_argument("--targets", nargs="+", dest="targets", required=True, help="Targets")
-    required.add_argument("--features", nargs="+", dest="features", required=True, help="features")
     required.add_argument("--datasets", nargs="+", desc="datasets", required=True, help="Datasets")
     required.add_argument(
         "--features_dir", type=Path, dest="features_dir", required=True,
@@ -28,7 +28,7 @@ def main() -> None:
         help="Absolute paths to phenotype directories")
     optional = parser.add_argument_group("optional arguments")
     optional.add_argument(
-        "--levels", nargs="+", dest="levels", default=["4"], help="Parcellation levels.")
+        "--level", type=str, dest="level", default="4", help="Parcellation level")
     optional.add_argument(
         "--config", type=Path, dest="config", default=Path(base_dir, "default.config"),
         help="Configuration file for cross-validation")
@@ -58,7 +58,7 @@ def main() -> None:
     cv_split = pe.Node(CrossValSplit(config=config), "cv_split")
     cv_iterables = [
         ("repeat", list(range(int(config["n_repeats"])))),
-        ("fold", list(range(int(config["n_folds"])))), ("level", config["levels"])]
+        ("fold", list(range(int(config["n_folds"]))))]
     features = pe.Node(CVFeatures(config=config), "features", iterables=cv_iterables)
     mpp_wf.connect([
         (sublist, cv_split, [('sublists', 'sublists')]),
@@ -66,49 +66,50 @@ def main() -> None:
         (cv_split, features, [('cv_split', 'cv_split')])])
 
     # Feature-wise models
-    features_iterables = [("feature_type", config["features"])]
+    features_iterables = [("feature_type", feature_list(config["datasets"]))]
     fw_model = pe.Node(FeaturewiseModel(config=config), "fw_model", iterables=features_iterables)
+    fw_combine = pe.JoinNode(
+        PredictionCombine(config=config), "fw_combine", joinsource="fw_model",
+        joinfield=["targets", "results"])
     fw_save = pe.JoinNode(
-        PredictionSave(
-            output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
-            type='featurewise'),
-        name='fw_save', joinfield=['results'], joinsource='features')
+        PredictionSave(config=config, type="featurewise"),
+        "fw_save", joinfield=["results"], joinsource="features")
     mpp_wf.connect([
-        (init_data, fw_model, [
-            ('sublists', 'sublists'), ('confounds', 'confounds'), ('phenotypes', 'phenotypes')]),
-        (cv_split, fw_model, [('cv_split', 'cv_split')]),
+        (sublist, fw_model, [("sublists", "sublists"), ("target", "target")]),
+        (cv_split, fw_model, [("cv_split", "cv_split")]),
         (features, fw_model, [
-            ('embeddings', 'embeddings'), ('params', 'params'), ('level', 'level'),
-            ('repeat', 'repeat'), ('fold', 'fold')]),
-        (fw_model, fw_save, [('results', 'results')])])
+            ("cv_features_file", "cv_features_file"), ("repeat", "repeat"), ("fold", "fold")]),
+        (fw_model, fw_combine, [("target", "targets"), ("results", "results")]),
+        (fw_combine, fw_save, [("results", "results")])])
 
     # Confound models
-    conf_model = pe.Node(ConfoundsModel(config=config), name='conf_model')
-    conf_save = pe.JoinNode(
-        PredictionSave(
-            output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
-            type='confounds'),
-        name='conf_save', joinfield=['results'], joinsource='features')
+    conf_model = pe.Node(ConfoundsModel(config=config), "conf_model")
+    #conf_save = pe.JoinNode(
+    #    PredictionSave(
+    #        output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
+    #        type='confounds'),
+    #    name='conf_save', joinfield=['results'], joinsource='features')
     mpp_wf.connect([
-        (init_data, conf_model, [
-            ('sublists', 'sublists'), ('confounds', 'confounds'), ('phenotypes', 'phenotypes')]),
-        (features, conf_model, [('repeat', 'repeat'), ('fold', 'fold')]),
-        (cv_split, conf_model, [('cv_split', 'cv_split')]),
+        (sublist, conf_model, [("sublists", "sublists"), ("target", "target")]),
+        (features, conf_model, [("repeat", "repeat"), ("fold", "fold")]),
+        (cv_split, conf_model, [("cv_split", "cv_split")]),
         (conf_model, conf_save, [('results', 'results')])])
 
     # Integrated-features set models
-    if_model = pe.Node(IntegratedFeaturesModel(config=config), name='if_model')
-    if_save = pe.JoinNode(
-        PredictionSave(
-            output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
-            type='integratedfeatures'),
-        name='if_save', joinfield=['results'], joinsource='features')
+    if_model = pe.JoinNode(
+        IntegratedFeaturesModel(config=config), "if_model", joinsource="fw_model",
+        joinfield=["fw_ypred"])
+    #if_save = pe.JoinNode(
+    #    PredictionSave(
+    #        output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
+    #        type='integratedfeatures'),
+    #    name='if_save', joinfield=['results'], joinsource='features')
     mpp_wf.connect([
-        (init_data, if_model, [('sublists', 'sublists'),('phenotypes', 'phenotypes')]),
-        (cv_split, if_model, [('cv_split', 'cv_split')]),
-        (features, if_model, [('level', 'level'), ('repeat', 'repeat'), ('fold', 'fold')]),
-        (fw_model, if_model, [('fw_ypred', 'fw_ypred')]),
-        (conf_model, if_model, [('c_ypred', 'c_ypred')]),
+        (sublist, if_model, [("sublists", "sublists")]),
+        (cv_split, if_model, [("cv_split", "cv_split")]),
+        (features, if_model, [("repeat", "repeat"), ("fold", "fold")]),
+        (fw_model, if_model, [("fw_ypred", "fw_ypred"), ("feature_type", "features")]),
+        (conf_model, if_model, [("c_ypred", "c_ypred")]),
         (if_model, if_save, [('results', 'results')])])
 
     mpp_wf.write_graph()

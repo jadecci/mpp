@@ -21,13 +21,9 @@ class _CVFeaturesInputSpec(BaseInterfaceInputSpec):
 
 
 class _CVFeaturesOutputSpec(TraitedSpec):
-    embeddings = traits.Dict(desc="embeddings for gradients")
-    params_gmv = traits.Dict(desc="parameters for GMV-based anatomical connectivity")
-    params_ct = traits.Dict(desc="parameters for CT-based anatomical connectivity")
-    params_cs = traits.Dict(desc="parameters for CS-based anatomical connectivity")
+    cv_features_file = traits.File(exists=True, desc="file containing CV features")
     repeat = traits.Int(desc="current repeat of cross-validation")
     fold = traits.Int(desc="current fold in the repeat")
-    level = traits.Str(desc="parcellation level")
 
 
 class CVFeatures(SimpleInterface):
@@ -45,10 +41,13 @@ class CVFeatures(SimpleInterface):
                 arr_out[j, i] = arr_out[i, j]
         return arr_out
 
-    def _compute_features(self, sublist: list) -> tuple[np.ndarray, dict]:
+    def save_features(self, features: pd.DataFrame, key: str) -> None:
+        features.to_hdf(self._results["cv_features_file"], key)
+
+    def _compute_features(self, key: str, l_key: str, postfix: str = "") -> None:
+        sublist = self.inputs.cv_split[key]
         nparc_dict = {"1": 116, "2": 232, "3": 350, "4": 454}
-        nparc = nparc_dict[self.inputs.level]
-        l_key = f"level{self.inputs.config['level']}"
+        nparc = nparc_dict[self.inputs.config["level"]]
 
         # Diffusion mapping
         rsfc = np.zeros((nparc, nparc, len(sublist)))
@@ -62,13 +61,14 @@ class CVFeatures(SimpleInterface):
             rsfc_thresh[i, rsfc_thresh[i, :] < np.percentile(rsfc_thresh[i, :], 90)] = 0
         rsfc_thresh[rsfc_thresh < 0] = 0  # there should be very few negatives
         affinity = 1 - pairwise_distances(rsfc_thresh, metric='cosine')
-        embed = compute_diffusion_map(affinity, alpha=0.5)
+        embed = compute_diffusion_map(affinity, alpha=0.5) # Nparc x Ngrad -> Ngrad x Nparc
+        pd.DataFrame(embed.T).to_hdf(self._results["cv_features_file"], f"embed{postfix}")
 
         # Structural Co-Registration
         # see https://github.com/katielavigne/score/blob/main/score.py
-        params = {"gmv": pd.DataFrame(), "cs": pd.DataFrame(), "ct": pd.DataFrame()}
         for feature in ["gmv", "cs", "ct"]:
             features = pd.DataFrame()
+            params = pd.DataFrame()
             for sub_i, subject in enumerate(sublist):
                 subject_file = find_sub_file(
                     self.inputs.sublists, self.inputs.config["features_dir"], subject)
@@ -80,27 +80,22 @@ class CVFeatures(SimpleInterface):
             for i in range(nparc):
                 for j in range(nparc):
                     results = ols(f"features[{i}] ~ features[{j}] + mean", data=features).fit()
-                    params[feature][f"{i}_{j}"] = [
+                    params[f"{i}_{j}"] = [
                         results.params["Intercept"], results.params[f"features[{j}]"],
                         results.params["mean"]]
-
-        return embed, params
+            params.to_hdf(self._results["cv_features_file"], f"params{postfix}")
 
     def _run_interface(self, runtime):
+        tmp_dir = Path(self.inputs.config["work_dir"], "features_tmp")
+        tmp_dir.mkdir(parents=True, exist_ok=True)
         key = f"repeat{self.inputs.repeat}_fold{self.inputs.fold}"
-        embed, params = self._compute_features(self.inputs.cv_split[key])
-        self._results["embeds"]["embed"] = embed
-        self._results["params_gmv"]["params"] = params["gmv"]
-        self._results["params_ct"]["params"] = params["ct"]
-        self._results["params_cs"]["params"] = params["cs"]
+        l_key = f"level{self.inputs.config['level']}"
+        self._results["cv_features_file"] = Path(tmp_dir, f"cv_features_{key}_{l_key}.h5")
+
+        self._compute_features(key, l_key)
         for inner in range(5):
-            embed, params = self._compute_features(self.inputs.cv_split[f"{key}_inner{inner}"])
-            self._results["embeds"][f"embed_inner{inner}"] = embed
-            self._results["params_gmv"][f"params_inner{inner}"] = params["gmv"]
-            self._results["params_ct"][f"params_inner{inner}"] = params["ct"]
-            self._results["params_cs"][f"params_inner{inner}"] = params["cs"]
+            self._compute_features(f"{key}_inner{inner}", l_key, postfix=f"_inner{inner}")
         self._results["repeat"] = self.inputs.repeat
         self._results["fold"] = self.inputs.fold
-        self._results["level"] = self.inputs.level
 
         return runtime
