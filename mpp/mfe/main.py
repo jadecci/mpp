@@ -158,9 +158,11 @@ def main() -> None:
 
     # Compute effective connectivity if both functional and diffusion features are requested
     if "rfMRI" in config["modality"] and "dMRI" in config["modality"]:
-        mfe_wf.connect([(sc, rsfc, [("sc_count", "sc_count")])])
+        mfe_wf.connect([
+            (sc, rsfc, [("sc_count", "sc_count")]), (rsfc, save_features, [("ec", "e_rsfc")])])
     if "tfMRI" in config["modality"] and "dMRI" in config["modality"]:
-        mfe_wf.connect([sc, tfc, [("sc_count", "sc_count")]])
+        mfe_wf.connect([
+            (sc, tfc, [("sc_count", "sc_count")]), (tfc, save_features, [("ec", "e_rsfc")])])
 
     # Confounds and phenotypes are always computed
     conf = pe.Node(Confounds(config=config, simg_cmd=simg_cmd), "conf")
@@ -177,7 +179,7 @@ def main() -> None:
             plugin="CondorDAGMan",
             plugin_args={
                 "dagman_args": f"-outfile_dir {config['work_dir']} -import_env",
-                "wrapper_cmd": Path(base_dir, "utilities", "venv_wrapper.sh"),
+                "wrapper_cmd": Path(base_dir, "venv_wrapper.sh"),
                 "override_specs": "request_memory = 10 GB\nrequest_cpus = 1"})
     else:
         mfe_wf.run()

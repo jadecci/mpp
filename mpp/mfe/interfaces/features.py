@@ -145,15 +145,16 @@ class FC(SimpleInterface):
             b = np.linalg.lstsq((z @ z.T).T, (y @ z.T).T, rcond=None)[0].T
             self._results["dfc"][f"level{level+1}"] = b[:, range(1, b.shape[1])]
 
-    def _ec(self, task_reg: Optional[np.ndarray] = None) -> None:
+    def _ec(self, task_reg: Optional[np.ndarray] = None) -> dict:
         # effective connectivity: regression DCM
-        self._results["ec"] = {}
+        ec_dict = {}
         for level in range(4):
             rdcm = RegressionDCM(
                 self._tavg_dict[f"level{level+1}"].T, self.inputs.config["param"]["tr"],
                 task_reg, prior_a=self.inputs.sc_count[f"level{level+1}"])
             rdcm.estimate()
-            self._results["ec"][f"level{level+1}"] = rdcm.params["mu_connectivity"]
+            ec_dict[f"level{level+1}"] = rdcm.params["mu_connectivity"]
+        return ec_dict
 
     @staticmethod
     def _concat(tavg1: dict, tavg2: dict) -> dict:
@@ -224,6 +225,7 @@ class FC(SimpleInterface):
                 self._results["sfc"][run] = self._sfc()
 
                 if self.inputs.sc_count:
+                    self._results["ec"] = {}
                     ev_files = self.inputs.config["param"]["ev_files"][run]
                     task_reg = np.zeros((self._tavg_dict[f"level1"].shape[1], len(ev_files)))
                     for ev_i, ev_file in enumerate(ev_files):
@@ -237,7 +239,7 @@ class FC(SimpleInterface):
                                     or (dataset == "HCP-D" and run != "tfMRI_EMOTION"):
                                 acq2_start = block_start + task_reg.shape[0] / 2
                                 task_reg[acq2_start:(acq2_start + block_len), ev_i] = 1
-                    self._ec(task_reg)
+                    self._results["ec"][run] = self._ec(task_reg)
 
         return runtime
 
@@ -256,18 +258,19 @@ class NetworkStats(SimpleInterface):
     output_spec = _NetworkStatsOutputSpec
 
     def _run_interface(self, runtime):
-        self._results["stats"] = {"cpl": {}, "eff": {}, "mod": {}, "par": {}}
+        self._results["stats"] = {}
         for level in ["1", "2", "3", "4"]:
+            stats_level = {}
+
             dist, _ = bct.distance_wei(bct.invert(self.inputs.conn[f"level{level}"]))
             comm, _ = bct.community_louvain(self.inputs.conn[f"level{level}"], B="negative_sym")
-            cpl, eff, _, _, _ = bct.charpath(dist)
-            _, mod = bct.modularity_und(comm)
+            stats_level["cpl"], stats_level["eff"], _, _, _ = bct.charpath(dist)
+            _, stats_level["mod"] = bct.modularity_und(comm)
             par = bct.participation_coef(self.inputs.conn[f"level{level}"], comm)
 
-            self._results["stats"]["cpl"][f"level{level}"] = cpl
-            self._results["stats"]["eff"][f"level{level}"] = eff
-            self._results["stats"]["mod"][f"level{level}"] = mod
-            self._results["stats"]["par"][f"level{level}"] = par
+            for i in range(par.shape[0]):
+                stats_level[f"par_{i}"] = par[i]
+            self._results["stats"][f"level{level}"] = stats_level
 
         return runtime
 

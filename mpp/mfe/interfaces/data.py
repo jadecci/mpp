@@ -367,8 +367,10 @@ class _SaveFeaturesInputSpec(BaseInterfaceInputSpec):
     config = traits.Dict(mandatory=True, desc="Workflow configurations")
     s_rsfc = traits.Dict(dtype=float, desc="resting-state functional connectivity")
     d_rsfc = traits.Dict(dtype=float, desc="dynamic functional connectivity")
+    e_rsfc = traits.Dict(dtype=float, desc="resting-state effecgive connectivity")
     rs_stats = traits.Dict(dtype=float, desc="network statistics")
-    tfc = traits.Dict({}, dtype=dict, desc="task-based functional connectivity")
+    s_tfc = traits.Dict({}, dtype=dict, desc="static task-based functional connectivity")
+    e_tfc = traits.Dict({}, dtype=dict, desc="task-based effective connectivity")
     myelin = traits.Dict(dtype=float, desc="myelin content estimates")
     morph = traits.Dict(dtype=float, desc="morphometry features")
     sc_count = traits.Dict(desc="structural connectome based on streamline counts")
@@ -411,13 +413,15 @@ class SaveFeatures(SimpleInterface):
             if "rfMRI" in self.inputs.config["modality"]:
                 self._write_data_level(level, self.inputs.s_rsfc, "rs_sfc", "conn_sym")
                 self._write_data_level(level, self.inputs.d_rsfc, "rs_dfc", "conn_asym")
+                self._write_data_level(level, self.inputs.e_rsfc, "rs_ec", "conn_asym")
                 for stat in ["cpl", "eff", "mod"]:
                     self._write_data(self.inputs.rs_stats[stat], f"rs_{stat}")
                 self._write_data_level(level, self.inputs.rs_stats["par"], f"rs_par", "array")
 
             if "tfMRI" in self.inputs.config["modality"]:
                 for key, _ in self.inputs.tfc.items():
-                    self._write_data_level(level, self.inputs.tfc[key], f"{key}_sfc", "conn_sym")
+                    self._write_data_level(level, self.inputs.s_tfc[key], f"{key}_sfc", "conn_sym")
+                    self._write_data_level(level, self.inputs.e_tfc[key], f"{key}_ec", "conn_asym")
 
             if "sMRI" in self.inputs.config["modality"]:
                 self._write_data_level(level, self.inputs.myelin, "s_myelin", "array")
