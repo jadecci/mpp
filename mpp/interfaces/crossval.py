@@ -66,7 +66,6 @@ class _FeaturewiseModelOutputSpec(TraitedSpec):
     results = traits.Dict(desc="accuracy results")
     fw_ypred = traits.Dict(desc="Predicted psychometric values")
     feature_type = traits.Str(mandatory=True, desc="Feature type")
-    target = traits.Str(mandatory=True, desc="target phenotype to predict")
 
 
 class FeaturewiseModel(SimpleInterface):
@@ -130,7 +129,6 @@ class FeaturewiseModel(SimpleInterface):
         key_out = f"{self.inputs.feature_type}_{key}_level{self.inputs.config['level']}"
         n_alphas = int(self.inputs.config["n_alphas"])
         self._results["feature_type"] = self.inputs.feature_type
-        self._results["target"] = self.inputs.target
 
         all_sub = sum(self.inputs.sublists.values(), [])
         train_sub = self.inputs.cv_split[key]

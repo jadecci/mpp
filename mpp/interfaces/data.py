@@ -52,7 +52,7 @@ class PredictSublist(SimpleInterface):
 class _PredictionCombineInputSpec(BaseInterfaceInputSpec):
     config = traits.Dict(mandatory=True, desc="Workflow configurations")
     results = traits.List(dtype=dict, desc="accuracy results")
-    targets = traits.List(dtype=str, mandatory=True, desc="target phenotype to predict")
+    features = traits.List(dtype=str, mandatory=True, desc="feature types")
 
 
 class _PredictionCombineOutputSpec(TraitedSpec):
@@ -65,9 +65,9 @@ class PredictionCombine(SimpleInterface):
     output_spec = _PredictionCombineOutputSpec
 
     def _run_interface(self, runtime):
-        for target, results in zip(self.inputs.targets, self.inputs.results):
+        for feature, results in zip(self.inputs.features, self.inputs.results):
             for key, val in results:
-                self._results["results"][f"{key}_{target}"] = val
+                self._results["results"][f"{key}_{feature}"] = val
 
         return runtime
 
@@ -76,6 +76,7 @@ class _PredictionSaveInputSpec(BaseInterfaceInputSpec):
     config = traits.Dict(mandatory=True, desc="Workflow configurations")
     results = traits.List(dtype=dict, desc="accuracy results")
     type = traits.Str(mandatory=True, desc="type of model used in prediction")
+    target = traits.Str(mandatory=True, desc="prediction target")
 
 
 class PredictionSave(SimpleInterface):
@@ -83,12 +84,9 @@ class PredictionSave(SimpleInterface):
     input_spec = _PredictionSaveInputSpec
 
     def _run_interface(self, runtime):
-        output_file = Path(self.inputs.config["output_dir"], f"{self.inputs.type}.h5")
+        output_file = Path(
+            self.inputs.config["output_dir"], f"{self.inputs.type}_{self.inputs.target}.h5")
         results = {key: val for d in self.inputs.results for key, val in d.items()}
-        for key, val in results.items():
-            write_h5(output_file, f'/{key}', np.array(val), self.inputs.overwrite)
-            
-        self._results["results"] = {
-            f"r_{key_out}": r, f"cod_{key_out}": cod, f"ypred_{key_out}": test_ypred}
+        pd.DataFrame(results).to_hdf(output_file, self.inputs.type)
 
         return runtime

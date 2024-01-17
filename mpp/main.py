@@ -69,49 +69,49 @@ def main() -> None:
     features_iterables = [("feature_type", feature_list(config["datasets"]))]
     fw_model = pe.Node(FeaturewiseModel(config=config), "fw_model", iterables=features_iterables)
     fw_combine = pe.JoinNode(
-        PredictionCombine(config=config), "fw_combine", joinsource="fw_model",
-        joinfield=["targets", "results"])
+        PredictionCombine(config=config), "fw_combine",
+        joinsource="fw_model", joinfield=["features", "results"])
     fw_save = pe.JoinNode(
-        PredictionSave(config=config, type="featurewise"),
-        "fw_save", joinfield=["results"], joinsource="features")
+        PredictionSave(config=config, type="featurewise"), "fw_save",
+        joinsource="features", joinfield=["results"], )
     mpp_wf.connect([
         (sublist, fw_model, [("sublists", "sublists"), ("target", "target")]),
         (cv_split, fw_model, [("cv_split", "cv_split")]),
         (features, fw_model, [
             ("cv_features_file", "cv_features_file"), ("repeat", "repeat"), ("fold", "fold")]),
-        (fw_model, fw_combine, [("target", "targets"), ("results", "results")]),
+        (fw_model, fw_combine, [("feature_type", "features"), ("results", "results")]),
+        (sublist, fw_save, [("target", "target")]),
         (fw_combine, fw_save, [("results", "results")])])
 
     # Confound models
     conf_model = pe.Node(ConfoundsModel(config=config), "conf_model")
-    #conf_save = pe.JoinNode(
-    #    PredictionSave(
-    #        output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
-    #        type='confounds'),
-    #    name='conf_save', joinfield=['results'], joinsource='features')
+    conf_save = pe.JoinNode(
+        PredictionSave(config=config, type="confounds"), "conf_save",
+        joinsource="features", joinfield=["results"])
     mpp_wf.connect([
         (sublist, conf_model, [("sublists", "sublists"), ("target", "target")]),
         (features, conf_model, [("repeat", "repeat"), ("fold", "fold")]),
         (cv_split, conf_model, [("cv_split", "cv_split")]),
-        (conf_model, conf_save, [('results', 'results')])])
+        (sublist, conf_save, [("target", "target")]),
+        (conf_model, conf_save, [("results", "results")])])
 
     # Integrated-features set models
     if_model = pe.JoinNode(
-        IntegratedFeaturesModel(config=config), "if_model", joinsource="fw_model",
-        joinfield=["fw_ypred"])
-    #if_save = pe.JoinNode(
-    #    PredictionSave(
-    #        output_dir=args.output_dir, overwrite=args.overwrite, phenotype=args.target,
-    #        type='integratedfeatures'),
-    #    name='if_save', joinfield=['results'], joinsource='features')
+        IntegratedFeaturesModel(config=config), "if_model",
+        joinsource="fw_model", joinfield=["fw_ypred"])
+    if_save = pe.JoinNode(
+        PredictionSave(config=config, type="integrated"), "if_save",
+        joinsource="features", joinfield=["results"])
     mpp_wf.connect([
         (sublist, if_model, [("sublists", "sublists")]),
         (cv_split, if_model, [("cv_split", "cv_split")]),
         (features, if_model, [("repeat", "repeat"), ("fold", "fold")]),
         (fw_model, if_model, [("fw_ypred", "fw_ypred"), ("feature_type", "features")]),
         (conf_model, if_model, [("c_ypred", "c_ypred")]),
-        (if_model, if_save, [('results', 'results')])])
+        (sublist, if_save, [("target", "target")]),
+        (if_model, if_save, [("results", "results")])])
 
+    # Run workflow
     mpp_wf.write_graph()
     if config["condordag"]:
         mpp_wf.run(
