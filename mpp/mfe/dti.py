@@ -2,6 +2,7 @@ from pathlib import Path
 import argparse
 
 import nipype.pipeline as pe
+import pandas as pd
 from nipype.interfaces import fsl
 
 from mpp.mfe.interfaces.data import InitDTIData
@@ -32,13 +33,14 @@ def main() -> None:
     # Set-up
     simg_cmd = SimgCmd(config)
     config["output_dir"].mkdir(parents=True, exist_ok=True)
+    sublist = pd.read_csv(config["sublist"], header=None, dtype=str).squeeze("columns").tolist()
     mfe_wf = pe.Workflow(f"mfe_dti_{config['dataset']}_wf", base_dir=config["work_dir"])
     mfe_wf.config["execution"]["try_hard_link_datasink"] = "false"
     mfe_wf.config["execution"]["crashfile_format"] = "txt"
     mfe_wf.config["execution"]["stop_on_first_crash"] = "true"
 
     init_data = pe.Node(
-        InitDTIData(config=config), "init_data", iterables=[("subject", config["sublist"])])
+        InitDTIData(config=config), "init_data", iterables=[("subject", sublist)])
     dtifit = pe.Node(fsl.DTIFit(command=simg_cmd.cmd("dtifit")), "dtifit")
     rd = pe.Node(RD(config=config), "rd")
     tbss = pe.JoinNode(
@@ -50,10 +52,10 @@ def main() -> None:
         (init_data, dtifit, [
             ("dwi", "dwi"), ("bvals", "bvals"), ("bvecs", "bvecs"), ("mask", "mask")]),
         (init_data, rd, [("subject", "subject")]),
-        (dtifit, rd, [("L2", "l2_file"), ("L3", "l2_file")]),
+        (dtifit, rd, [("L2", "l2_file"), ("L3", "l3_file")]),
         (init_data, tbss, [("subject", "subjects"), ("dataset_dir", "dataset_dir")]),
         (dtifit, tbss, [("FA", "fa_files"), ("MD", "md_files"), ("L1", "ad_files")]),
-        (rd, tbss, [("rd_file", "rd_file")]),
+        (rd, tbss, [("rd_file", "rd_files")]),
         (tbss, features, [
             ("fa_skeleton_file", "fa_skeleton_file"), ("md_skeleton_file", "md_skeleton_file"),
             ("ad_skeleton_file", "ad_skeleton_file"), ("rd_skeleton_file", "rd_skeleton_file")])])

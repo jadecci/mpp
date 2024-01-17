@@ -36,6 +36,7 @@ dynamic = ["version"]
 [project.scripts]
 mpp = "mpp.main:main"
 mfe = "mpp.mfe.main:main"
+mfe_dti = "mpp.mfe.dti:main"
 
 [project.urls]
 repository = "https://github.com/jadecci/mpp"

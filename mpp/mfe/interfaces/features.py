@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 
 from mpp.exceptions import DatasetError
-from mpp.mfe.utilities import add_subdir
+from mpp.mfe.utilities import AddSubDir
 
 base_dir = Path(__file__).resolve().parent.parent.parent
 
@@ -334,7 +334,9 @@ class Anat(SimpleInterface):
                 annot_fs = Path(base_dir, "data", annot_file)
                 dl.unlock(annot_fs, dataset=base_dir.parent)
                 annot_sub = Path(tmp_dir, f"{hemi}.{subject}_{level+1}.annot")
-                add_subdir(tmp_dir, subject, Path(self.inputs.anat_dir, subject))
+                add_subdir = AddSubDir(
+                    sub_dir=tmp_dir, subject=subject, fs_dir=Path(self.inputs.anat_dir, subject))
+                add_subdir.run()
                 annot_fs2sub = freesurfer.SurfaceTransform(
                     command=self.inputs.simg_cmd.cmd(
                         "mri_surf2surf", options=f"--env SUBJECTS_DIR={tmp_dir}"),
@@ -450,11 +452,11 @@ class RD(SimpleInterface):
     def _run_interface(self, runtime):
         rd_dir = Path(self.inputs.config["work_dir"], "rd_tmp")
         rd_dir.mkdir(parents=True, exist_ok=True)
-        rd_file = Path(rd_dir, f"{self.inputs.subject}_rd.nii.gz")
+        self._results["rd_file"] = Path(rd_dir, f"{self.inputs.subject}_rd.nii.gz")
 
         img_l2 = nib.load(self.inputs.l2_file)
         data_rd = np.divide(img_l2.get_fdata() + nib.load(self.inputs.l3_file).get_fdata(), 2)
-        nib.save(nib.Nifti1Image(data_rd, img_l2.affine, img_l2.header), rd_file)
+        nib.save(nib.Nifti1Image(data_rd, img_l2.affine, img_l2.header), self._results["rd_file"])
 
         return runtime
 
