@@ -67,7 +67,7 @@ def main() -> None:
         tfc = pe.Node(FC(config=config, modality="tfMRI"), "tfc")
         mfe_wf.connect([
             (init_data, tfc, [("t_runs", "t_runs"), ("data_files", "data_files")]),
-            (tfc, save_features, [("sfc", "tfc")])])
+            (tfc, save_features, [("sfc", "s_tfc")])])
 
     # sMRI features
     if "sMRI" in config["modality"]:
@@ -160,7 +160,7 @@ def main() -> None:
             (sc, rsfc, [("sc_count", "sc_count")]), (rsfc, save_features, [("ec", "e_rsfc")])])
     if "tfMRI" in config["modality"] and "dMRI" in config["modality"]:
         mfe_wf.connect([
-            (sc, tfc, [("sc_count", "sc_count")]), (tfc, save_features, [("ec", "e_rsfc")])])
+            (sc, tfc, [("sc_count", "sc_count")]), (tfc, save_features, [("ec", "e_tfc")])])
 
     # Confounds and phenotypes are always computed
     conf = pe.Node(Confounds(config=config, simg_cmd=simg_cmd), "conf")

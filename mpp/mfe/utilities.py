@@ -251,8 +251,10 @@ class CombineAtlas(SimpleInterface):
             if parcel != 0:
                 atlas[atlas_subcort == parcel] = parcel + 100 * int(self.inputs.level)
 
+        tmp_dir = Path(self.inputs.config["work_dir"], "atlas_tmp")
+        tmp_dir.mkdir(parents=True, exist_ok=True)
         self._results["combined_file"] = Path(
-            self.inputs.config["work_dir"], f"atlas_combine_level{self.inputs.level}.nii.gz")
+            tmp_dir, f"atlas_combine_level{self.inputs.level}.nii.gz")
         nib.save(
             nib.Nifti1Image(atlas, header=atlas_img.header, affine=atlas_img.affine),
             self._results["combined_file"])

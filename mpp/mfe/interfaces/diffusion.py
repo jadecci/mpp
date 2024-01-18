@@ -71,8 +71,8 @@ class ProbTract(SimpleInterface):
             "-seed_dynamic", str(fod_wm_file), "-act", str(ftt_file),
             "-output_seeds", str(Path(tmp_dir, f"{subject}_WBT_10M_seeds_ctx.txt")),
             "-backtrack", "-crop_at_gmwmi", "-nthreads", "0",
-            "-fslgrad", str(self.inputs.bvec), str(self.inputs.bval),
-            str(self.inputs.fod_wm_file), str(self._results["tck_file"])]
+            "-fslgrad", str(self.inputs.data_files["bvec"]), str(self.inputs.data_files["bval"]),
+            str(fod_wm_file), str(self._results["tck_file"])]
         subprocess.run(tck, check=True)
 
         return runtime
@@ -106,7 +106,7 @@ class TBSS(SimpleInterface):
         files_out = []
         for subject, nonfa_file in zip(self.inputs.subjects, files_in):
             copyfile(nonfa_file, Path(dir_out, f"{subject}_FA.nii.gz"))
-            files_out.append(Path(Path(dir_out, f"{subject}_FA.nii.gz")))
+            files_out.append(f"{subject}_FA.nii.gz")
         return files_out
 
     def _run_interface(self, runtime):
@@ -118,8 +118,8 @@ class TBSS(SimpleInterface):
         fa_list = self._copy_files(self.inputs.fa_files, fa_dir)
         subprocess.run(self.inputs.simg_cmd.cmd("tbss_1_preproc").split() + fa_list, check=True)
         subprocess.run(self.inputs.simg_cmd.cmd("tbss_2_reg").split() + ["-n"], check=True)
-        subprocess.run(self.inputs.simg_cmd.cmd("tbss_3_postreg") + ["-S"], check=True)
-        subprocess.run(self.inputs.simg_cmd.cmd("tbss_4_prestats") + ["0.2"], check=True)
+        subprocess.run(self.inputs.simg_cmd.cmd("tbss_3_postreg").split() + ["-S"], check=True)
+        subprocess.run(self.inputs.simg_cmd.cmd("tbss_4_prestats").split() + ["0.2"], check=True)
         self._results["fa_skeleton_file"] = Path(fa_dir, "stats", "all_FA_skeletonised.nii.gz")
 
         files_in_dict = {
