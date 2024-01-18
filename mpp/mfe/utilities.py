@@ -82,6 +82,7 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
             "source": "inm7-storage",
             "dir": Path(root_data_dir, "original", "hcp", "hcp_aging"),
             "sub_dir": Path(root_data_dir, "original", "hcp", "hcp_aging", subject),
+            "diff_url": "git@gin.g-node.org:/jadecci/hcp_lifespan_diffproc.git",
             "clean": "hp0_clean",
             "tasks": ["tfMRI_CARIT_PA", "tfMRI_FACENAME_PA", "tfMRI_VISMOTOR_PA"],
             "rests": ['rfMRI_REST1_AP', 'rfMRI_REST1_PA', 'rfMRI_REST2_AP', 'rfMRI_REST2_PA'],
@@ -133,6 +134,7 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
             "source": "inm7-storage",
             "dir": Path(root_data_dir, "original", "hcp", "hcp_development"),
             "sub_dir": Path(root_data_dir, "original", "hcp", "hcp_development", subject),
+            "diff_url": "git@gin.g-node.org:/jadecci/hcp_lifespan_diffproc.git",
             "clean": "hp0_clean",
             "tasks": [
                 "tfMRI_CARIT_AP", "tfMRI_CARIT_PA", "tfMRI_EMOTION_PA", "tfMRI_GUESSING_AP",
