@@ -318,7 +318,7 @@ class Anat(SimpleInterface):
                 selected = selected[~np.isnan(selected)]
                 parc_surf[parcel] = selected.mean()
             parc_mel_mask = parc_mel.nonzero()
-            parc_mel = parc_mel[parc_mel.nonzero()]
+            parc_mel = parc_mel[parc_mel_mask]
             myelin_vol_masked = np.array([
                 myelin_vol[parc_mel_mask[0][i], parc_mel_mask[1][i], parc_mel_mask[2][i]]
                 for i in range(parc_mel_mask[0].shape[0])])
@@ -473,10 +473,7 @@ class _DTIFeaturesInputSpec(BaseInterfaceInputSpec):
 
 
 class _DTIFeaturesOutputSpec(TraitedSpec):
-    fa = traits.Dict(desc="region-wise FA values")
-    md = traits.Dict(desc="region-wise MD values")
-    ad = traits.Dict(desc="region-wise AD values")
-    rd = traits.Dict(desc="region-wise RD values")
+    dti_features = traits.Dict(desc="region-wise DTI features")
 
 
 class DTIFeatures(SimpleInterface):
@@ -486,10 +483,25 @@ class DTIFeatures(SimpleInterface):
 
     def _run_interface(self, runtime):
         in_files = {
-            "FA": self.inputs.fa_skeleton_file, "MD": self.inputs.md_skeleton_file,
-            "AD": self.inputs.ad_skeleton_file, "RD": self.inputs.rd_skeleton_file}
+            "fa": self.inputs.fa_skeleton_file, "md": self.inputs.md_skeleton_file,
+            "ad": self.inputs.ad_skeleton_file, "rd": self.inputs.rd_skeleton_file}
+        parc_jhu_file = Path(base_dir, "data", "JHU-ICBM-labels-1mm.nii.gz")
+        parc_jhu = nib.load(parc_jhu_file).get_fdata()
+        parc_jhu_mask = parc_jhu.nonzeros()
+        parc_jhu = parc_jhu[parc_jhu_mask]
+        parcels = np.unique(parc_jhu).astype(int)
+
         for file_type, file_in in in_files.items():
             data = nib.load(file_in).get_fdata()
+            data_masked = np.array([
+                data[parc_jhu_mask[0][i], parc_jhu_mask[1][i], parc_jhu_mask[2][i]]
+                for i in range(parc_jhu_mask[0].shape[0])])
+            data_parc = np.zeros((parcels.shape[0]))
+            for parcel in parcels:
+                selected = data_masked[np.where(parc_jhu == parcel)[0]]
+                selected = selected[~np.isnan(selected)]
+                data_parc[parcel-1] = selected.mean()
+            self._results["dti_features"][file_type] = data_parc
 
         return runtime
 

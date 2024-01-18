@@ -139,10 +139,12 @@ class InitData(SimpleInterface):
             if "dMRI" in self.inputs.config["modality"]:
                 if self.inputs.config["dataset"] == "HCP-YA":
                     d_dir = Path(param["sub_dir"], "T1w", "Diffusion")
-                    dl.get(d_dir.parent, dataset=param["sub_dir"], get_data=False,
-                           source=param["source"])
+                    dl.get(d_dir.parent, dataset=param["sub_dir"], get_data=False)
                 else:
-                    d_dir = self.inputs.config["diff_dir"]
+                    d_data_dir = Path(
+                        self.inputs.config["work_dir"], f"{self.inputs.config['subject']}_diff")
+                    dl.install(d_data_dir, source=param["diff_url"])
+                    d_dir = Path(d_data_dir, self.inputs.config["subject"])
                 d_files = {
                     "dwi": Path(d_dir, "data.nii.gz"), "bval": Path(d_dir, "bvals"),
                     "bvec": Path(d_dir, "bvecs"),
@@ -233,37 +235,30 @@ class InitDTIData(SimpleInterface):
     input_spec = _InitDTIDataInputSpec
     output_spec = _InitDTIDataOutputSpec
 
+    def _get_file(self, key: str, filename: str) -> None:
+        dl.get(Path(self._d_dir, filename), dataset=self._d_dir.parent)
+        self._results[key] = Path(self._d_dir, filename)
+
     def _run_interface(self, runtime):
         root_data_dir = Path(self.inputs.config["work_dir"], self.inputs.subject)
         param = dataset_params(
             self.inputs.config["dataset"], root_data_dir, Path(), self.inputs.subject)
         self._results["dataset_dir"] = root_data_dir
-
-        dl.install(root_data_dir, source=param["url"])
-        dl.get(param["dir"], dataset=root_data_dir, get_data=False, source=param["source"])
-        dl.get(param["sub_dir"], dataset=param["dir"], get_data=False, source=param["source"])
+        self._results["subject"] = self.inputs.subject
 
         if self.inputs.config["dataset"] in ["HCP-YA", "HCP-A", "HCP-D"]:
             if self.inputs.config["dataset"] == "HCP-YA":
-                d_dir = Path(param["sub_dir"], "T1w", "Diffusion")
-                dl.get(d_dir.parent, dataset=param["sub_dir"], get_data=False,
-                       source=param["source"])
+                dl.install(root_data_dir, source=param["url"])
+                dl.get(param["sub_dir"], dataset=param["dir"], get_data=False)
+                self._d_dir = Path(param["sub_dir"], "T1w", "Diffusion")
+                dl.get(self._d_dir.parent, dataset=param["sub_dir"], get_data=False)
             else:
-                d_dir = self.inputs.config["diff_dir"]
-
-            d_files = {
-                "dwi": Path(d_dir, "data.nii.gz"), "bvals": Path(d_dir, "bvals"),
-                "bvecs": Path(d_dir, "bvecs"),
-                "mask": Path(d_dir, "nodif_brain_mask.nii.gz")}
-            if self.inputs.config["dataset"] == "HCP-YA":
-                for d_file in d_files.values():
-                    dl.get(d_file, dataset=d_dir.parent)
-
-            self._results["dwi"] = d_files["dwi"]
-            self._results["bvals"] = d_files["bvals"]
-            self._results["bvecs"] = d_files["bvecs"]
-            self._results["mask"] = d_files["mask"]
-            self._results["subject"] = self.inputs.subject
+                dl.install(root_data_dir, source=param["diff_url"])
+                self._d_dir = Path(root_data_dir, self.inputs.subject)
+            self._get_file("dwi", "data.nii.gz")
+            self._get_file("bvals", "bvals")
+            self._get_file("bvecs", "bvecs")
+            self._get_file("mask", "modif_brain_mask.nii.gz")
         else:
             raise DatasetError()
 
@@ -433,6 +428,31 @@ class SaveFeatures(SimpleInterface):
             if "dMRI" in self.inputs.config["modality"]:
                 self._write_data_level(level, self.inputs.sc_count, "d_scc", "conn_asym")
                 self._write_data_level(level, self.inputs.sc_length, "d_scl", "conn_asym")
+
+        dl.remove(dataset=self.inputs.dataset_dir, reckless="kill")
+
+        return runtime
+
+
+class _SaveDTIFeaturesInputSpec(BaseInterfaceInputSpec):
+    config = traits.Dict(mandatory=True, desc="Workflow configurations")
+    features = traits.Dict(dtype=float, desc="region-wise DTI features")
+    dataset_dir = traits.Directory(mandatory=True, desc="absolute path to installed root dataset")
+
+
+class SaveDTIFeatures(SimpleInterface):
+    """Save extracted features"""
+    input_spec = _SaveDTIFeaturesInputSpec
+
+    def _write_data(self, data: dict, key: str) -> None:
+        data_pd = pd.DataFrame(data, index=[self.inputs.config["subject"]])
+        data_pd.to_hdf(self._output, key, mode="a", format="fixed")
+
+    def _run_interface(self, runtime):
+        self._output = Path(
+            self.inputs.config["output_dir"], f"{self.inputs.config['dataset']}_dti.h5")
+        for feature in self.inputs.features:
+            self._write_data(feature, f"d_{feature}")
 
         dl.remove(dataset=self.inputs.dataset_dir, reckless="kill")
 

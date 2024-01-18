@@ -25,9 +25,6 @@ def main() -> None:
         help="List of modalities (rfMRI, tfMRI, sMRI, dMRI)")
     optional = parser.add_argument_group("optional arguments")
     optional.add_argument(
-        "--diff_dir", type=Path, default=None,
-        help="Directory containing preprocessed diffusion files")
-    optional.add_argument(
         "--pheno_dir", type=Path, default=None, help="Directory containing phenotype data")
     optional.add_argument("--work_dir", type=Path, default=Path.cwd(), help="Work directory")
     optional.add_argument("--output_dir", type=Path, default=Path.cwd(), help="Output directory")

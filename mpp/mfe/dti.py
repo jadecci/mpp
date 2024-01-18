@@ -5,7 +5,7 @@ import nipype.pipeline as pe
 import pandas as pd
 from nipype.interfaces import fsl
 
-from mpp.mfe.interfaces.data import InitDTIData
+from mpp.mfe.interfaces.data import InitDTIData, SaveDTIFeatures
 from mpp.mfe.interfaces.diffusion import TBSS
 from mpp.mfe.interfaces.features import RD, DTIFeatures
 from mpp.mfe.utilities import SimgCmd
@@ -47,7 +47,7 @@ def main() -> None:
         TBSS(config=config, simg_cmd=simg_cmd), "tbss", joinsource="init_data",
         joinfield=["fa_files", "md_files", "ad_files", "rd_files", "subjects"])
     features = pe.Node(DTIFeatures(config=config), "features")
-
+    save_features = pe.Node(SaveDTIFeatures(config=config), "save_features")
     mfe_wf.connect([
         (init_data, dtifit, [
             ("dwi", "dwi"), ("bvals", "bvals"), ("bvecs", "bvecs"), ("mask", "mask")]),
@@ -58,7 +58,9 @@ def main() -> None:
         (rd, tbss, [("rd_file", "rd_files")]),
         (tbss, features, [
             ("fa_skeleton_file", "fa_skeleton_file"), ("md_skeleton_file", "md_skeleton_file"),
-            ("ad_skeleton_file", "ad_skeleton_file"), ("rd_skeleton_file", "rd_skeleton_file")])])
+            ("ad_skeleton_file", "ad_skeleton_file"), ("rd_skeleton_file", "rd_skeleton_file")]),
+        (init_data, save_features, [("dataset_dir", "dataset_dir")]),
+        (features, save_features, [("dti_features", "features")])])
 
     # Run workflow
     mfe_wf.write_graph()
