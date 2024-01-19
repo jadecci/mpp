@@ -30,7 +30,7 @@ dependencies = [
     "psutil ~= 5.0",
     "statsmodels ~= 0.14.0",
     "rdcmpy @ git+https://github.com/jadecci/rDCM_py@v0.2",
-    "hcpdiffpy @ git+https://github.com/jadecci/hcp_pipeline_diffusion_py.git@0.3",
+    "hcpdiffpy @ git+https://github.com/jadecci/hcp_pipeline_diffusion_py.git@0.4.1",
 ]
 dynamic = ["version"]
 

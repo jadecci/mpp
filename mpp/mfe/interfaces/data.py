@@ -1,3 +1,4 @@
+from importlib.resources import files
 from pathlib import Path
 from shutil import copyfile
 import logging
@@ -8,8 +9,8 @@ import pandas as pd
 
 from mpp.exceptions import DatasetError
 from mpp.mfe.utilities import dataset_params
+import mpp
 
-base_dir = Path(__file__).resolve().parent.parent.parent
 logging.getLogger("datalad").setLevel(logging.WARNING)
 
 
@@ -45,7 +46,7 @@ class InitData(SimpleInterface):
     output_spec = _InitDataOutputSpec
 
     def _run_interface(self, runtime):
-        root_data_dir = Path(self.inputs.config["work_dir"], self.inputs.config["subject"])
+        root_data_dir = Path(self.inputs.config["tmp_dir"], self.inputs.config["subject"])
         param = self.inputs.config["param"]
 
         self._results["dataset_dir"] = root_data_dir
@@ -142,7 +143,7 @@ class InitData(SimpleInterface):
                     dl.get(d_dir.parent, dataset=param["sub_dir"], get_data=False)
                 else:
                     d_data_dir = Path(
-                        self.inputs.config["work_dir"], f"{self.inputs.config['subject']}_diff")
+                        self.inputs.config["tmp_dir"], f"{self.inputs.config['subject']}_diff")
                     dl.install(d_data_dir, source=param["diff_url"])
                     d_dir = Path(d_data_dir, self.inputs.config["subject"])
                 d_files = {
@@ -240,7 +241,7 @@ class InitDTIData(SimpleInterface):
         self._results[key] = Path(self._d_dir, filename)
 
     def _run_interface(self, runtime):
-        root_data_dir = Path(self.inputs.config["work_dir"], self.inputs.subject)
+        root_data_dir = Path(self.inputs.config["tmp_dir"], self.inputs.subject)
         config = self.inputs.config.copy()
         config["subject"] = self.inputs.subject
         config["pheno_dir"] = Path()
@@ -286,7 +287,7 @@ class PickAtlas(SimpleInterface):
 
     def _run_interface(self, runtime):
         self._results["level"] = self.inputs.level
-        data_dir = Path(base_dir, "data")
+        data_dir = files(mpp) / "data"
         self._results["parc_sch"] = Path(
             data_dir, f"Schaefer2018_{self.inputs.level}00Parcels_17Networks_order.dlabel.nii")
         self._results["parc_mel"] = Path(

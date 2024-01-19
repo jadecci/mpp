@@ -1,3 +1,4 @@
+from importlib.resources import files
 from pathlib import Path
 import argparse
 import configparser
@@ -9,8 +10,7 @@ from mpp.mfe.interfaces.data import InitData, PickAtlas, SubDirAnnot, SaveFeatur
 from mpp.mfe.interfaces.diffusion import ProbTract
 from mpp.mfe.interfaces.features import FC, NetworkStats, Anat, SC, Confounds
 from mpp.mfe.utilities import SimgCmd, dataset_params, AddSubDir, CombineStrings, CombineAtlas
-
-base_dir = Path(__file__).resolve().parent.parent
+import mpp
 
 
 def main() -> None:
@@ -29,7 +29,7 @@ def main() -> None:
     optional.add_argument("--work_dir", type=Path, default=Path.cwd(), help="Work directory")
     optional.add_argument("--output_dir", type=Path, default=Path.cwd(), help="Output directory")
     optional.add_argument(
-        "--config", type=Path, dest="config", default=Path(base_dir, "default.config"),
+        "--config", type=Path, dest="config", default=files(mpp)/"mfe"/"default.config",
         help="Configuration file for dataset directories")
     optional.add_argument("--simg", type=Path, default=None, help="singularity image")
     optional.add_argument("--condordag", action="store_true", help="Submit as DAG to HTCondor")
@@ -178,7 +178,7 @@ def main() -> None:
             plugin="CondorDAGMan",
             plugin_args={
                 "dagman_args": f"-outfile_dir {config['tmp_dir']} -import_env",
-                "wrapper_cmd": Path(base_dir, "venv_wrapper.sh"),
+                "wrapper_cmd": files(mpp) / "venv_wrapper.sh",
                 "override_specs": "request_memory = 10 GB\nrequest_cpus = 1"})
     else:
         mfe_wf.run()

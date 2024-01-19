@@ -1,3 +1,4 @@
+from importlib.resources import files
 from os import environ
 from pathlib import Path
 from typing import Optional
@@ -17,8 +18,7 @@ import pandas as pd
 
 from mpp.exceptions import DatasetError
 from mpp.mfe.utilities import AddSubDir
-
-base_dir = Path(__file__).resolve().parent.parent.parent
+import mpp
 
 
 class _FCInputSpec(BaseInterfaceInputSpec):
@@ -81,6 +81,7 @@ class FC(SimpleInterface):
             conf = self._nuisance_conf_hcp(t_vol)
         else:
             raise DatasetError()
+        data_dir = files(mpp) / "data"
 
         regressors = np.concatenate((
             zscore(conf), np.ones((conf.shape[0], 1)),
@@ -90,8 +91,8 @@ class FC(SimpleInterface):
         tavg_dict = {}
         for level in range(4):
             parc_sch_file = Path(
-                base_dir, "data", f"Schaefer2018_{level+1}00Parcels_17Networks_order.dlabel.nii")
-            parc_mel_file = Path(base_dir, "data", f"Tian_Subcortex_S{level+1}_3T.nii.gz")
+                data_dir, f"Schaefer2018_{level+1}00Parcels_17Networks_order.dlabel.nii")
+            parc_mel_file = Path(data_dir, f"Tian_Subcortex_S{level+1}_3T.nii.gz")
             parc_sch = nib.load(parc_sch_file).get_fdata()
             parc_mel = nib.load(parc_mel_file).get_fdata()
 
@@ -295,6 +296,7 @@ class Anat(SimpleInterface):
 
     def _run_interface(self, runtime):
         subject = self.inputs.config["subject"]
+        data_dir = files(mpp) / "data"
         self._results["myelin"] = {}
         self._results["morph"] = {"gmv": {}, "cs": {}, "ct": {}}
 
@@ -306,8 +308,8 @@ class Anat(SimpleInterface):
         for level in range(4):
             # Myelin estimate
             parc_sch_file = Path(
-                base_dir, "data", f"Schaefer2018_{level+1}00Parcels_17Networks_order.dlabel.nii")
-            parc_mel_file = Path(base_dir, "data", f"Tian_Subcortex_S{level+1}_3T.nii.gz")
+                data_dir, f"Schaefer2018_{level+1}00Parcels_17Networks_order.dlabel.nii")
+            parc_mel_file = Path(data_dir, f"Tian_Subcortex_S{level+1}_3T.nii.gz")
             parc_sch = nib.load(parc_sch_file).get_fdata()
             parc_mel = nib.load(parc_mel_file).get_fdata()
             parc_surf = np.zeros(((level+1)*100))
@@ -332,8 +334,7 @@ class Anat(SimpleInterface):
             stats_surf = None
             for hemi in ["lh", "rh"]:
                 annot_file = f"{hemi}.Schaefer2018_{level+1}00Parcels_17Networks_order.annot"
-                annot_fs = Path(base_dir, "data", annot_file)
-                dl.unlock(annot_fs, dataset=base_dir.parent)
+                annot_fs = files(mpp) / "data" / annot_file
                 annot_sub = Path(self.inputs.config["tmp_dir"], f"{hemi}.{subject}_{level+1}.annot")
                 add_subdir = AddSubDir(
                     sub_dir=self.inputs.config["tmp_dir"], subject=subject,
@@ -484,7 +485,7 @@ class DTIFeatures(SimpleInterface):
         in_files = {
             "fa": self.inputs.fa_skeleton_file, "md": self.inputs.md_skeleton_file,
             "ad": self.inputs.ad_skeleton_file, "rd": self.inputs.rd_skeleton_file}
-        parc_jhu_file = Path(base_dir, "data", "JHU-ICBM-labels-1mm.nii.gz")
+        parc_jhu_file = files(mpp) / "data" / "JHU-ICBM-labels-1mm.nii.gz"
         parc_jhu = nib.load(parc_jhu_file).get_fdata()
         parc_jhu_mask = parc_jhu.nonzero()
         parc_jhu = parc_jhu[parc_jhu_mask]

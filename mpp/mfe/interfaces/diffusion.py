@@ -94,6 +94,7 @@ class _TBSSOutputSpec(TraitedSpec):
     md_skeleton_file = traits.File(exists=True, desc="skeletonised MD file")
     ad_skeleton_file = traits.File(exists=True, desc="skeletonised AD file")
     rd_skeleton_file = traits.File(exists=True, desc="skeletonised RD file")
+    dataset_dir = traits.Directory(mandatory=True, desc="absolute path to installed root dataset")
 
 
 class TBSS(SimpleInterface):
@@ -114,6 +115,7 @@ class TBSS(SimpleInterface):
         fa_dir = Path(self.inputs.config["tmp_dir"], "tbss_fa")
         fa_dir.mkdir(parents=True, exist_ok=True)
         chdir(fa_dir)
+        self._results["dataset_dir"] = self.inputs.dataset_dir
 
         fa_list = self._copy_files(self.inputs.fa_files, fa_dir)
         subprocess.run(self.inputs.simg_cmd.cmd("tbss_1_preproc").split() + fa_list, check=True)

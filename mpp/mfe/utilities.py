@@ -9,8 +9,6 @@ import numpy as np
 
 from mpp.exceptions import DatasetError
 
-base_dir = Path(__file__).resolve().parent.parent.parent
-
 
 class SimgCmd:
     def __init__(self, config: dict) -> None:
@@ -19,7 +17,7 @@ class SimgCmd:
         else:
             self._cmd = (
                 f"singularity run -B {config['work_dir']}:{config['work_dir']},"
-                f"{config['output_dir']}:{config['output_dir']},{base_dir}:{base_dir}")
+                f"{config['output_dir']}:{config['output_dir']}")
             self._simg = config["simg"]
 
     def cmd(self, cmd: str, options: Union[str, None] = None) -> str:
@@ -33,7 +31,7 @@ class SimgCmd:
 
 
 def dataset_params(config: dict) -> dict:
-    root_data_dir = Path(config["work_dir"], config["subject"])
+    root_data_dir = Path(config["tmp_dir"], config["subject"])
     params = {
         "HCP-YA": {
             "url": "git@github.com:datalad-datasets/human-connectome-project-openaccess.git",
