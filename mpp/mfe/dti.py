@@ -1,5 +1,6 @@
 from pathlib import Path
 import argparse
+import configparser
 
 import nipype.pipeline as pe
 import pandas as pd
@@ -27,6 +28,9 @@ def main() -> None:
     optional.add_argument("--work_dir", type=Path, default=Path.cwd(), help="Work directory")
     optional.add_argument("--output_dir", type=Path, default=Path.cwd(), help="Output directory")
     optional.add_argument("--simg", type=Path, default=None, help="singularity image")
+    optional.add_argument(
+        "--config", type=Path, dest="config", default=Path(base_dir, "default.config"),
+        help="Configuration file for dataset directories")
     optional.add_argument("--condordag", action="store_true", help="Submit as DAG to HTCondor")
     config = vars(parser.parse_args())
 
@@ -35,6 +39,9 @@ def main() -> None:
     config["output_dir"].mkdir(parents=True, exist_ok=True)
     config["tmp_dir"] = Path(config["work_dir"], f"mfe_dti_{config['dataset']}_tmp")
     config["tmp_dir"].mkdir(parents=True, exist_ok=True)
+    config_parse = configparser.ConfigParser()
+    config_parse.read(config["config"])
+    config.update({option: config_parse["USER"][option] for option in config_parse["USER"]})
     sublist = pd.read_csv(config["sublist"], header=None, dtype=str).squeeze("columns").tolist()
     mfe_wf = pe.Workflow(f"mfe_dti_{config['dataset']}_wf", base_dir=config["work_dir"])
     mfe_wf.config["execution"]["try_hard_link_datasink"] = "false"

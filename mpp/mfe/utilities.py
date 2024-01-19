@@ -32,13 +32,13 @@ class SimgCmd:
                 return f"{self._cmd} {options} {self._simg} {cmd}"
 
 
-def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: str) -> dict:
+def dataset_params(config: dict) -> dict:
+    root_data_dir = Path(config["work_dir"], config["subject"])
     params = {
         "HCP-YA": {
             "url": "git@github.com:datalad-datasets/human-connectome-project-openaccess.git",
-            "source": None,
             "dir": Path(root_data_dir),
-            "sub_dir": Path(root_data_dir, "HCP1200", subject),
+            "sub_dir": Path(root_data_dir, "HCP1200", config["subject"]),
             "clean": "hp2000_clean",
             "tasks": [
                 "tfMRI_EMOTION_LR", "tfMRI_EMOTION_RL", "tfMRI_GAMBLING_LR", "tfMRI_GAMBLING_RL",
@@ -64,8 +64,8 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
                 "endurance": "Endurance_AgeAdj", "gaitspeed": "GaitSpeed_Comp",
                 "strength": "Strength_AgeAdj", "neoffi_n": "NEOFAC_N", "neoffi_e": "NEOFAC_E",
                 "neoffi_o": "NEOFAC_O", "neoffi_a": "NEOFAC_A", "neoffi_c": "NEOFAC_C"},
-            "pheno_file": Path(pheno_dir, "unrestricted_hcpya.csv"),
-            "restricted_file": Path(pheno_dir, "restricted_hcpya.csv"),
+            "pheno_file": Path(config["pheno_dir"], "unrestricted_hcpya.csv"),
+            "restricted_file": Path(config["pheno_dir"], "restricted_hcpya.csv"),
             "tr": 0.72,
             "ev_files": {
                 "tfMRI_EMOTION": ["fear.txt", "neut.txt"],
@@ -78,11 +78,10 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
                 "tfMRI_RELATIONAL": ["relation.txt", "match.txt"],
                 "tfMRI_SOCIAL": ["mental_resp.txt", "other_resp.txt"]}},
         "HCP-A": {
-            "url": "git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git",
-            "source": "inm7-storage",
-            "dir": Path(root_data_dir, "original", "hcp", "hcp_aging"),
-            "sub_dir": Path(root_data_dir, "original", "hcp", "hcp_aging", subject),
-            "diff_url": "git@gin.g-node.org:/jadecci/hcp_lifespan_diffproc.git",
+            "url": config["hcpa_url"],
+            "dir": Path(root_data_dir, config["hcpa_dir"]),
+            "sub_dir": Path(root_data_dir, config["hcpa_dir"], config["subject"]),
+            "diff_url": config["hcpa_diff_url"],
             "clean": "hp0_clean",
             "tasks": ["tfMRI_CARIT_PA", "tfMRI_FACENAME_PA", "tfMRI_VISMOTOR_PA"],
             "rests": ['rfMRI_REST1_AP', 'rfMRI_REST1_PA', 'rfMRI_REST2_AP', 'rfMRI_REST2_PA'],
@@ -122,19 +121,18 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
                 "posaffect": 157, "emotsupp": 12, "friendship": 12, "loneliness": 23,
                 "endurance": 16, "gaitspeed": 30, "strength": 22, "neoffi_n": 77,
                 "neoffi_e": 76, "neoffi_o": 78, "neoffi_a": 74, "neoffi_c": 75},
-            "demo_file": Path(pheno_dir, "ssaga_cover_demo01.txt"),
-            "hand_file": Path(pheno_dir, "edinburgh_hand01.txt"),
+            "demo_file": Path(config["pheno_dir"], "ssaga_cover_demo01.txt"),
+            "hand_file": Path(config["pheno_dir"], "edinburgh_hand01.txt"),
             "tr": 0.8,
             "ev_files": {
                 "tfMRI_CARIT_PA":["go.txt", "miss.txt", "nogoCR.txt", "nogoFA.txt"],
                 "tfMRI_FACENAME_PA": ["encoding.txt", "recall.txt"],
                 "tfMRI_VISMOTOR_PA": ["vismotor.txt"]}},
         "HCP-D": {
-            "url": "git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git",
-            "source": "inm7-storage",
-            "dir": Path(root_data_dir, "original", "hcp", "hcp_development"),
-            "sub_dir": Path(root_data_dir, "original", "hcp", "hcp_development", subject),
-            "diff_url": "git@gin.g-node.org:/jadecci/hcp_lifespan_diffproc.git",
+            "url": config["hcpd_url"],
+            "dir": Path(root_data_dir, config["hcpd_dir"]),
+            "sub_dir": Path(root_data_dir, config["hcpd_dir"], config["subject"]),
+            "diff_url": config["hcpd_diff_url"],
             "clean": "hp0_clean",
             "tasks": [
                 "tfMRI_CARIT_AP", "tfMRI_CARIT_PA", "tfMRI_EMOTION_PA", "tfMRI_GUESSING_AP",
@@ -151,8 +149,8 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
                 "posaffect": 66, "emotsupp": 11, "friendship": 10, "loneliness": 11,
                 "endurance": 13, "gaitspeed": 18, "strength": 14, "neoffi_n": 71,
                 "neoffi_e": 70, "neoffi_o": 72, "neoffi_a": 68, "neoffi_c": 69},
-            "demo_file": Path(pheno_dir, "ssaga_cover_demo01.txt"),
-            "hand_file": Path(pheno_dir, "edinburgh_hand01.txt"),
+            "demo_file": Path(config["pheno_dir"], "ssaga_cover_demo01.txt"),
+            "hand_file": Path(config["pheno_dir"], "edinburgh_hand01.txt"),
             "tr": 0.8,
             "ev_files": {
                 "tfMRI_CARIT": [
@@ -165,10 +163,10 @@ def dataset_params(dataset: str, root_data_dir: Path, pheno_dir: Path, subject: 
     params["HCP-D"]["col_names"] = params["HCP-A"]["col_names"]
     params["HCP-D"]["pheno_files"] = params["HCP-A"]["pheno_files"]
 
-    if dataset not in ["HCP-YA", "HCP-A", "HCP-D"]:
+    if config["dataset"] not in ["HCP-YA", "HCP-A", "HCP-D"]:
         raise DatasetError
     else:
-        return params[dataset]
+        return params[config["dataset"]]
 
 
 class _AddSubDirInputSpec(BaseInterfaceInputSpec):

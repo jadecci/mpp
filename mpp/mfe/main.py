@@ -1,9 +1,9 @@
 from pathlib import Path
 import argparse
+import configparser
 
 import nipype.pipeline as pe
 from nipype.interfaces import fsl, freesurfer
-from nipype.interfaces import utility as niu
 
 from mpp.mfe.interfaces.data import InitData, PickAtlas, SubDirAnnot, SaveFeatures, Phenotypes
 from mpp.mfe.interfaces.diffusion import ProbTract
@@ -28,6 +28,9 @@ def main() -> None:
         "--pheno_dir", type=Path, default=None, help="Directory containing phenotype data")
     optional.add_argument("--work_dir", type=Path, default=Path.cwd(), help="Work directory")
     optional.add_argument("--output_dir", type=Path, default=Path.cwd(), help="Output directory")
+    optional.add_argument(
+        "--config", type=Path, dest="config", default=Path(base_dir, "default.config"),
+        help="Configuration file for dataset directories")
     optional.add_argument("--simg", type=Path, default=None, help="singularity image")
     optional.add_argument("--condordag", action="store_true", help="Submit as DAG to HTCondor")
     config = vars(parser.parse_args())
@@ -36,9 +39,10 @@ def main() -> None:
     simg_cmd = SimgCmd(config)
     config["output_dir"].mkdir(parents=True, exist_ok=True)
     config["tmp_dir"] = Path(config["work_dir"], f"mfe_{config['subject']}_tmp")
-    config["param"] = dataset_params(
-        config["dataset"], Path(config["work_dir"], config["subject"]), config["pheno_dir"],
-        config["subject"])
+    config_parse = configparser.ConfigParser()
+    config_parse.read(config["config"])
+    config.update({option: config_parse["USER"][option] for option in config_parse["USER"]})
+    config["param"] = dataset_params(config)
     mfe_wf = pe.Workflow(f"mfe_{config['subject']}_wf", base_dir=config["work_dir"])
     mfe_wf.config["execution"]["try_hard_link_datasink"] = "false"
     mfe_wf.config["execution"]["crashfile_format"] = "txt"

@@ -54,8 +54,8 @@ class InitData(SimpleInterface):
         self._results["data_files"] = {}
 
         dl.install(root_data_dir, source=param["url"])
-        dl.get(param["dir"], dataset=root_data_dir, get_data=False, source=param["source"])
-        dl.get(param["sub_dir"], dataset=param["dir"], get_data=False, source=param["source"])
+        dl.get(param["dir"], dataset=root_data_dir, get_data=False)
+        dl.get(param["sub_dir"], dataset=param["dir"], get_data=False)
 
         if self.inputs.config["dataset"] in ["HCP-YA", "HCP-A", "HCP-D"]:
             mni_dir = Path(param["sub_dir"], "MNINonLinear")
@@ -64,8 +64,8 @@ class InitData(SimpleInterface):
             fs_dir = Path(anat_dir, self.inputs.config["subject"])
             self._results["anat_dir"] = anat_dir
             self._results["fs_dir"] = fs_dir
-            dl.get(mni_dir, dataset=param["sub_dir"], get_data=False, source=param["source"])
-            dl.get(anat_dir, dataset=param["sub_dir"], get_data=False, source=param["source"])
+            dl.get(mni_dir, dataset=param["sub_dir"], get_data=False)
+            dl.get(anat_dir, dataset=param["sub_dir"], get_data=False)
 
             if "rfMRI" in self.inputs.config["modality"]:
                 rs_files = {"atlas_mask": Path(mni_dir, "ROIs", "Atlas_wmparc.2.nii.gz")}
@@ -76,7 +76,7 @@ class InitData(SimpleInterface):
                 self._results["hcpd_b_runs"] = 0
                 for key, val in rs_files.items():
                     if val.is_symlink():
-                        dl.get(val, dataset=mni_dir, source=param["source"])
+                        dl.get(val, dataset=mni_dir)
                     else:
                         if self.inputs.dataset == "HCP-D":
                             if "AP" in val:
@@ -90,10 +90,10 @@ class InitData(SimpleInterface):
                             rs_files[key] = ""
                             if rs_file_a.is_symlink:
                                 rs_files[key] = rs_file_a
-                                dl.get(rs_file_a, dataset=mni_dir, source=param["source"])
+                                dl.get(rs_file_a, dataset=mni_dir)
                             if rs_file_b.is_symlink():
                                 rs_files[f"{key}b"] = rs_file_b
-                                dl.get(rs_file_b, dataset=mni_dir, source=param["source"])
+                                dl.get(rs_file_b, dataset=mni_dir)
                                 self._results["hcpd_b_runs"] = self._results["hcpd_b_runs"] + 1
                         else:
                             rs_files[key] = ""
@@ -105,7 +105,7 @@ class InitData(SimpleInterface):
                     t_files[f"{run}_surf"] = Path(func_dir, run, f"{run}_Atlas_MSMAll.dtseries.nii")
                     t_files[f"{run}_vol"] = Path(func_dir, run, f"{run}.nii.gz")
                 for key, val in t_files.items():
-                    dl.get(val, dataset=mni_dir, source=param["source"])
+                    dl.get(val, dataset=mni_dir)
                 self._results["data_files"].update(t_files)
 
             if "sMRI" in self.inputs.config["modality"]:
@@ -131,9 +131,9 @@ class InitData(SimpleInterface):
                     "myelin_vol": Path(anat_dir, "T1wDividedByT2w.nii.gz")}
                 for key, val in s_files.items():
                     if key == "t1_vol" or key == "myelin_l" or key == "myelin_r":
-                        dl.get(val, dataset=mni_dir, source=param["source"])
+                        dl.get(val, dataset=mni_dir)
                     else:
-                        dl.get(val, dataset=anat_dir, source=param["source"])
+                        dl.get(val, dataset=anat_dir)
                 self._results["data_files"].update(s_files)
 
             if "dMRI" in self.inputs.config["modality"]:
@@ -179,17 +179,17 @@ class InitData(SimpleInterface):
                     "norm": Path(fs_dir, "mri", "norm.mgz"),
                     "brain_mask": Path(fs_dir, "mri", "brainmask.mgz")}
                 for key, val in fs_files.items():
-                    dl.get(val, dataset=anat_dir, source=param["source"])
+                    dl.get(val, dataset=anat_dir)
                 self._results["data_files"].update(fs_files)
 
                 anat_files = {
                     "t1_restore_brain": Path(anat_dir, "T1w_acpc_dc_restore_brain.nii.gz")}
                 for key, val in anat_files.items():
-                    dl.get(val, dataset=anat_dir, source=param["source"])
+                    dl.get(val, dataset=anat_dir)
                 self._results["data_files"].update(anat_files)
 
                 t1mni_file = Path(mni_dir, "xfms", "acpc_dc2standard.nii.gz")
-                dl.get(t1mni_file, dataset=mni_dir, source=param["source"])
+                dl.get(t1mni_file, dataset=mni_dir)
                 self._results["data_files"]["t1_to_mni"] = t1mni_file
 
                 self._results["t1_restore_brain"] = self._results["data_files"]["t1_restore_brain"]
@@ -207,7 +207,7 @@ class InitData(SimpleInterface):
             if "conf" in self.inputs.config["modality"]:
                 if self.inputs.config["dataset"] in ["HCP-A", "HCP-D"]:
                     astats = Path(fs_dir, "stats", "aseg.stats")
-                    dl.get(astats, dataset=anat_dir, source=param["source"])
+                    dl.get(astats, dataset=anat_dir)
                     self._results["data_files"]["astats"] = astats
 
         else:
@@ -241,8 +241,10 @@ class InitDTIData(SimpleInterface):
 
     def _run_interface(self, runtime):
         root_data_dir = Path(self.inputs.config["work_dir"], self.inputs.subject)
-        param = dataset_params(
-            self.inputs.config["dataset"], root_data_dir, Path(), self.inputs.subject)
+        config = self.inputs.config.copy()
+        config["subject"] = self.inputs.subject
+        config["pheno_dir"] = Path()
+        param = dataset_params(config)
         self._results["dataset_dir"] = root_data_dir
         self._results["subject"] = self.inputs.subject
 
