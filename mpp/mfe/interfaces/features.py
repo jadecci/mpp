@@ -294,8 +294,6 @@ class Anat(SimpleInterface):
     output_spec = _AnatOutputSpec
 
     def _run_interface(self, runtime):
-        tmp_dir = Path(self.inputs.config["work_dir"], "morph_tmp")
-        tmp_dir.mkdir(parents=True, exist_ok=True)
         subject = self.inputs.config["subject"]
         self._results["myelin"] = {}
         self._results["morph"] = {"gmv": {}, "cs": {}, "ct": {}}
@@ -336,17 +334,19 @@ class Anat(SimpleInterface):
                 annot_file = f"{hemi}.Schaefer2018_{level+1}00Parcels_17Networks_order.annot"
                 annot_fs = Path(base_dir, "data", annot_file)
                 dl.unlock(annot_fs, dataset=base_dir.parent)
-                annot_sub = Path(tmp_dir, f"{hemi}.{subject}_{level+1}.annot")
+                annot_sub = Path(self.inputs.config["tmp_dir"], f"{hemi}.{subject}_{level+1}.annot")
                 add_subdir = AddSubDir(
-                    sub_dir=tmp_dir, subject=subject, fs_dir=Path(self.inputs.anat_dir, subject))
+                    sub_dir=self.inputs.config["tmp_dir"], subject=subject,
+                    fs_dir=Path(self.inputs.anat_dir, subject))
                 add_subdir.run()
+                fs_opts = f"--env SUBJECTS_DIR={self.inputs.config['tmp_dir']}"
                 annot_fs2sub = freesurfer.SurfaceTransform(
-                    command=self.inputs.simg_cmd.cmd(
-                        "mri_surf2surf", options=f"--env SUBJECTS_DIR={tmp_dir}"),
+                    command=self.inputs.simg_cmd.cmd("mri_surf2surf", options=fs_opts),
                     source_annot_file=annot_fs, out_file=annot_sub, hemi=hemi,
-                    source_subject="fsaverage", target_subject=subject, subjects_dir=tmp_dir)
+                    source_subject="fsaverage", target_subject=subject,
+                    subjects_dir=self.inputs.config["tmp_dir"])
                 annot_fs2sub.run()
-                hemi_table = Path(tmp_dir, f"{hemi}.{subject}_fs_stats")
+                hemi_table = Path(self.inputs.config["tmp_dir"], f"{hemi}.{subject}_fs_stats")
                 options = f"--env SUBJECTS_DIR={self.inputs.anat_dir}"
                 subprocess.run(
                     self.inputs.simg_cmd.cmd("mris_anatomical_stats", options=options).split() + [
@@ -367,7 +367,7 @@ class Anat(SimpleInterface):
                 stats_surf["ThickAvg"].values, stats_surf["ThickAvg"].mean())
 
             # GMV
-            seg_up_file = Path(tmp_dir, f"{subject}_S{level}_up.nii.gz")
+            seg_up_file = Path(self.inputs.config["tmp_dir"], f"{subject}_S{level}_up.nii.gz")
             flt = fsl.FLIRT(
                 command=self.inputs.simg_cmd.cmd(cmd="flirt"), in_file=parc_mel_file,
                 reference=self.inputs.data_files["t1_vol"], out_file=seg_up_file,
@@ -453,9 +453,8 @@ class RD(SimpleInterface):
     output_spec = _RDOutputSpec
 
     def _run_interface(self, runtime):
-        rd_dir = Path(self.inputs.config["work_dir"], "rd_tmp")
-        rd_dir.mkdir(parents=True, exist_ok=True)
-        self._results["rd_file"] = Path(rd_dir, f"{self.inputs.subject}_rd.nii.gz")
+        self._results["rd_file"] = Path(
+            self.inputs.config["tmp_dir"], f"{self.inputs.subject}_rd.nii.gz")
 
         img_l2 = nib.load(self.inputs.l2_file)
         data_rd = np.divide(img_l2.get_fdata() + nib.load(self.inputs.l3_file).get_fdata(), 2)
@@ -487,10 +486,11 @@ class DTIFeatures(SimpleInterface):
             "ad": self.inputs.ad_skeleton_file, "rd": self.inputs.rd_skeleton_file}
         parc_jhu_file = Path(base_dir, "data", "JHU-ICBM-labels-1mm.nii.gz")
         parc_jhu = nib.load(parc_jhu_file).get_fdata()
-        parc_jhu_mask = parc_jhu.nonzeros()
+        parc_jhu_mask = parc_jhu.nonzero()
         parc_jhu = parc_jhu[parc_jhu_mask]
         parcels = np.unique(parc_jhu).astype(int)
 
+        self._results["dti_features"] = {}
         for file_type, file_in in in_files.items():
             data = nib.load(file_in).get_fdata()
             data_masked = np.array([
@@ -554,9 +554,7 @@ class Confounds(SimpleInterface):
                 "age": demo["interview_age"].values[0], "gender": demo["sex"].values[0],
                 "handedness": handedness["hcp_handedness_score"].values[0]}
 
-            tmp_dir = Path(self.inputs.config["work_dir"], "astats_tmp")
-            tmp_dir.mkdir(parents=True, exist_ok=True)
-            astats_file = Path(tmp_dir, f"{subject}_astats.txt")
+            astats_file = Path(self.inputs.config["tmp_dir"], f"{subject}_astats.txt")
             subprocess.run(
                 self.inputs.simg_cmd.cmd("asegstats2table").split()
                 + ["--meas", "volume", "--tablefile", str(astats_file)]

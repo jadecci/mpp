@@ -27,15 +27,13 @@ class ProbTract(SimpleInterface):
     output_spec = _ProbTractOutputSpec
 
     def _run_interface(self, runtime):
-        tmp_dir = Path(self.inputs.config["work_dir"], "probtrack_tmp")
-        tmp_dir.mkdir(parents=True, exist_ok=True)
         subject = self.inputs.config['subject']
 
         # Fiber orientation
-        res_wm_file = Path(tmp_dir, f"{subject}_sfwm.txt")
-        res_gm_file = Path(tmp_dir, f"{subject}_gm.txt")
-        res_csf_file = Path(tmp_dir, f"{subject}_csf.txt")
-        fod_wm_file = Path(tmp_dir, f"{subject}_fod_wm.mif")
+        res_wm_file = Path(self.inputs.config["tmp_dir"], f"{subject}_sfwm.txt")
+        res_gm_file = Path(self.inputs.config["tmp_dir"], f"{subject}_gm.txt")
+        res_csf_file = Path(self.inputs.config["tmp_dir"], f"{subject}_csf.txt")
+        fod_wm_file = Path(self.inputs.config["tmp_dir"], f"{subject}_fod_wm.mif")
         args = [
             "-shells", self.inputs.config["param"]["shells"], "-nthreads", "0",
             "-mask", str(self.inputs.data_files["nodif_mask"]),
@@ -47,10 +45,10 @@ class ProbTract(SimpleInterface):
         subprocess.run(
             self.inputs.simg_cmd.cmd("dwi2fod").split() + ["msmt_csd"] + args
             + [str(res_wm_file), str(fod_wm_file), str(res_gm_file),
-               str(Path(tmp_dir, f"{subject}_fod_gm.mif")), str(res_csf_file),
-               str(Path(tmp_dir, f"{subject}_fod_csf.mif"))], check=True)
+               str(Path(self.inputs.config["tmp_dir"], f"{subject}_fod_gm.mif")), str(res_csf_file),
+               str(Path(self.inputs.config["tmp_dir"], f"{subject}_fod_csf.mif"))], check=True)
 
-        ftt_file = Path(tmp_dir, f"{subject}_ftt.nii.gz")
+        ftt_file = Path(self.inputs.config["tmp_dir"], f"{subject}_ftt.nii.gz")
         subprocess.run(
             self.inputs.simg_cmd.cmd('5ttgen').split() + [
                 "hsvs", "-nocleanup", str(self.inputs.fs_dir), str(ftt_file)], check=True)
@@ -63,13 +61,15 @@ class ProbTract(SimpleInterface):
             "cutoff": "0.05", "trials": "1000", "samples": "4", "downsample": "3", "power": "0.33",
             # parameters different from default (Jung et al. 2021)
             "maxlength": "250", "max_attempts_per_seed": "50", "select": "10000000"}
-        self._results["tck_file"] = Path(tmp_dir, f"{subject}_WBT_10M_ctx.tck")
+        self._results["tck_file"] = Path(
+            self.inputs.config["tmp_dir"], f"{subject}_WBT_10M_ctx.tck")
         tck = self.inputs.simg_cmd.cmd("tckgen").split()
         for param, value in params.items():
             tck = tck + [f"-{param}", value]
         tck = tck + [
             "-seed_dynamic", str(fod_wm_file), "-act", str(ftt_file),
-            "-output_seeds", str(Path(tmp_dir, f"{subject}_WBT_10M_seeds_ctx.txt")),
+            "-output_seeds", str(
+                Path(self.inputs.config["tmp_dir"], f"{subject}_WBT_10M_seeds_ctx.txt")),
             "-backtrack", "-crop_at_gmwmi", "-nthreads", "0",
             "-fslgrad", str(self.inputs.data_files["bvec"]), str(self.inputs.data_files["bval"]),
             str(fod_wm_file), str(self._results["tck_file"])]
@@ -111,7 +111,7 @@ class TBSS(SimpleInterface):
 
     def _run_interface(self, runtime):
         dl.remove(dataset=self.inputs.dataset_dir, reckless="kill")
-        fa_dir = Path(self.inputs.config["work_dir"], "tbss_fa")
+        fa_dir = Path(self.inputs.config["tmp_dir"], "tbss_fa")
         fa_dir.mkdir(parents=True, exist_ok=True)
         chdir(fa_dir)
 

@@ -33,6 +33,8 @@ def main() -> None:
     # Set-up
     simg_cmd = SimgCmd(config)
     config["output_dir"].mkdir(parents=True, exist_ok=True)
+    config["tmp_dir"] = Path(config["work_dir"], f"mfe_dti_{config['dataset']}_tmp")
+    config["tmp_dir"].mkdir(parents=True, exist_ok=True)
     sublist = pd.read_csv(config["sublist"], header=None, dtype=str).squeeze("columns").tolist()
     mfe_wf = pe.Workflow(f"mfe_dti_{config['dataset']}_wf", base_dir=config["work_dir"])
     mfe_wf.config["execution"]["try_hard_link_datasink"] = "false"
@@ -68,7 +70,7 @@ def main() -> None:
         mfe_wf.run(
             plugin="CondorDAGMan",
             plugin_args={
-                "dagman_args": f"-outfile_dir {config['work_dir']} -import_env",
+                "dagman_args": f"-outfile_dir {config['tmp_dir']} -import_env",
                 "wrapper_cmd": Path(base_dir, "venv_wrapper.sh"),
                 "override_specs": "request_memory = 10 GB\nrequest_cpus = 1"})
     else:

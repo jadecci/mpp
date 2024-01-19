@@ -35,6 +35,7 @@ def main() -> None:
     # Set-up
     simg_cmd = SimgCmd(config)
     config["output_dir"].mkdir(parents=True, exist_ok=True)
+    config["tmp_dir"] = Path(config["work_dir"], f"mfe_{config['subject']}_tmp")
     config["param"] = dataset_params(
         config["dataset"], Path(config["work_dir"], config["subject"]), config["pheno_dir"],
         config["subject"])
@@ -75,14 +76,13 @@ def main() -> None:
 
     # dMRI features
     if "dMRI" in config["modality"]:
-        tmp_dir = Path(config["work_dir"], "sc_tmp")
-        tmp_dir.mkdir(parents=True, exist_ok=True)
-        fs_opt = f"--env SUBJECTS_DIR={tmp_dir}"
-        sub_dir = pe.Node(AddSubDir(sub_dir=tmp_dir, subject=config["subject"]), "sub_dir")
+        fs_opt = f"--env SUBJECTS_DIR={config['tmp_dir']}"
+        sub_dir = pe.Node(AddSubDir(sub_dir=config["tmp_dir"], subject=config["subject"]), "sub_dir")
         pick_atlas = pe.Node(PickAtlas(), "pick_atlas", iterables=[("level", ["1", "2", "3", "4"])])
         add_annot = pe.Node(SubDirAnnot(config=config), "add_annot")
         aseg = pe.Node(
-            CombineStrings(input1=str(tmp_dir), input2="/aparc2aseg_", input4=".nii.gz"), "aseg")
+            CombineStrings(input1=str(config["tmp_dir"]), input2="/aparc2aseg_", input4=".nii.gz"),
+            "aseg")
         mfe_wf.connect([
             (init_data, sub_dir, [("fs_dir", "fs_dir")]),
             (sub_dir, add_annot, [("sub_dir", "sub_dir")]),
@@ -173,7 +173,7 @@ def main() -> None:
         mfe_wf.run(
             plugin="CondorDAGMan",
             plugin_args={
-                "dagman_args": f"-outfile_dir {config['work_dir']} -import_env",
+                "dagman_args": f"-outfile_dir {config['tmp_dir']} -import_env",
                 "wrapper_cmd": Path(base_dir, "venv_wrapper.sh"),
                 "override_specs": "request_memory = 10 GB\nrequest_cpus = 1"})
     else:

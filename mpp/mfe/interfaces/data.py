@@ -258,7 +258,7 @@ class InitDTIData(SimpleInterface):
             self._get_file("dwi", "data.nii.gz")
             self._get_file("bvals", "bvals")
             self._get_file("bvecs", "bvecs")
-            self._get_file("mask", "modif_brain_mask.nii.gz")
+            self._get_file("mask", "nodif_brain_mask.nii.gz")
         else:
             raise DatasetError()
 
@@ -444,16 +444,12 @@ class SaveDTIFeatures(SimpleInterface):
     """Save extracted features"""
     input_spec = _SaveDTIFeaturesInputSpec
 
-    def _write_data(self, data: dict, key: str) -> None:
-        data_pd = pd.DataFrame(data, index=[self.inputs.config["subject"]])
-        data_pd.to_hdf(self._output, key, mode="a", format="fixed")
-
     def _run_interface(self, runtime):
         self._output = Path(
             self.inputs.config["output_dir"], f"{self.inputs.config['dataset']}_dti.h5")
-        for feature in self.inputs.features:
-            self._write_data(feature, f"d_{feature}")
-
+        for feature, data in self.inputs.features.items():
+            data_pd = pd.DataFrame(data)
+            data_pd.to_hdf(self._output, feature, mode="a", format="fixed")
         dl.remove(dataset=self.inputs.dataset_dir, reckless="kill")
 
         return runtime
