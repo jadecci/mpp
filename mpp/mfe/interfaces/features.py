@@ -470,6 +470,7 @@ class _DTIFeaturesInputSpec(BaseInterfaceInputSpec):
     md_skeleton_file = traits.File(mandatory=True, exists=True, desc="skeletonised MD file")
     ad_skeleton_file = traits.File(mandatory=True, exists=True, desc="skeletonised AD file")
     rd_skeleton_file = traits.File(mandatory=True, exists=True, desc="skeletonised RD file")
+    sublist = traits.List(mandatory=True, dtype=str, desc="subject IDs")
 
 
 class _DTIFeaturesOutputSpec(TraitedSpec):
@@ -491,18 +492,19 @@ class DTIFeatures(SimpleInterface):
         parc_jhu = parc_jhu[parc_jhu_mask]
         parcels = np.unique(parc_jhu).astype(int)
 
-        self._results["dti_features"] = {}
+        self._results["dti_features"] = {"fa": {}, "md": {}, "ad": {}, "rd": {}}
         for file_type, file_in in in_files.items():
             data = nib.load(file_in).get_fdata()
-            data_masked = np.array([
-                data[parc_jhu_mask[0][i], parc_jhu_mask[1][i], parc_jhu_mask[2][i]]
-                for i in range(parc_jhu_mask[0].shape[0])])
-            data_parc = np.zeros((parcels.shape[0]))
-            for parcel in parcels:
-                selected = data_masked[np.where(parc_jhu == parcel)[0]]
-                selected = selected[~np.isnan(selected)]
-                data_parc[parcel-1] = selected.mean()
-            self._results["dti_features"][file_type] = data_parc
+            for sub_i, subject in enumerate(self.inputs.sublist):
+                data_masked = np.array([
+                    data[parc_jhu_mask[0][i], parc_jhu_mask[1][i], parc_jhu_mask[2][i], sub_i]
+                    for i in range(parc_jhu_mask[0].shape[0])])
+                data_parc = np.zeros((parcels.shape[0]))
+                for parcel in parcels:
+                    selected = data_masked[np.where(parc_jhu == parcel)[0]]
+                    selected = selected[~np.isnan(selected)]
+                    data_parc[parcel-1] = selected.mean()
+                self._results["dti_features"][file_type][subject] = data_parc
 
         return runtime
 

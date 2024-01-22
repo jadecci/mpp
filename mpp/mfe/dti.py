@@ -55,7 +55,7 @@ def main() -> None:
     tbss = pe.JoinNode(
         TBSS(config=config, simg_cmd=simg_cmd), "tbss", joinsource="init_data",
         joinfield=["fa_files", "md_files", "ad_files", "rd_files", "subjects"])
-    features = pe.Node(DTIFeatures(config=config), "features")
+    features = pe.Node(DTIFeatures(config=config, sublist=sublist), "features")
     save_features = pe.Node(SaveDTIFeatures(config=config), "save_features")
     mfe_wf.connect([
         (init_data, dtifit, [
@@ -68,7 +68,6 @@ def main() -> None:
         (tbss, features, [
             ("fa_skeleton_file", "fa_skeleton_file"), ("md_skeleton_file", "md_skeleton_file"),
             ("ad_skeleton_file", "ad_skeleton_file"), ("rd_skeleton_file", "rd_skeleton_file")]),
-        (tbss, save_features, [("dataset_dir", "dataset_dir")]),
         (features, save_features, [("dti_features", "features")])])
 
     # Run workflow

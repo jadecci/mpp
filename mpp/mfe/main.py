@@ -36,13 +36,14 @@ def main() -> None:
     config = vars(parser.parse_args())
 
     # Set-up
-    simg_cmd = SimgCmd(config)
     config["output_dir"].mkdir(parents=True, exist_ok=True)
     config["tmp_dir"] = Path(config["work_dir"], f"mfe_{config['subject']}_tmp")
+    config["tmp_dir"].mkdir(parents=True, exist_ok=True)
     config_parse = configparser.ConfigParser()
     config_parse.read(config["config"])
     config.update({option: config_parse["USER"][option] for option in config_parse["USER"]})
     config["param"] = dataset_params(config)
+    simg_cmd = SimgCmd(config)
     mfe_wf = pe.Workflow(f"mfe_{config['subject']}_wf", base_dir=config["work_dir"])
     mfe_wf.config["execution"]["try_hard_link_datasink"] = "false"
     mfe_wf.config["execution"]["crashfile_format"] = "txt"
@@ -80,8 +81,9 @@ def main() -> None:
 
     # dMRI features
     if "dMRI" in config["modality"]:
-        fs_opt = f"--env SUBJECTS_DIR={config['tmp_dir']}"
-        sub_dir = pe.Node(AddSubDir(sub_dir=config["tmp_dir"], subject=config["subject"]), "sub_dir")
+        fs_opt = f"--env SUBJECTS_DIR={Path(config['tmp_dir'], 'fs_subdir')}"
+        sub_dir = pe.Node(AddSubDir(
+            sub_dir=Path(config["tmp_dir"], "fs_subdir"), subject=config["subject"]), "sub_dir")
         pick_atlas = pe.Node(PickAtlas(), "pick_atlas", iterables=[("level", ["1", "2", "3", "4"])])
         add_annot = pe.Node(SubDirAnnot(config=config), "add_annot")
         aseg = pe.Node(

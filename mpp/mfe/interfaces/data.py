@@ -440,7 +440,6 @@ class SaveFeatures(SimpleInterface):
 class _SaveDTIFeaturesInputSpec(BaseInterfaceInputSpec):
     config = traits.Dict(mandatory=True, desc="Workflow configurations")
     features = traits.Dict(dtype=float, desc="region-wise DTI features")
-    dataset_dir = traits.Directory(mandatory=True, desc="absolute path to installed root dataset")
 
 
 class SaveDTIFeatures(SimpleInterface):
@@ -450,9 +449,9 @@ class SaveDTIFeatures(SimpleInterface):
     def _run_interface(self, runtime):
         self._output = Path(
             self.inputs.config["output_dir"], f"{self.inputs.config['dataset']}_dti.h5")
-        for feature, data in self.inputs.features.items():
-            data_pd = pd.DataFrame(data)
-            data_pd.to_hdf(self._output, feature, mode="a", format="fixed")
-        dl.remove(dataset=self.inputs.dataset_dir, reckless="kill")
+        for feature, feature_data in self.inputs.features.items():
+            for subject, subject_data in feature_data.items():
+                data_pd = pd.DataFrame(subject_data)
+                data_pd.to_hdf(self._output, f"{feature}_{subject}", mode="a", format="fixed")
 
         return runtime

@@ -15,9 +15,10 @@ class SimgCmd:
         if config["simg"] is None:
             self._cmd = None
         else:
+            cwd = Path(".").resolve()
             self._cmd = (
                 f"singularity run -B {config['work_dir']}:{config['work_dir']},"
-                f"{config['output_dir']}:{config['output_dir']}")
+                f"{config['output_dir']}:{config['output_dir']},{cwd}:{cwd}")
             self._simg = config["simg"]
 
     def cmd(self, cmd: str, options: Union[str, None] = None) -> str:
