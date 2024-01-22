@@ -1,63 +1,87 @@
-## 1. Preparation & Featrues Extraction
-Clone and install from GIN repository to get all the replication data files and the container
+## 1. Preparation
+1. Clone and install from GIN repository to get all the replication files
 ```bash
 python3 -m venv ~/.venvs/mpp-features
 source ~/.venvs/mpp-features/bin/activate
 datalad clone git@gin.g-node.org:/jadecci/MPP.git ${project_dir}/mpp
 cd ${project_dir}/mpp && datalad get -r . && cd ${project_dir}
 ```
-
-### 1.1. HCP-YA, HCP-A and HCP-D
-1. Download the phenotype files into the `phenotype` folder, following the directory structure.
-2. Generate the subject lists for feature extraction
-```bash
-python3 ${project_dir}/mpp/sublist/create_allRun_sublists.py
+2. Download the phenotype files into the `phenotype` folder, following the directory structure.
+```console
+${project_dir}/phenotype
+├── HCP-A
+├── HCP-D
+├── restricted_hcpya.csv
+└── unrestricted_hcpya.csv
 ```
-1. Preprocess diffusion data for HCP Aging and HCP Development
+
+## 2. Feature Extraction
+
+1. Generate the subject lists for feature extraction
+```bash
+python3 ${project_dir}/mpp/replication/sublist/create_allRun_sublists.py \
+    ${project_dir}/phenotype ${project_dir}/sublist \
+    ${project_dir}/mpp/replication/sublist/HCP-A_exclude.csv
+```
+2. Preprocess diffusion data for HCP Aging and HCP Development
 ```bash
 # For INM7 member on juseless
 datalad clone git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git
 datalad get -n -d datasets_repo datasets_repo/original
+
 for subject in `cat sublist/HCP-A_allRun.csv`; do
-    ./mpp/replication/submit_hcpdiff.sh -d ${project_dir}/datasets_repo/original/hcp/hcp_aging \
+    ${project_dir}/mpp/replication/submit_hcpdiff.sh \
+        -d ${project_dir}/datasets_repo/original/hcp/hcp_aging \
         -l ${project_dir}/sublist/HCP-A_allRun.csv
 done
+
 for subject in `cat sublist/HCP-D_allRun.csv`; do
-    ./mpp/replication/submit_hcpdiff.sh -d ${project_dir}/datasets_repo/original/hcp/hcp_development \
+    ${project_dir}/mpp/replication/submit_hcpdiff.sh \
+        -d ${project_dir}/datasets_repo/original/hcp/hcp_development \
         -l ${project_dir}/sublist/HCP-D_allRun.csv
 done
 
 # Common usage
 simg=${project_dir}/mpp/replication/singularity_files/mdiffusion.simg
-for subject in `cat sublist/HCP-A_allRun.csv`; do
+
+for subject in `cat ${project_dir}/sublist/HCP-A_allRun.csv`; do
     hcpdiffpy ${hcpa_data}/${subject} ${subject} 0.69 --ndirs 98 99 --phases AP PA \
-        --work_dir $(pwd)/work --output_dir $(pwd)/hcpdiff_output \
+        --work_dir ${project_dir}/work --output_dir ${project_dir}/hcpdiff_output \
         --fsl_simg ${simg} --fs_simg ${simg} --wb_simg ${simg}
 done
-for subject in `cat sublist/HCP-D_allRun.csv`; do
+
+for subject in `cat ${project_dir}/sublist/HCP-D_allRun.csv`; do
     hcpdiffpy ${hcpd_data}/${subject} ${subject} 0.69 --ndirs 98 99 --phases AP PA \
-        --work_dir $(pwd)/work --output_dir $(pwd)/hcpdiff_output \
+        --work_dir ${project_dir}/work --output_dir ${project_dir}/hcpdiff_output \
         --fsl_simg ${simg} --fs_simg ${simg} --wb_simg ${simg}
 done
 ```
-1. Extract multimodal features
+3. Extract multimodal features
 ```bash
-for dataset in HCP-YA, HCP-A, HCP-D; do
-    mfeatures ${dataset} sublist/${dataset}_allRun.csv --output_dir ${dataset}/features \
-        --condordag --wrapper venv_wrapper.sh
+simg=${project_dir}/mpp/replication/singularity_files/mdiffusion.simg
+
+for subject in cat `${project_dir}/sublist/HCP-YA_allRun.csv`; do
+    mfe HCP-YA ${subject} --modality rfMRI tfMRI sMRI dMRI \
+        --pheno_dir ${project_dir}/mpp/replication/phenotype \
+        --work_dir ${project_dir}/work --output_dir ${project_dir}/mfe_output  \
+        --simg ${simg}
 done
+
+for dataset in HCP-A HCP-D; do
+    for subject in cat `${project_dir}/sublist/${dataset}_allRun.csv`; do
+        mfe ${dataset} ${subject} --modality rfMRI tfMRI sMRI dMRI \
+            --pheno_dir ${project_dir}/mpp/replication/phenotype/${dataset} \
+            --work_dir ${project_dir}/work --output_dir ${project_dir}/mfe_output \
+            --simg ${simg}
+    done
 ```
 
+## 3. Prediction
 
-### 1.2. ABCD
 ```bash
-# ABCD
-datalad clone git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git datasets_repo
-datalad get -d datasets_repo -n datasets_repo/original/abcd
-python3 sublist/create_sublist_ABCD.py datasets_repo/original/abcd sublist/ABCD.csv \
-        --source inm7-storage --log sublist/ABCD.log
-datalad remove -d datasets_repo --reckless kill
+mpp
 ```
+
 
 ## Additional information
 
