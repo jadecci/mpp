@@ -146,6 +146,17 @@ class FC(SimpleInterface):
             b = np.linalg.lstsq((z @ z.T).T, (y @ z.T).T, rcond=None)[0].T
             self._results["dfc"][f"level{level+1}"] = b[:, range(1, b.shape[1])]
 
+    def _ev_block(self, length: int, ev_files: list) -> np.ndarray:
+        task_reg = np.zeros((length, len(ev_files)))
+        for ev_i, ev_file in enumerate(ev_files):
+            ev = pd.read_table(ev_file, header=None, sep=" ")
+            for _, block in ev.iterrows():
+                block_start = int(
+                    round(block[0] / self.inputs.config["param"]["tr"])) - 1
+                block_len = int(round(block[1] / self.inputs.config["param"]["tr"]))
+                task_reg[block_start:(block_start + block_len), ev_i] = 1
+        return task_reg
+
     def _ec(self, task_reg: Optional[np.ndarray] = None) -> dict:
         # effective connectivity: regression DCM
         ec_dict = {}
@@ -227,19 +238,22 @@ class FC(SimpleInterface):
 
                 if self.inputs.sc_count:
                     self._results["ec"] = {}
-                    ev_files = self.inputs.config["param"]["ev_files"][run]
-                    task_reg = np.zeros((self._tavg_dict[f"level1"].shape[1], len(ev_files)))
-                    for ev_i, ev_file in enumerate(ev_files):
-                        ev = pd.read_table(ev_file, header=None, sep=" ")
-                        for block_i, block in ev.iterrows():
-                            block_start = int(
-                                round(block[0] / self.inputs.config["param"]["tr"])) - 1
-                            block_len = int(round(block[1] / self.inputs.config["param"]["tr"]))
-                            task_reg[block_start:(block_start + block_len), ev_i] = 1
-                            if dataset == "HCP-YA" \
-                                    or (dataset == "HCP-D" and run != "tfMRI_EMOTION"):
-                                acq2_start = block_start + task_reg.shape[0] / 2
-                                task_reg[acq2_start:(acq2_start + block_len), ev_i] = 1
+                    length_all = self._tavg_dict["level1"].shape[1]
+                    if dataset == "HCP-YA":
+                        ev_files_lr = self.inputs.config["data_files"][f"{run}_LR_ev"]
+                        task_reg_lr = self._ev_block(int(length_all/2), ev_files_lr)
+                        ev_files_rl = self.inputs.config["data_files"][f"{run}_RL_ev"]
+                        task_reg_rl = self._ev_block(int(length_all/2), ev_files_rl)
+                        task_reg = np.vstack((task_reg_lr, task_reg_rl))
+                    elif dataset == "HCP-D" and run != "tfMRI_EMOTION":
+                        ev_files_ap = self.inputs.config["data_files"][f"{run}_AP_ev"]
+                        task_reg_ap = self._ev_block(int(length_all/2), ev_files_ap)
+                        ev_files_pa = self.inputs.config["data_files"][f"{run}_PA_ev"]
+                        task_reg_pa = self._ev_block(int(length_all/2), ev_files_pa)
+                        task_reg = np.vstack((task_reg_ap, task_reg_pa))
+                    else:
+                        ev_files = self.inputs.config["data_files"][f"{run}_ev"]
+                        task_reg = self._ev_block(length_all, ev_files)
                     self._results["ec"][run] = self._ec(task_reg)
 
         return runtime
@@ -262,13 +276,13 @@ class NetworkStats(SimpleInterface):
         self._results["stats"] = {}
         for level in ["1", "2", "3", "4"]:
             stats_level = {}
+            conn = self.inputs.conn[f"level{level}"]
 
-            dist, _ = bct.distance_wei(bct.invert(self.inputs.conn[f"level{level}"]))
-            comm, _ = bct.community_louvain(self.inputs.conn[f"level{level}"], B="negative_sym")
+            dist, _ = bct.distance_wei(bct.invert(conn))
+            comm, _ = bct.community_louvain(conn, B="negative_sym")
             stats_level["cpl"], stats_level["eff"], _, _, _ = bct.charpath(dist)
-            _, stats_level["mod"] = bct.modularity_und(comm)
-            par = bct.participation_coef(self.inputs.conn[f"level{level}"], comm)
-
+            _, stats_level["mod"] = bct.modularity_und(conn, kci=comm)
+            par = bct.participation_coef(conn, comm)
             for i in range(par.shape[0]):
                 stats_level[f"par_{i}"] = par[i]
             self._results["stats"][f"level{level}"] = stats_level
@@ -411,16 +425,16 @@ class SC(SimpleInterface):
     output_spec = _SCOutputSpec
 
     def _run_interface(self, runtime):
-        work_dir = self.inputs.config["work_dir"]
+        work_dir = self.inputs.config["tmp_dir"]
         self._results["sc_count"] = {}
         self._results["sc_length"] = {}
 
         for atlas_file in self.inputs.atlas_files:
-            key = f"level{atlas_file.name.split('flirt')[0][-2]}"
+            key = f"level{Path(atlas_file).name.split('flirt')[0][-2]}"
             count_file = Path(work_dir, f"sc_count_{key}.csv")
             subprocess.run(
                 self.inputs.simg_cmd.cmd("tck2connectome").split() + [
-                    "-assignment_radial_search", "2", "-symmetric", "-nthreads", "0",
+                    "-assignment_radial_search", "2", "-symmetric", "-nthreads", "0", "-force",
                     str(self.inputs.tck_file), str(atlas_file), str(count_file)],
                 check=True)
             self._results["sc_count"][key] = np.log(pd.read_csv(count_file, header=None))
@@ -429,8 +443,8 @@ class SC(SimpleInterface):
             subprocess.run(
                 self.inputs.simg_cmd.cmd("tck2connectome").split() + [
                     "-assignment_radial_search", "2", "-scale_length", "-stat_edge", "mean",
-                    "-symmetric", "-nthreads", "0", str(self.inputs.tck_file), str(atlas_file),
-                    str(length_file)],
+                    "-symmetric", "-nthreads", "0", "-force", str(self.inputs.tck_file),
+                    str(atlas_file), str(length_file)],
                 check=True)
             self._results["sc_length"][key] = pd.read_csv(length_file, header=None)
 

@@ -105,6 +105,9 @@ class InitData(SimpleInterface):
                 for run in param["tasks"]:
                     t_files[f"{run}_surf"] = Path(func_dir, run, f"{run}_Atlas_MSMAll.dtseries.nii")
                     t_files[f"{run}_vol"] = Path(func_dir, run, f"{run}.nii.gz")
+                    ev_files = param["ev_files"][f"tfMRI_{run.split('_')[1]}"]
+                    for ev_file in ev_files:
+                        t_files[f"{run}_ev"] = Path(func_dir, run, "EVs", ev_file)
                 for key, val in t_files.items():
                     dl.get(val, dataset=mni_dir)
                 self._results["data_files"].update(t_files)

@@ -43,7 +43,7 @@ class ProbTract(SimpleInterface):
             self.inputs.simg_cmd.cmd("dwi2response").split() + ["dhollander", "-force"] + args
             + [str(res_wm_file), str(res_gm_file), str(res_csf_file)], check=True)
         subprocess.run(
-            self.inputs.simg_cmd.cmd("dwi2fod").split() + ["msmt_csd"] + args
+            self.inputs.simg_cmd.cmd("dwi2fod").split() + ["msmt_csd", "-force"] + args
             + [str(res_wm_file), str(fod_wm_file), str(res_gm_file),
                str(Path(self.inputs.config["tmp_dir"], f"{subject}_fod_gm.mif")), str(res_csf_file),
                str(Path(self.inputs.config["tmp_dir"], f"{subject}_fod_csf.mif"))], check=True)
@@ -51,7 +51,7 @@ class ProbTract(SimpleInterface):
         ftt_file = Path(self.inputs.config["tmp_dir"], f"{subject}_ftt.nii.gz")
         subprocess.run(
             self.inputs.simg_cmd.cmd('5ttgen').split() + [
-                "hsvs", "-nocleanup", str(self.inputs.fs_dir), str(ftt_file)], check=True)
+                "hsvs", "-nocleanup", "-force", str(self.inputs.fs_dir), str(ftt_file)], check=True)
 
         # Tracktography
         params = {
@@ -70,7 +70,7 @@ class ProbTract(SimpleInterface):
             "-seed_dynamic", str(fod_wm_file), "-act", str(ftt_file),
             "-output_seeds", str(
                 Path(self.inputs.config["tmp_dir"], f"{subject}_WBT_10M_seeds_ctx.txt")),
-            "-backtrack", "-crop_at_gmwmi", "-nthreads", "0",
+            "-backtrack", "-crop_at_gmwmi", "-nthreads", "0", "-force",
             "-fslgrad", str(self.inputs.data_files["bvec"]), str(self.inputs.data_files["bval"]),
             str(fod_wm_file), str(self._results["tck_file"])]
         subprocess.run(tck, check=True)
