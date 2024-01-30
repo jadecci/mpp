@@ -19,7 +19,7 @@ def main() -> None:
         formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog, width=100))
     required = parser.add_argument_group("required arguments")
     required.add_argument("--targets", nargs="+", dest="targets", required=True, help="Targets")
-    required.add_argument("--datasets", nargs="+", desc="datasets", required=True, help="Datasets")
+    required.add_argument("--datasets", nargs="+", dest="datasets", required=True, help="Datasets")
     required.add_argument(
         "--features_dir", type=Path, dest="features_dir", required=True,
         help="Absolute paths to extracted features")
