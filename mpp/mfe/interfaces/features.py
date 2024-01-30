@@ -240,19 +240,19 @@ class FC(SimpleInterface):
                     self._results["ec"] = {}
                     length_all = self._tavg_dict["level1"].shape[1]
                     if dataset == "HCP-YA":
-                        ev_files_lr = self.inputs.config["data_files"][f"{run}_LR_ev"]
+                        ev_files_lr = self.inputs.data_files[f"{run}_LR_ev"]
                         task_reg_lr = self._ev_block(int(length_all/2), ev_files_lr)
-                        ev_files_rl = self.inputs.config["data_files"][f"{run}_RL_ev"]
+                        ev_files_rl = self.inputs.data_files[f"{run}_RL_ev"]
                         task_reg_rl = self._ev_block(int(length_all/2), ev_files_rl)
                         task_reg = np.vstack((task_reg_lr, task_reg_rl))
                     elif dataset == "HCP-D" and run != "tfMRI_EMOTION":
-                        ev_files_ap = self.inputs.config["data_files"][f"{run}_AP_ev"]
+                        ev_files_ap = self.inputs.data_files[f"{run}_AP_ev"]
                         task_reg_ap = self._ev_block(int(length_all/2), ev_files_ap)
-                        ev_files_pa = self.inputs.config["data_files"][f"{run}_PA_ev"]
+                        ev_files_pa = self.inputs.data_files[f"{run}_PA_ev"]
                         task_reg_pa = self._ev_block(int(length_all/2), ev_files_pa)
                         task_reg = np.vstack((task_reg_ap, task_reg_pa))
                     else:
-                        ev_files = self.inputs.config["data_files"][f"{run}_ev"]
+                        ev_files = self.inputs.data_files[f"{run}_ev"]
                         task_reg = self._ev_block(length_all, ev_files)
                     self._results["ec"][run] = self._ec(task_reg)
 
