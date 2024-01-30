@@ -56,7 +56,15 @@ for subject in `cat ${project_dir}/sublist/HCP-D_allRun.csv`; do
         --fsl_simg ${simg} --fs_simg ${simg} --wb_simg ${simg}
 done
 ```
-3. Extract multimodal features
+3. Extract DTI features (requires all preprocessed diffusion data for each dataset)
+```bash
+simg=${project_dir}/mpp/replication/singularity_files/mdiffusion.simg
+
+mfe_dti HCP-YA ${project_dir}/sublist/HCP-YA_allRun.csv --simg ${simg} \
+    --work_dir ${project_dir}/work --output_dir ${project_dir}/mfe_output
+
+```
+4. Extract multimodal features
 ```bash
 simg=${project_dir}/mpp/replication/singularity_files/mdiffusion.simg
 
@@ -74,6 +82,7 @@ for dataset in HCP-A HCP-D; do
             --work_dir ${project_dir}/work --output_dir ${project_dir}/mfe_output \
             --simg ${simg}
     done
+done
 ```
 
 ## 3. Prediction
