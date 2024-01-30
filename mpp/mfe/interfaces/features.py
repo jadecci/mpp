@@ -451,33 +451,6 @@ class SC(SimpleInterface):
         return runtime
 
 
-class _RDInputSpec(BaseInterfaceInputSpec):
-    config = traits.Dict(mandatory=True, desc="Workflow configurations")
-    l2_file = traits.File(mandatory=True, exists=True, desc="2nd eigenvalue file")
-    l3_file = traits.File(mandatory=True, exists=True, desc="3rd eigenvalue file")
-    subject = traits.Str(mandatory=True, desc="Subject ID")
-
-
-class _RDOutputSpec(TraitedSpec):
-    rd_file = traits.File(exists=True, desc="RD file")
-
-
-class RD(SimpleInterface):
-    """Compute RD image based on L2 and L3 images"""
-    input_spec = _RDInputSpec
-    output_spec = _RDOutputSpec
-
-    def _run_interface(self, runtime):
-        self._results["rd_file"] = Path(
-            self.inputs.config["tmp_dir"], f"{self.inputs.subject}_rd.nii.gz")
-
-        img_l2 = nib.load(self.inputs.l2_file)
-        data_rd = np.divide(img_l2.get_fdata() + nib.load(self.inputs.l3_file).get_fdata(), 2)
-        nib.save(nib.Nifti1Image(data_rd, img_l2.affine, img_l2.header), self._results["rd_file"])
-
-        return runtime
-
-
 class _DTIFeaturesInputSpec(BaseInterfaceInputSpec):
     config = traits.Dict(mandatory=True, desc="Workflow configurations")
     fa_skeleton_file = traits.File(mandatory=True, exists=True, desc="skeletonised FA file")

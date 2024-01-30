@@ -8,7 +8,6 @@ import datalad.api as dl
 import pandas as pd
 
 from mpp.exceptions import DatasetError
-from mpp.mfe.utilities import dataset_params
 import mpp
 
 logging.getLogger("datalad").setLevel(logging.WARNING)
@@ -214,57 +213,6 @@ class InitData(SimpleInterface):
                     dl.get(astats, dataset=anat_dir)
                     self._results["data_files"]["astats"] = astats
 
-        else:
-            raise DatasetError()
-
-        return runtime
-
-
-class _InitDTIDataInputSpec(BaseInterfaceInputSpec):
-    config = traits.Dict(mandatory=True, desc="Workflow configurations")
-    subject = traits.Str(mandatory=True, desc="Subject ID")
-
-
-class _InitDTIDataOutputSpec(TraitedSpec):
-    dwi = traits.File(exists=True, desc="preprocessed DWI data file")
-    bvals = traits.File(exists=True, desc="preprocessed bvals file")
-    bvecs = traits.File(exists=True, desc="preprocessed bvecs file")
-    mask = traits.File(exists=True, desc="preprocessed no-diffusion mask file")
-    subject = traits.Str(desc="subject ID")
-    dataset_dir = traits.Directory(desc="absolute path to installed root dataset")
-
-
-class InitDTIData(SimpleInterface):
-    """Install and get subject-specific data for DTI feature extraction"""
-    input_spec = _InitDTIDataInputSpec
-    output_spec = _InitDTIDataOutputSpec
-
-    def _get_file(self, key: str, filename: str) -> None:
-        dl.get(Path(self._d_dir, filename), dataset=self._d_dir.parent)
-        self._results[key] = Path(self._d_dir, filename)
-
-    def _run_interface(self, runtime):
-        root_data_dir = Path(self.inputs.config["tmp_dir"], self.inputs.subject)
-        config = self.inputs.config.copy()
-        config["subject"] = self.inputs.subject
-        config["pheno_dir"] = Path()
-        param = dataset_params(config)
-        self._results["dataset_dir"] = root_data_dir
-        self._results["subject"] = self.inputs.subject
-
-        if self.inputs.config["dataset"] in ["HCP-YA", "HCP-A", "HCP-D"]:
-            if self.inputs.config["dataset"] == "HCP-YA":
-                dl.install(root_data_dir, source=param["url"])
-                dl.get(param["sub_dir"], dataset=param["dir"], get_data=False)
-                self._d_dir = Path(param["sub_dir"], "T1w", "Diffusion")
-                dl.get(self._d_dir.parent, dataset=param["sub_dir"], get_data=False)
-            else:
-                dl.install(root_data_dir, source=param["diff_url"])
-                self._d_dir = Path(root_data_dir, self.inputs.subject)
-            self._get_file("dwi", "data.nii.gz")
-            self._get_file("bvals", "bvals")
-            self._get_file("bvecs", "bvecs")
-            self._get_file("mask", "nodif_brain_mask.nii.gz")
         else:
             raise DatasetError()
 

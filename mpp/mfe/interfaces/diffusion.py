@@ -4,8 +4,14 @@ from shutil import copyfile, rmtree
 import logging
 import subprocess
 
+from nipype.interfaces import fsl
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 import datalad.api as dl
+import nibabel as nib
+import numpy as np
+
+from mpp.exceptions import DatasetError
+from mpp.mfe.utilities import dataset_params
 
 logging.getLogger("datalad").setLevel(logging.WARNING)
 
@@ -78,6 +84,68 @@ class ProbTract(SimpleInterface):
         return runtime
 
 
+class _DTIFitInputSpec(BaseInterfaceInputSpec):
+    config = traits.Dict(mandatory=True, desc="Workflow configurations")
+    subject = traits.Str(mandatory=True, desc="Subject ID")
+    simg_cmd = traits.Any(mandatory=True, desc="command for using singularity image (or not)")
+
+
+class _DTIFitOutputSpec(TraitedSpec):
+    subject = traits.Str(desc="subject ID")
+    fa_file = traits.File(exists=True, desc="fractional anisotropy file")
+    md_file = traits.File(exists=True, desc="mean diffusivity file")
+    ad_file = traits.File(exists=True, desc="axial diffusivity file")
+    rd_file = traits.File(exists=True, desc="radial diffusivity file")
+
+
+class DTIFit(SimpleInterface):
+    """Run FSL DTIFIT for one subject"""
+    input_spec = _DTIFitInputSpec
+    output_spec = _DTIFitOutputSpec
+
+    def _run_interface(self, runtime):
+        root_data_dir = Path(self.inputs.config["tmp_dir"], self.inputs.subject)
+        config = self.inputs.config.copy()
+        config["subject"] = self.inputs.subject
+        config["pheno_dir"] = Path()
+        param = dataset_params(config)
+        self._results["subject"] = self.inputs.subject
+
+        if self.inputs.config["dataset"] in ["HCP-YA", "HCP-A", "HCP-D"]:
+            if self.inputs.config["dataset"] == "HCP-YA":
+                dl.install(root_data_dir, source=param["url"])
+                dl.get(param["sub_dir"], dataset=param["dir"], get_data=False)
+                d_dir = Path(param["sub_dir"], "T1w", "Diffusion")
+                dl.get(d_dir.parent, dataset=param["sub_dir"], get_data=False)
+            else:
+                dl.install(root_data_dir, source=param["diff_url"])
+                d_dir = Path(root_data_dir, self.inputs.subject)
+            dwi_files = {
+                "dwi": Path(d_dir, "data.nii.gz"), "bvals": Path(d_dir, "bvals"),
+                "bvecs": Path(d_dir, "bvecs"), "mask": Path(d_dir, "nodif_brain_mask.nii.gz")}
+            for val in dwi_files.values():
+                dl.get(val, dataset=d_dir.parent)
+        else:
+            raise DatasetError()
+
+        dtifit = fsl.DTIFit(
+            command=self.inputs.simg_cmd.cmd("dtifit"), dwi=dwi_files["dwi"],
+            bvals=dwi_files["bvals"], bvecs=dwi_files["bvecs"], mask=dwi_files["mask"])
+        dtifit.run()
+        results = dtifit.aggregate_outputs()
+        self._results["fa_file"] = results.FA
+        self._results["md_file"] = results.MD
+        self._results["ad_file"] = results.L1
+        dl.remove(dataset=root_data_dir, reckless="kill")
+
+        self._results["rd_file"] = Path(config["tmp_dir"], f"{config['subject']}_rd.nii.gz")
+        img_l2 = nib.load(results.L2)
+        data_rd = np.divide(img_l2.get_fdata() + nib.load(results.L3).get_fdata(), 2)
+        nib.save(nib.Nifti1Image(data_rd, img_l2.affine, img_l2.header), self._results["rd_file"])
+
+        return runtime
+
+
 class _TBSSInputSpec(BaseInterfaceInputSpec):
     config = traits.Dict(mandatory=True, desc="Workflow configurations")
     fa_files = traits.List(mandatory=True, desc="list of FA files")
@@ -85,7 +153,6 @@ class _TBSSInputSpec(BaseInterfaceInputSpec):
     ad_files = traits.List(mandatory=True, desc="list of AD files")
     rd_files = traits.List(mandatory=True, desc="list of RD files")
     subjects = traits.List(mandatory=True, desc="list of subjects")
-    dataset_dir = traits.Directory(mandatory=True, desc="absolute path to installed root dataset")
     simg_cmd = traits.Any(mandatory=True, desc="command for using singularity image (or not)")
 
 
@@ -110,7 +177,6 @@ class TBSS(SimpleInterface):
         return files_out
 
     def _run_interface(self, runtime):
-        dl.remove(dataset=self.inputs.dataset_dir, reckless="kill")
         fa_dir = Path(self.inputs.config["tmp_dir"], "tbss_fa")
         fa_dir.mkdir(parents=True, exist_ok=True)
         chdir(fa_dir)

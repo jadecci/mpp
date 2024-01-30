@@ -5,11 +5,10 @@ import configparser
 
 import nipype.pipeline as pe
 import pandas as pd
-from nipype.interfaces import fsl
 
-from mpp.mfe.interfaces.data import InitDTIData, SaveDTIFeatures
-from mpp.mfe.interfaces.diffusion import TBSS
-from mpp.mfe.interfaces.features import RD, DTIFeatures
+from mpp.mfe.interfaces.data import SaveDTIFeatures
+from mpp.mfe.interfaces.diffusion import DTIFit, TBSS
+from mpp.mfe.interfaces.features import DTIFeatures
 from mpp.mfe.utilities import SimgCmd
 import mpp
 
@@ -48,23 +47,17 @@ def main() -> None:
     mfe_wf.config["execution"]["crashfile_format"] = "txt"
     mfe_wf.config["execution"]["stop_on_first_crash"] = "true"
 
-    init_data = pe.Node(
-        InitDTIData(config=config), "init_data", iterables=[("subject", sublist)])
-    dtifit = pe.Node(fsl.DTIFit(command=simg_cmd.cmd("dtifit")), "dtifit")
-    rd = pe.Node(RD(config=config), "rd")
+    dtifit = pe.Node(
+        DTIFit(config=config, simg_cmd=simg_cmd), "dtifit", iterables=[("subject", sublist)])
     tbss = pe.JoinNode(
         TBSS(config=config, simg_cmd=simg_cmd), "tbss", joinsource="init_data",
         joinfield=["fa_files", "md_files", "ad_files", "rd_files", "subjects"])
     features = pe.Node(DTIFeatures(config=config, sublist=sublist), "features")
     save_features = pe.Node(SaveDTIFeatures(config=config), "save_features")
     mfe_wf.connect([
-        (init_data, dtifit, [
-            ("dwi", "dwi"), ("bvals", "bvals"), ("bvecs", "bvecs"), ("mask", "mask")]),
-        (init_data, rd, [("subject", "subject")]),
-        (dtifit, rd, [("L2", "l2_file"), ("L3", "l3_file")]),
-        (init_data, tbss, [("subject", "subjects"), ("dataset_dir", "dataset_dir")]),
-        (dtifit, tbss, [("FA", "fa_files"), ("MD", "md_files"), ("L1", "ad_files")]),
-        (rd, tbss, [("rd_file", "rd_files")]),
+        (dtifit, tbss, [
+            ("subject", "subjects"), ("fa_file", "fa_files"), ("md_file", "md_files"),
+            ("ad_file", "ad_files"), ("rd_file", "rd_files")]),
         (tbss, features, [
             ("fa_skeleton_file", "fa_skeleton_file"), ("md_skeleton_file", "md_skeleton_file"),
             ("ad_skeleton_file", "ad_skeleton_file"), ("rd_skeleton_file", "rd_skeleton_file")]),
