@@ -22,7 +22,7 @@ hcpya_out_file = Path(args.out_dir, "HCP-YA_allRun.csv")
 hcpya_data["Subject"].to_csv(hcpya_out_file, header=False, index=False)
 
 # HCP-A
-hcpa_pheno_file = Path(args.phno_dir, "HCP-A", "ndar_subject01.txt")
+hcpa_pheno_file = Path(args.pheno_dir, "HCP-A", "ndar_subject01.txt")
 hcpa_data = pd.read_table(
     hcpa_pheno_file, sep="\t", header=0, skiprows=[1], usecols=["src_subject_id"])
 hcpa_data["src_subject_id"] = hcpa_data["src_subject_id"].str.cat(["_V1_MR"]*len(hcpa_data))
@@ -32,7 +32,7 @@ hcpa_out_file = Path(args.out_dir, "HCP-A_allRun.csv")
 hcpa_data.to_csv(hcpa_out_file, header=False, index=False)
 
 # HCP-D
-hcpd_pheno_file = Path(args.phno_dir, "HCP-D", "ndar_subject01.txt")
+hcpd_pheno_file = Path(args.pheno_dir, "HCP-D", "ndar_subject01.txt")
 hcpd_data = pd.read_table(
     hcpd_pheno_file, sep="\t", header=0, skiprows=[1], usecols=["src_subject_id"])
 hcpd_data["src_subject_id"] = hcpd_data["src_subject_id"].str.cat(["_V1_MR"]*len(hcpd_data))
