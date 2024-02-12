@@ -183,7 +183,7 @@ class TBSS(SimpleInterface):
 
         fa_list = self._copy_files(self.inputs.fa_files, fa_dir)
         subprocess.run(self.inputs.simg_cmd.cmd("tbss_1_preproc").split() + fa_list, check=True)
-        subprocess.run(self.inputs.simg_cmd.cmd("tbss_2_reg").split() + ["-n"], check=True)
+        subprocess.run(self.inputs.simg_cmd.cmd("tbss_2_reg").split() + ["-T"], check=True)
         subprocess.run(self.inputs.simg_cmd.cmd("tbss_3_postreg").split() + ["-S"], check=True)
         subprocess.run(self.inputs.simg_cmd.cmd("tbss_4_prestats").split() + ["0.2"], check=True)
         self._results["fa_skeleton_file"] = Path(fa_dir, "stats", "all_FA_skeletonised.nii.gz")

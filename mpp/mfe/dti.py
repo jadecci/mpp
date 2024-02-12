@@ -50,7 +50,7 @@ def main() -> None:
     dtifit = pe.Node(
         DTIFit(config=config, simg_cmd=simg_cmd), "dtifit", iterables=[("subject", sublist)])
     tbss = pe.JoinNode(
-        TBSS(config=config, simg_cmd=simg_cmd), "tbss", joinsource="init_data",
+        TBSS(config=config, simg_cmd=simg_cmd), "tbss", joinsource="dtifit",
         joinfield=["fa_files", "md_files", "ad_files", "rd_files", "subjects"])
     features = pe.Node(DTIFeatures(config=config, sublist=sublist), "features")
     save_features = pe.Node(SaveDTIFeatures(config=config), "save_features")
