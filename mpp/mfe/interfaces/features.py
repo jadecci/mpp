@@ -7,11 +7,11 @@ import subprocess
 
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 from nipype.interfaces import fsl, freesurfer
+from pandas.errors import EmptyDataError
 from rdcmpy import RegressionDCM
 from scipy.ndimage import binary_erosion
 from scipy.stats import zscore
 import bct
-import datalad.api as dl
 import nibabel as nib
 import numpy as np
 import pandas as pd
@@ -149,12 +149,15 @@ class FC(SimpleInterface):
     def _ev_block(self, length: int, ev_files: list) -> np.ndarray:
         task_reg = np.zeros((length, len(ev_files)))
         for ev_i, ev_file in enumerate(ev_files):
-            ev = pd.read_table(ev_file, header=None, sep=" ")
-            for _, block in ev.iterrows():
-                block_start = int(
-                    round(block[0] / self.inputs.config["param"]["tr"])) - 1
-                block_len = int(round(block[1] / self.inputs.config["param"]["tr"]))
-                task_reg[block_start:(block_start + block_len), ev_i] = 1
+            try:
+                ev = pd.read_table(ev_file, header=None, delim_whitespace=True)
+                for _, block in ev.iterrows():
+                    block_start = int(
+                        round(float(block[0]) / self.inputs.config["param"]["tr"])) - 1
+                    block_len = int(round(float(block[1]) /self.inputs.config["param"]["tr"]))
+                    task_reg[block_start:(block_start + block_len), ev_i] = 1
+            except EmptyDataError:
+                task_reg[:, ev_i] = 0
         return task_reg
 
     def _ec(self, task_reg: Optional[np.ndarray] = None) -> dict:
@@ -162,8 +165,8 @@ class FC(SimpleInterface):
         ec_dict = {}
         for level in range(4):
             rdcm = RegressionDCM(
-                self._tavg_dict[f"level{level+1}"].T, self.inputs.config["param"]["tr"],
-                task_reg, prior_a=self.inputs.sc_count[f"level{level+1}"])
+                self._tavg_dict[f"level{level+1}"].T, float(self.inputs.config["param"]["tr"]),
+                task_reg, prior_a=np.array(self.inputs.sc_count[f"level{level+1}"]))
             rdcm.estimate()
             ec_dict[f"level{level+1}"] = rdcm.params["mu_connectivity"]
         return ec_dict
