@@ -205,10 +205,12 @@ class FC(SimpleInterface):
             self._results["sfc"] = self._sfc()
             self._dfc()
             if self.inputs.sc_count:
-                self._ec()
+                self._results["ec"] = self._ec()
 
         elif self.inputs.modality == "tfMRI":
             self._results["sfc"] = {}
+            if self.inputs.sc_count:
+                self._results["ec"] = {}
             for run in self.inputs.config["param"]["task_runs"]:
                 if dataset == "HCP-YA":
                     self._tavg_dict = self._concat(
@@ -240,7 +242,6 @@ class FC(SimpleInterface):
                 self._results["sfc"][run] = self._sfc()
 
                 if self.inputs.sc_count:
-                    self._results["ec"] = {}
                     length_all = self._tavg_dict["level1"].shape[1]
                     if dataset == "HCP-YA":
                         ev_files_lr = self.inputs.data_files[f"{run}_LR_ev"]
@@ -276,19 +277,21 @@ class NetworkStats(SimpleInterface):
     output_spec = _NetworkStatsOutputSpec
 
     def _run_interface(self, runtime):
-        self._results["stats"] = {}
+        self._results["stats"] = {"cpl": {}, "eff": {}, "mod": {}, "par": {}}
         for level in ["1", "2", "3", "4"]:
-            stats_level = {}
-            conn = self.inputs.conn[f"level{level}"]
+            l_key = f"level{level}"
+            conn = self.inputs.conn[l_key]
 
             dist, _ = bct.distance_wei(bct.invert(conn))
             comm, _ = bct.community_louvain(conn, B="negative_sym")
-            stats_level["cpl"], stats_level["eff"], _, _, _ = bct.charpath(dist)
-            _, stats_level["mod"] = bct.modularity_und(conn, kci=comm)
+            cpl, eff, _, _, _ = bct.charpath(dist)
+            _, mod = bct.modularity_und(conn, kci=comm)
             par = bct.participation_coef(conn, comm)
-            for i in range(par.shape[0]):
-                stats_level[f"par_{i}"] = par[i]
-            self._results["stats"][f"level{level}"] = stats_level
+
+            self._results["stats"]["cpl"][l_key] = cpl
+            self._results["stats"]["eff"][l_key] = eff
+            self._results["stats"]["mod"][l_key] = mod
+            self._results["stats"]["par"][l_key] = par
 
         return runtime
 
@@ -353,16 +356,16 @@ class Anat(SimpleInterface):
                 annot_file = f"{hemi}.Schaefer2018_{level+1}00Parcels_17Networks_order.annot"
                 annot_fs = files(mpp) / "data" / annot_file
                 annot_sub = Path(self.inputs.config["tmp_dir"], f"{hemi}.{subject}_{level+1}.annot")
+                sub_dir = Path(self.inputs.config["tmp_dir"], "fs_sub_dir")
                 add_subdir = AddSubDir(
-                    sub_dir=self.inputs.config["tmp_dir"], subject=subject,
-                    fs_dir=Path(self.inputs.anat_dir, subject))
+                    sub_dir=sub_dir, subject=subject, fs_dir=Path(self.inputs.anat_dir, subject))
                 add_subdir.run()
-                fs_opts = f"--env SUBJECTS_DIR={self.inputs.config['tmp_dir']}"
+                fs_opts = f"--env SUBJECTS_DIR={sub_dir}"
                 annot_fs2sub = freesurfer.SurfaceTransform(
                     command=self.inputs.simg_cmd.cmd("mri_surf2surf", options=fs_opts),
                     source_annot_file=annot_fs, out_file=annot_sub, hemi=hemi,
                     source_subject="fsaverage", target_subject=subject,
-                    subjects_dir=self.inputs.config["tmp_dir"])
+                    subjects_dir=sub_dir)
                 annot_fs2sub.run()
                 hemi_table = Path(self.inputs.config["tmp_dir"], f"{hemi}.{subject}_fs_stats")
                 options = f"--env SUBJECTS_DIR={self.inputs.anat_dir}"

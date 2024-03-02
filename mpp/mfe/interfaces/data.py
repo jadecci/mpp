@@ -67,6 +67,12 @@ class InitData(SimpleInterface):
             dl.get(mni_dir, dataset=param["sub_dir"], get_data=False)
             dl.get(anat_dir, dataset=param["sub_dir"], get_data=False)
 
+            # required for computing confounds
+            if self.inputs.config["dataset"] in ["HCP-A", "HCP-D"]:
+                    astats = Path(fs_dir, "stats", "aseg.stats")
+                    dl.get(astats, dataset=anat_dir)
+                    self._results["data_files"]["astats"] = astats
+
             if "rfMRI" in self.inputs.config["modality"]:
                 rs_files = {"atlas_mask": Path(mni_dir, "ROIs", "Atlas_wmparc.2.nii.gz")}
                 for run in param["rests"]:
@@ -207,12 +213,6 @@ class InitData(SimpleInterface):
                 self._results["rh_white"] = self._results["data_files"]["rh_white"]
                 self._results["ribbon"] = self._results["data_files"]["ribbon"]
                 self._results["t1_to_mni"] = self._results["data_files"]["t1_to_mni"]
-
-            if "conf" in self.inputs.config["modality"]:
-                if self.inputs.config["dataset"] in ["HCP-A", "HCP-D"]:
-                    astats = Path(fs_dir, "stats", "aseg.stats")
-                    dl.get(astats, dataset=anat_dir)
-                    self._results["data_files"]["astats"] = astats
 
         else:
             raise DatasetError()
@@ -367,12 +367,13 @@ class SaveFeatures(SimpleInterface):
                 self._write_data_level(level, self.inputs.d_rsfc, "rs_dfc", "conn_asym")
                 self._write_data_level(level, self.inputs.e_rsfc, "rs_ec", "conn_asym")
                 for stat in ["cpl", "eff", "mod"]:
-                    self._write_data(self.inputs.rs_stats[stat], f"rs_{stat}")
-                self._write_data_level(level, self.inputs.rs_stats["par"], f"rs_par", "array")
+                    self._write_data(
+                        {stat: self.inputs.rs_stats[stat][f"level{level}"]}, f"rs_{stat}")
+                self._write_data_level(level, self.inputs.rs_stats["par"], "rs_par", "array")
 
             if "tfMRI" in self.inputs.config["modality"]:
-                for key, _ in self.inputs.tfc.items():
-                    self._write_data_level(level, self.inputs.s_tfc[key], f"{key}_sfc", "conn_sym")
+                for key, val in self.inputs.s_tfc.items():
+                    self._write_data_level(level, val, f"{key}_sfc", "conn_sym")
                     self._write_data_level(level, self.inputs.e_tfc[key], f"{key}_ec", "conn_asym")
 
             if "sMRI" in self.inputs.config["modality"]:

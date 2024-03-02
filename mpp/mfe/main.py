@@ -54,6 +54,14 @@ def main() -> None:
     save_features = pe.Node(SaveFeatures(config=config), "save_features")
     mfe_wf.connect([(init_data, save_features, [("dataset_dir", "dataset_dir")])])
 
+    # Confounds and phenotypes are always computed
+    conf = pe.Node(Confounds(config=config, simg_cmd=simg_cmd), "conf")
+    pheno = pe.Node(Phenotypes(config=config), "pheno")
+    mfe_wf.connect([
+        (init_data, conf, [("data_files", "data_files")]),
+        (conf, save_features, [("conf", "conf")]),
+        (pheno, save_features, [("pheno", "pheno")])])
+
     # rfMRI features
     if "rfMRI" in config["modality"]:
         rsfc = pe.Node(FC(config=config, modality="rfMRI"), "rsfc")
@@ -77,6 +85,7 @@ def main() -> None:
         anat = pe.Node(Anat(config=config, simg_cmd=simg_cmd), "anat")
         mfe_wf.connect([
             (init_data, anat, [("data_files", "data_files"), ("anat_dir", "anat_dir")]),
+            (conf, anat, [("conf", "conf")]),
             (anat, save_features, [("myelin", "myelin"), ("morph", "morph")])])
 
     # dMRI features
@@ -164,14 +173,6 @@ def main() -> None:
     if "tfMRI" in config["modality"] and "dMRI" in config["modality"]:
         mfe_wf.connect([
             (sc, tfc, [("sc_count", "sc_count")]), (tfc, save_features, [("ec", "e_tfc")])])
-
-    # Confounds and phenotypes are always computed
-    conf = pe.Node(Confounds(config=config, simg_cmd=simg_cmd), "conf")
-    pheno = pe.Node(Phenotypes(config=config), "pheno")
-    mfe_wf.connect([
-        (init_data, conf, [("data_files", "data_files")]),
-        (conf, save_features, [("conf", "conf")]),
-        (pheno, save_features, [("pheno", "pheno")])])
 
     # Run workflow
     mfe_wf.write_graph()

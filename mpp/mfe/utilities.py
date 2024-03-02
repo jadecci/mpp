@@ -124,9 +124,9 @@ def dataset_params(config: dict) -> dict:
             "hand_file": Path(config["pheno_dir"], "edinburgh_hand01.txt"),
             "tr": 0.8,
             "ev_files": {
-                "tfMRI_CARIT_PA":["go.txt", "miss.txt", "nogoCR.txt", "nogoFA.txt"],
-                "tfMRI_FACENAME_PA": ["encoding.txt", "recall.txt"],
-                "tfMRI_VISMOTOR_PA": ["vismotor.txt"]}},
+                "tfMRI_CARIT":["go.txt", "miss.txt", "nogoCR.txt", "nogoFA.txt"],
+                "tfMRI_FACENAME": ["encoding.txt", "recall.txt"],
+                "tfMRI_VISMOTOR": ["vismotor.txt"]}},
         "HCP-D": {
             "url": config["hcpd_url"],
             "dir": Path(root_data_dir, config["hcpd_dir"]),
@@ -159,6 +159,8 @@ def dataset_params(config: dict) -> dict:
                 "tfMRI_GUESSING": [
                     "cueHigh.txt", "cueLow.txt", "feedbackHighLose.txt", "feedbackHighWin.txt",
                     "feedbackLowLose.txt", "feedbackLowWin.txt", "guess.txt"]}}}
+    for key, val in params["HCP-A"]["pheno_files"].items():
+        params["HCP-A"]["pheno_files"][key] = Path(config["pheno_dir"], val)
     params["HCP-D"]["col_names"] = params["HCP-A"]["col_names"]
     params["HCP-D"]["pheno_files"] = params["HCP-A"]["pheno_files"]
 
@@ -185,7 +187,7 @@ class AddSubDir(SimpleInterface):
 
     def _run_interface(self, runtime):
         Path(self.inputs.sub_dir).mkdir(parents=True, exist_ok=True)
-        if not Path(self.inputs.sub_dir, self.inputs.subject).is_symlink():
+        if not Path(self.inputs.sub_dir, self.inputs.subject).is_dir():
             symlink(self.inputs.fs_dir, Path(self.inputs.sub_dir, self.inputs.subject))
         if not Path(self.inputs.sub_dir, "fsaverage").is_dir():
             copytree(
