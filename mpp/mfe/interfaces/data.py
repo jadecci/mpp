@@ -310,7 +310,10 @@ class Phenotypes(SimpleInterface):
                 pheno_data = pheno_data.loc[pheno_data["src_subject_id"] == subject]
             else:
                 raise DatasetError()
-            self._results["pheno"][key] = pheno_data[val].values[0]
+            if pheno_data[val].values.shape[0]:
+                self._results["pheno"][key] = pheno_data[val].values[0]
+            else:
+                self._results["pheno"][key] = 999 # missing value
 
         return runtime
 
