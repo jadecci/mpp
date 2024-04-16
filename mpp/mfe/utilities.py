@@ -120,8 +120,9 @@ def dataset_params(config: dict) -> dict:
                 "posaffect": 157, "emotsupp": 12, "friendship": 12, "loneliness": 23,
                 "endurance": 16, "gaitspeed": 30, "strength": 22, "neoffi_n": 77,
                 "neoffi_e": 76, "neoffi_o": 78, "neoffi_a": 74, "neoffi_c": 75},
-            "demo_file": Path(config["pheno_dir"], "ssaga_cover_demo01.txt"),
+            "demo_file": Path(config["pheno_dir"], "ndar_subject01.txt"),
             "hand_file": Path(config["pheno_dir"], "edinburgh_hand01.txt"),
+            "hand_col": 70,
             "tr": 0.8,
             "ev_files": {
                 "tfMRI_CARIT":["go.txt", "miss.txt", "nogoCR.txt", "nogoFA.txt"],
@@ -148,8 +149,9 @@ def dataset_params(config: dict) -> dict:
                 "posaffect": 66, "emotsupp": 11, "friendship": 10, "loneliness": 11,
                 "endurance": 13, "gaitspeed": 18, "strength": 14, "neoffi_n": 71,
                 "neoffi_e": 70, "neoffi_o": 72, "neoffi_a": 68, "neoffi_c": 69},
-            "demo_file": Path(config["pheno_dir"], "ssaga_cover_demo01.txt"),
+            "demo_file": Path(config["pheno_dir"], "ndar_subject01.txt"),
             "hand_file": Path(config["pheno_dir"], "edinburgh_hand01.txt"),
+            "hand_col": 23,
             "tr": 0.8,
             "ev_files": {
                 "tfMRI_CARIT": [
