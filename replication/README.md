@@ -1,12 +1,16 @@
 ## 1. Preparation
+
 1. Clone and install from GIN repository to get all the replication files
+
 ```bash
 python3 -m venv ~/.venvs/mpp-features
 source ~/.venvs/mpp-features/bin/activate
 datalad clone git@gin.g-node.org:/jadecci/MPP.git ${project_dir}/mpp
 cd ${project_dir}/mpp && datalad get -r . && cd ${project_dir}
 ```
+
 2. Download the phenotype files into the `phenotype` folder, following the directory structure.
+
 ```console
 ${project_dir}/phenotype
 ├── HCP-A
@@ -18,13 +22,16 @@ ${project_dir}/phenotype
 ## 2. Feature Extraction
 
 1. Generate the subject lists for feature extraction
+
 ```bash
 python3 ${project_dir}/mpp/replication/sublist/create_allRun_sublists.py \
     ${project_dir}/phenotype ${project_dir}/sublist \
     ${project_dir}/mpp/replication/sublist/HCP-A_exclude.csv \
     ${project_dir}/mpp/replication/sublist/HCP-D_exclude.csv
 ```
+
 2. Preprocess diffusion data for HCP Aging and HCP Development
+
 ```bash
 # For INM7 member on juseless
 datalad clone git@jugit.fz-juelich.de:inm7/datasets/datasets_repo.git
@@ -57,7 +64,9 @@ for subject in `cat ${project_dir}/sublist/HCP-D_allRun.csv`; do
         --fsl_simg ${simg} --fs_simg ${simg} --wb_simg ${simg}
 done
 ```
+
 3. Extract DTI features (requires all preprocessed diffusion data for each dataset)
+
 ```bash
 simg=${project_dir}/mpp/replication/singularity_files/mdiffusion.simg
 
@@ -65,7 +74,9 @@ mfe_dti HCP-YA ${project_dir}/sublist/HCP-YA_allRun.csv --simg ${simg} \
     --work_dir ${project_dir}/work --output_dir ${project_dir}/mfe_output
 
 ```
+
 4. Extract multimodal features
+
 ```bash
 simg=${project_dir}/mpp/replication/singularity_files/mdiffusion.simg
 
