@@ -540,7 +540,7 @@ class Confounds(SimpleInterface):
             subject = self.inputs.config["subject"].split("_V1_MR")[0]
             demo = pd.read_table(
                 self.inputs.config["param"]["demo_file"], sep="\t", header=0, skiprows=[1],
-                usecols=[4, 5, 7], dtype={"src_subject_id": str, "interview_age": int, "sex": str})
+                usecols=[4, 6, 7], dtype={"src_subject_id": str, "interview_age": int, "sex": str})
             demo = demo.loc[demo["src_subject_id"] == subject]
             handedness = pd.read_table(
                 self.inputs.config["param"]["hand_file"], sep="\t", header=0, skiprows=[1],

@@ -84,7 +84,7 @@ class InitData(SimpleInterface):
                     if val.is_symlink():
                         dl.get(val, dataset=mni_dir)
                     else:
-                        if self.inputs.dataset == "HCP-D":
+                        if self.inputs.config["dataset"] == "HCP-D":
                             if "AP" in val:
                                 rs_file_a = Path(str(val).replace("_AP", "a_AP"))
                                 rs_file_b = Path(str(val).replace("_AP", "b_AP"))
@@ -183,10 +183,6 @@ class InitData(SimpleInterface):
                     "norm": Path(fs_dir, "mri", "norm.mgz"),
                     "lh_thickness": Path(fs_dir, "surf", "lh.thickness"),
                     "rh_thickness": Path(fs_dir, "surf", "rh.thickness"),
-                    "aseg": Path(fs_dir, "mri", "aseg.mgz"),
-                    "aparc_aseg": Path(fs_dir, "mri", "aparc+aseg.mgz"),
-                    "talairach_xfm": Path(fs_dir, "mri", "transforms", "talairach.xfm"),
-                    "norm": Path(fs_dir, "mri", "norm.mgz"),
                     "brain_mask": Path(fs_dir, "mri", "brainmask.mgz")}
                 for key, val in fs_files.items():
                     dl.get(val, dataset=anat_dir)
