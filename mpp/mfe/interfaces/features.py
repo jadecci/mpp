@@ -249,15 +249,17 @@ class FC(SimpleInterface):
                         ev_files_rl = self.inputs.data_files[f"{run}_RL_ev"]
                         task_reg_rl = self._ev_block(int(length_all/2), ev_files_rl)
                         task_reg = np.vstack((task_reg_lr, task_reg_rl))
-                    elif dataset == "HCP-D" and run != "tfMRI_EMOTION":
+                    elif dataset == "HCP-D":
                         ev_files_ap = self.inputs.data_files[f"{run}_AP_ev"]
                         task_reg_ap = self._ev_block(int(length_all/2), ev_files_ap)
                         ev_files_pa = self.inputs.data_files[f"{run}_PA_ev"]
                         task_reg_pa = self._ev_block(int(length_all/2), ev_files_pa)
                         task_reg = np.vstack((task_reg_ap, task_reg_pa))
-                    else:
+                    elif dataset == "HCP-A":
                         ev_files = self.inputs.data_files[f"{run}_ev"]
                         task_reg = self._ev_block(length_all, ev_files)
+                    else:
+                        raise DatasetError()
                     self._results["ec"][run] = self._ec(task_reg)
 
         return runtime
