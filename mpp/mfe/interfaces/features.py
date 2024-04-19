@@ -249,12 +249,15 @@ class FC(SimpleInterface):
                         ev_files_rl = self.inputs.data_files[f"{run}_RL_ev"]
                         task_reg_rl = self._ev_block(int(length_all/2), ev_files_rl)
                         task_reg = np.vstack((task_reg_lr, task_reg_rl))
-                    elif dataset == "HCP-D":
+                    elif dataset == "HCP-D" and run != "tfMRI_EMOTION":
                         ev_files_ap = self.inputs.data_files[f"{run}_AP_ev"]
                         task_reg_ap = self._ev_block(int(length_all/2), ev_files_ap)
                         ev_files_pa = self.inputs.data_files[f"{run}_PA_ev"]
                         task_reg_pa = self._ev_block(int(length_all/2), ev_files_pa)
                         task_reg = np.vstack((task_reg_ap, task_reg_pa))
+                    elif dataset == "HCP-D":
+                        ev_files = self.inputs.data_files[f"{run}_PA_ev"]
+                        task_reg = self._ev_block(length_all, ev_files)
                     elif dataset == "HCP-A":
                         ev_files = self.inputs.data_files[f"{run}_ev"]
                         task_reg = self._ev_block(length_all, ev_files)
@@ -531,7 +534,7 @@ class Confounds(SimpleInterface):
             res_conf = pd.read_csv(
                 self.inputs.config["param"]["restricted_file"],
                 usecols=["Subject", "Age_in_Yrs", "Handedness"],
-                dtype={"Subject": str, "Age_in_Yrs": int, "Handedness": int})
+                dtype={"Subject": str, "Age_in_Yrs": float, "Handedness": float})
             res_conf = res_conf.loc[res_conf["Subject"] == self.inputs.config["subject"]]
             conf = {
                 "age": res_conf["Age_in_Yrs"].values[0], "gender": unres_conf["Gender"].values[0],
@@ -542,12 +545,13 @@ class Confounds(SimpleInterface):
             subject = self.inputs.config["subject"].split("_V1_MR")[0]
             demo = pd.read_table(
                 self.inputs.config["param"]["demo_file"], sep="\t", header=0, skiprows=[1],
-                usecols=[4, 6, 7], dtype={"src_subject_id": str, "interview_age": int, "sex": str})
+                usecols=[4, 6, 7], dtype={
+                    "src_subject_id": str, "interview_age": float, "sex": str})
             demo = demo.loc[demo["src_subject_id"] == subject]
             handedness = pd.read_table(
                 self.inputs.config["param"]["hand_file"], sep="\t", header=0, skiprows=[1],
                 usecols=[5, self.inputs.config["param"]["hand_col"]],
-                dtype={"src_subject_id": str, "hcp_handedness_score": int})
+                dtype={"src_subject_id": str, "hcp_handedness_score": float})
             handedness = handedness.loc[handedness["src_subject_id"] == subject]
             conf = {
                 "age": demo["interview_age"].values[0], "gender": demo["sex"].values[0],
