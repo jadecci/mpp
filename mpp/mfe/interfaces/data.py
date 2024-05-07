@@ -385,6 +385,11 @@ class SaveFeatures(SimpleInterface):
                 self._write_data_level(level, self.inputs.sc_length, "d_scl", "conn_asym")
 
         dl.remove(dataset=self.inputs.dataset_dir, reckless="kill")
+        if "dMRI" in self.inputs.config["modality"]:
+            if self.inputs.config["dataset"] in ["HCP-A", "HCP-D"]:
+                d_data_dir = Path(
+                    self.inputs.config["tmp_dir"], f"{self.inputs.config['subject']}_diff")
+                dl.remove(d_data_dir, reckless="kill")
 
         return runtime
 
