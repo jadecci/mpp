@@ -335,15 +335,19 @@ class SaveFeatures(SimpleInterface):
     """Save extracted features"""
     input_spec = _SaveFeaturesInputSpec
 
-    def _write_data_level(self, level: int, data_in: dict, prefix: str, type: str) -> None:
+    def _write_data_level(self, level: int, data_in: dict, prefix: str, data_type: str) -> None:
+        if "surf" in data_type:
+            n_parcel = {1: 100, 2: 200, 3: 300, 4: 400}
+        else:
+            n_parcel = {1: 116, 2: 232, 3: 350, 4: 454}
         data = {}
-        for parcel_i in range(level * 100):
+        for parcel_i in range(n_parcel[level]):
             prefix_i = f"{prefix}_{parcel_i}"
-            if type == "conn_sym":
-                for parcel_j in range(parcel_i + 1, level * 100):
+            if data_type == "conn_sym":
+                for parcel_j in range(parcel_i + 1, n_parcel[level]):
                     data[f"{prefix_i}_{parcel_j}"] = data_in[f"level{level}"][parcel_i][parcel_j]
-            elif type == "conn_asym":
-                for parcel_j in range(level * 100):
+            elif data_type == "conn_asym":
+                for parcel_j in range(n_parcel[level]):
                     data[f"{prefix_i}_{parcel_j}"] = data_in[f"level{level}"][parcel_i][parcel_j]
             else:
                 data[prefix_i] = data_in[f"level{level}"][parcel_i]
@@ -356,6 +360,8 @@ class SaveFeatures(SimpleInterface):
 
     def _run_interface(self, runtime):
         self._output = Path(self.inputs.config["output_dir"], f"{self.inputs.config['subject']}.h5")
+        if self._output.exists():
+            dl.unlock(self._output)
 
         self._write_data(self.inputs.conf, "confound")
         self._write_data(self.inputs.pheno, "phenotype")
@@ -367,7 +373,8 @@ class SaveFeatures(SimpleInterface):
                 self._write_data_level(level, self.inputs.e_rsfc, "rs_ec", "conn_asym")
                 for stat in ["cpl", "eff", "mod"]:
                     self._write_data(
-                        {stat: self.inputs.rs_stats[stat][f"level{level}"]}, f"rs_{stat}")
+                        {stat: self.inputs.rs_stats[stat][f"level{level}"]},
+                        f"rs_{stat}_level{level}")
                 self._write_data_level(level, self.inputs.rs_stats["par"], "rs_par", "array")
 
             if "tfMRI" in self.inputs.config["modality"]:
@@ -377,8 +384,10 @@ class SaveFeatures(SimpleInterface):
 
             if "sMRI" in self.inputs.config["modality"]:
                 self._write_data_level(level, self.inputs.myelin, "s_myelin", "array")
-                for stat in ["gmv", "cs", "ct"]:
-                    self._write_data_level(level, self.inputs.morph[stat], f"s_{stat}", "array")
+                self._write_data_level(level, self.inputs.morph["gmv"], "s_gmv", "array")
+                for stat in ["cs", "ct"]:
+                    self._write_data_level(
+                        level, self.inputs.morph[stat], f"s_{stat}", "array_surf")
 
             if "dMRI" in self.inputs.config["modality"]:
                 self._write_data_level(level, self.inputs.sc_count, "d_scc", "conn_asym")
