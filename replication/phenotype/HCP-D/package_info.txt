@@ -1,1 +1,1 @@
-../../../.git/annex/objects/Jw/5X/MD5E-s800--4382225460f6ba1b2a79728abfa0fdca.txt/MD5E-s800--4382225460f6ba1b2a79728abfa0fdca.txt
+/annex/objects/MD5E-s800--4382225460f6ba1b2a79728abfa0fdca.txt

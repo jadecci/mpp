@@ -1,1 +1,1 @@
-../../../.git/annex/objects/M4/Gv/MD5E-s411830--eefabfdedef8be9068eb04848a6cd162.txt/MD5E-s411830--eefabfdedef8be9068eb04848a6cd162.txt
+/annex/objects/MD5E-s411830--eefabfdedef8be9068eb04848a6cd162.txt
