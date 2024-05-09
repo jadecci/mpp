@@ -361,8 +361,7 @@ class SaveFeatures(SimpleInterface):
     def _run_interface(self, runtime):
         self._output = Path(self.inputs.config["output_dir"], f"{self.inputs.config['subject']}.h5")
         if self._output.exists():
-            dl.get(self._output, dataset=self.inputs.config["output_dir"])
-            dl.unlock(self._output, dataset=self.inputs.config["output_dir"])
+            dl.unlock(self._output)
 
         self._write_data(self.inputs.conf, "confound")
         self._write_data(self.inputs.pheno, "phenotype")
