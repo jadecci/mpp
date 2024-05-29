@@ -17,7 +17,6 @@ class _CVFeaturesInputSpec(BaseInterfaceInputSpec):
     cv_split = traits.Dict(mandatory=True, dtype=list, desc="test subjects of each fold")
     repeat = traits.Int(mandatory=True, desc="current repeat of cross-validation")
     fold = traits.Int(mandatory=True, desc="current fold in the repeat")
-    level = traits.Str(mandatory=True, desc="parcellation level")
 
 
 class _CVFeaturesOutputSpec(TraitedSpec):
@@ -47,14 +46,14 @@ class CVFeatures(SimpleInterface):
     def _compute_features(self, key: str, l_key: str, postfix: str = "") -> None:
         sublist = self.inputs.cv_split[key]
         nparc_dict = {"1": 116, "2": 232, "3": 350, "4": 454}
-        nparc = nparc_dict[self.inputs.config["level"]]
 
         # Diffusion mapping
+        nparc = nparc_dict[self.inputs.config["level"]]
         rsfc = np.zeros((nparc, nparc, len(sublist)))
         for sub_i, subject in enumerate(sublist):
-            subject_file = find_sub_file(
+            subject_file, _, _ = find_sub_file(
                 self.inputs.sublists, self.inputs.config["features_dir"], subject)
-            rsfc_sub = pd.DataFrame(pd.read_hdf(subject_file, f"rs_sfc_{l_key}"))
+            rsfc_sub = pd.read_hdf(subject_file, f"rs_sfc_{l_key}")
             rsfc[:, :, sub_i] = self._rsfc_to_matrix(rsfc_sub, nparc)
         rsfc_thresh = np.tanh(rsfc.mean(axis=2))
         for i in range(rsfc_thresh.shape[0]):
@@ -67,16 +66,20 @@ class CVFeatures(SimpleInterface):
         # Structural Co-Registration
         # see https://github.com/katielavigne/score/blob/main/score.py
         for feature in ["gmv", "cs", "ct"]:
+            if feature == "gmv":
+                nparc = nparc_dict[self.inputs.config["level"]]
+            else:
+                nparc = int(self.inputs.config["level"]) * 100
             features = pd.DataFrame()
             params = pd.DataFrame()
             for sub_i, subject in enumerate(sublist):
-                subject_file = find_sub_file(
+                subject_file, _, _ = find_sub_file(
                     self.inputs.sublists, self.inputs.config["features_dir"], subject)
-                features_sub = pd.DataFrame(pd.read_hdf(subject_file, f"s_{feature}_{l_key}"))
+                features_sub = pd.read_hdf(subject_file, f"s_{feature}_{l_key}")
                 features = pd.concat([features, features_sub], axis="index")
-            features = features.join(pd.DataFrame({"mean": features.mean(axis=1)}))
             features[features.columns] = features[features.columns].apply(pd.to_numeric)
             features.columns = range(nparc)
+            features = features.join(pd.DataFrame({"mean": features.mean(axis=1)}))
             for i in range(nparc):
                 for j in range(nparc):
                     results = ols(f"features[{i}] ~ features[{j}] + mean", data=features).fit()

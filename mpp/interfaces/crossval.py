@@ -98,19 +98,28 @@ class FeaturewiseModel(SimpleInterface):
         conf = pd.DataFrame()
         x = pd.DataFrame()
         for subject in subjects:
-            subject_file = find_sub_file(
+            subject_file, dti_file, subject_id = find_sub_file(
                 self.inputs.sublists, self.inputs.config["features_dir"], subject)
             if self.inputs.feature_type == "rs_grad":
                 x_curr = self._grad_feature(subject_file)
             elif self.inputs.feature_type in ["s_acgmv", "s_accs", "s_acct"]:
                 x_curr = self._ac_feature(subject_file)
+            elif self.inputs.feature_type == "rs_stats":
+                x_cpl = pd.read_hdf(subject_file, f"rs_cpl_level{self.inputs.config['level']}")
+                x_eff = pd.read_hdf(subject_file, f"rs_eff_level{self.inputs.config['level']}")
+                x_mod = pd.read_hdf(subject_file, f"rs_mod_level{self.inputs.config['level']}")
+                x_par = pd.read_hdf(subject_file, f"rs_par_level{self.inputs.config['level']}")
+                x_curr = pd.concat([x_cpl, x_eff, x_mod, x_par], axis="columns")
+            elif self.inputs.feature_type in ["d_fa", "d_md", "d_ad", "d_rd"]:
+                feature_curr = self.inputs.feature_type.split("d_")[1]
+                x_curr = pd.read_hdf(dti_file, f"{feature_curr}_{subject_id}")
             else:
-                x_curr = pd.DataFrame(pd.read_hdf(
-                    subject_file, f"{self.inputs.feature_type}_level{self.inputs.config['level']}"))
-            x = pd.concat([x, pd.DataFrame(x_curr)], axis="index")
-            y_curr = pd.DataFrame(pd.read_hdf(subject_file, "phenotype"))
+                x_curr = pd.read_hdf(
+                    subject_file, f"{self.inputs.feature_type}_level{self.inputs.config['level']}")
+            x = pd.concat([x, x_curr], axis="index")
+            y_curr = pd.read_hdf(subject_file, "phenotype")
             y = pd.concat([y, y_curr[self.inputs.target]], axis="index")
-            conf_curr = pd.DataFrame(pd.read_hdf(subject_file, "confound"))
+            conf_curr = pd.read_hdf(subject_file, "confound")
             conf = pd.concat([conf, conf_curr], axis="index")
         return x.to_numpy(), y.to_numpy(), conf.to_numpy()
 
@@ -178,11 +187,11 @@ class ConfoundsModel(SimpleInterface):
         y = pd.DataFrame()
         conf = pd.DataFrame()
         for subject in subjects:
-            subject_file = find_sub_file(
+            subject_file, _, _ = find_sub_file(
                 self.inputs.sublists, self.inputs.config["features_dir"], subject)
-            y_curr = pd.DataFrame(pd.read_hdf(subject_file, "phenotype"))
+            y_curr = pd.read_hdf(subject_file, "phenotype")
             y = pd.concat([y, y_curr[self.inputs.target]], axis="index")
-            conf_curr = pd.DataFrame(pd.read_hdf(subject_file, "confound"))
+            conf_curr = pd.read_hdf(subject_file, "confound")
             conf = pd.concat([conf, conf_curr], axis="index")
         return conf.to_numpy(), y.to_numpy()
 
@@ -205,8 +214,8 @@ class ConfoundsModel(SimpleInterface):
             inner_train_sub = self.inputs.cv_split[f"{key}_inner{inner}"]
             inner_test_i = self.inputs.cv_split[f"{key}_inner{inner}_test"]
             inner_test_sub = train_sub[inner_test_i]
-            train_x, train_y, train_conf = self._extract_data(inner_train_sub)
-            test_x, test_y, test_conf = self._extract_data(inner_test_sub)
+            train_x, train_y = self._extract_data(inner_train_sub)
+            test_x, test_y = self._extract_data(inner_test_sub)
             _, _, train_ypred[inner_test_i] = elastic_net(
                 train_x, train_y, test_x, test_y, n_alphas)
         self._results["results"] = {"train_ypred": train_ypred, "test_ypred": test_ypred}
@@ -238,7 +247,7 @@ class IntegratedFeaturesModel(SimpleInterface):
     def _extract_data(self, subjects: list, key: str) -> tuple[np.ndarray, ...]:
         y = pd.DataFrame()
         for subject in subjects:
-            subject_file = find_sub_file(
+            subject_file, _, _ = find_sub_file(
                 self.inputs.sublists, self.inputs.config["features_dir"], subject)
             y_curr = pd.DataFrame(pd.read_hdf(subject_file, "phenotype"))
             y = pd.concat([y, y_curr[self.inputs.target]], axis="index")

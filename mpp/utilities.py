@@ -9,12 +9,14 @@ def find_sub_file(sublists: dict, features_dir: Path, subject: str) -> Path:
     for key, val in sublists.items():
         if subject in val:
             dataset = key
-    dataset_dir = Path(features_dir, dataset)
     if dataset in ["HCP-A", "HCP-D"]:
-        subject_file = Path(dataset_dir, f"{subject}_V1_MR.h5")
+        subject_file = Path(features_dir, dataset, f"{subject}_V1_MR.h5")
+        subject_id = f"{subject}_V1_MR"
     else:
-        subject_file = Path(dataset_dir, f"{subject}.h5")
-    return subject_file
+        subject_file = Path(features_dir, dataset, f"{subject}.h5")
+        subject_id = subject
+    dti_file = Path(features_dir, f"{dataset}_dti.h5")
+    return subject_file, dti_file, subject_id
 
 
 def feature_list(datasets: list) -> list:
@@ -47,5 +49,5 @@ def elastic_net(
     en = ElasticNetCV(l1_ratio=l1_ratio, n_alphas=n_alphas)
     en.fit(train_x, train_y)
     ypred = en.predict(test_x)
-    r = np.corrcoef(test_y, ypred)[0, 1]
+    r = np.corrcoef(test_y.T, ypred[np.newaxis, :])[0, 1]
     return r, en.score(test_x, test_y), ypred

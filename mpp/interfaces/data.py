@@ -22,27 +22,28 @@ class PredictSublist(SimpleInterface):
     output_spec = _PredictSublistOutputSpec
 
     def _check_sub(self, subject_file: Path) -> bool:
-        pheno = pd.DataFrame(pd.read_hdf(subject_file, "phenotype"))
-        conf = pd.DataFrame(pd.read_hdf(subject_file, "confound"))
+        pheno = pd.read_hdf(subject_file, "phenotype")
+        conf = pd.read_hdf(subject_file, "confound")
         if pheno[self.inputs.target].isnull().values[0]:
             return False
         if conf.isnull().values.any():
             return False
+        return True
 
     def _run_interface(self, runtime):
         self._results["sublists"] = {}
-        for dataset in self.inputs.config["datasets"]:
+        for dataset, sublist in zip(self.inputs.config["datasets"], self.inputs.config["sublists"]):
             self._results["sublists"][dataset] = []
-            for subject_file in Path(self.inputs.config["features_dir"][dataset]).iterdir():
+            for subject in sublist:
+                subject_file = Path(self.inputs.config["features_dir"], dataset, f"{subject}.h5")
                 if dataset in ["HCP-A", "HCP-D"]:
-                    subject = subject_file.stem.split("_V1_MR")[0]
+                    subject_id = subject.split("_V1_MR")[0]
                 elif dataset == "HCP-YA":
-                    subject = subject_file.stem
+                    subject_id = subject
                 else:
                     raise DatasetError()
-                check = self._check_sub(subject_file)
-                if check:
-                    self._results["sublists"][dataset].append(subject)
+                if self._check_sub(subject_file):
+                    self._results["sublists"][dataset].append(subject_id)
         self._results["target"] = self.inputs.target
 
         return runtime

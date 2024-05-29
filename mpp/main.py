@@ -24,8 +24,8 @@ def main() -> None:
         "--features_dir", type=Path, dest="features_dir", required=True,
         help="Absolute paths to extracted features")
     required.add_argument(
-        "--pheno_dir", nargs="+", dest="pheno_dir", required=True,
-        help="Absolute paths to phenotype directories")
+        "--sublists", nargs="+", dest="sublists", required=True,
+        help="Subject lists (one list for each dataset, in the same order as --datasets)")
     optional = parser.add_argument_group("optional arguments")
     optional.add_argument(
         "--level", type=str, dest="level", default="4", help="Parcellation level")
@@ -47,7 +47,7 @@ def main() -> None:
     config_parse = configparser.ConfigParser()
     config_parse.read(config["config"])
     config.update({option: config_parse["USER"][option] for option in config_parse["USER"]})
-    mpp_wf = pe.Workflow(f"mpp_wf", base_dir=config["work_dir"])
+    mpp_wf = pe.Workflow("mpp_wf", base_dir=config["work_dir"])
     mpp_wf.config["execution"]["try_hard_link_datasink"] = "false"
     mpp_wf.config["execution"]["crashfile_format"] = "txt"
     mpp_wf.config["execution"]["stop_on_first_crash"] = "true"
