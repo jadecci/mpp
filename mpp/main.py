@@ -70,23 +70,23 @@ def main() -> None:
     fw_model = pe.Node(FeaturewiseModel(config=config), "fw_model", iterables=features_iterables)
     fw_combine = pe.JoinNode(
         PredictionCombine(config=config), "fw_combine",
-        joinsource="fw_model", joinfield=["features", "results"])
+        joinsource="fw_model", joinfield=["results"])
     fw_save = pe.JoinNode(
-        PredictionSave(config=config, type="featurewise"), "fw_save",
+        PredictionSave(config=config, model_type="featurewise"), "fw_save",
         joinsource="features", joinfield=["results"], )
     mpp_wf.connect([
         (sublist, fw_model, [("sublists", "sublists"), ("target", "target")]),
         (cv_split, fw_model, [("cv_split", "cv_split")]),
         (features, fw_model, [
             ("cv_features_file", "cv_features_file"), ("repeat", "repeat"), ("fold", "fold")]),
-        (fw_model, fw_combine, [("feature_type", "features"), ("results", "results")]),
+        (fw_model, fw_combine, [("results", "results")]),
         (sublist, fw_save, [("target", "target")]),
         (fw_combine, fw_save, [("results", "results")])])
 
     # Confound models
     conf_model = pe.Node(ConfoundsModel(config=config), "conf_model")
     conf_save = pe.JoinNode(
-        PredictionSave(config=config, type="confounds"), "conf_save",
+        PredictionSave(config=config, model_type="confounds"), "conf_save",
         joinsource="features", joinfield=["results"])
     mpp_wf.connect([
         (sublist, conf_model, [("sublists", "sublists"), ("target", "target")]),
@@ -97,16 +97,16 @@ def main() -> None:
 
     # Integrated-features set models
     if_model = pe.JoinNode(
-        IntegratedFeaturesModel(config=config), "if_model",
-        joinsource="fw_model", joinfield=["fw_ypred"])
+        IntegratedFeaturesModel(config=config, features=feature_list(config["datasets"])),
+        "if_model", joinsource="fw_model", joinfield=["fw_ypred"])
     if_save = pe.JoinNode(
-        PredictionSave(config=config, type="integrated"), "if_save",
+        PredictionSave(config=config, model_type="integrated"), "if_save",
         joinsource="features", joinfield=["results"])
     mpp_wf.connect([
-        (sublist, if_model, [("sublists", "sublists")]),
+        (sublist, if_model, [("sublists", "sublists"), ("target", "target")]),
         (cv_split, if_model, [("cv_split", "cv_split")]),
         (features, if_model, [("repeat", "repeat"), ("fold", "fold")]),
-        (fw_model, if_model, [("fw_ypred", "fw_ypred"), ("feature_type", "features")]),
+        (fw_model, if_model, [("fw_ypred", "fw_ypred")]),
         (conf_model, if_model, [("c_ypred", "c_ypred")]),
         (sublist, if_save, [("target", "target")]),
         (if_model, if_save, [("results", "results")])])

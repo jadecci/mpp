@@ -7,7 +7,7 @@ from statsmodels.formula.api import ols
 import numpy as np
 import pandas as pd
 
-from mpp.utilities import find_sub_file
+from mpp.utilities import find_sub_file, fc_to_matrix
 
 
 class _CVFeaturesInputSpec(BaseInterfaceInputSpec):
@@ -31,15 +31,6 @@ class CVFeatures(SimpleInterface):
     input_spec = _CVFeaturesInputSpec
     output_spec = _CVFeaturesOutputSpec
 
-    @staticmethod
-    def _rsfc_to_matrix(data_in: pd.DataFrame, nparc: int) -> np.ndarray:
-        arr_out = np.zeros((nparc, nparc))
-        for i in range(nparc):
-            for j in range(i+1, nparc):
-                arr_out[i, j] = float(data_in[f"rs_sfc_{i}_{j}"].values[0])
-                arr_out[j, i] = arr_out[i, j]
-        return arr_out
-
     def save_features(self, features: pd.DataFrame, key: str) -> None:
         features.to_hdf(self._results["cv_features_file"], key)
 
@@ -54,7 +45,7 @@ class CVFeatures(SimpleInterface):
             subject_file, _, _ = find_sub_file(
                 self.inputs.sublists, self.inputs.config["features_dir"], subject)
             rsfc_sub = pd.read_hdf(subject_file, f"rs_sfc_{l_key}")
-            rsfc[:, :, sub_i] = self._rsfc_to_matrix(rsfc_sub, nparc)
+            rsfc[:, :, sub_i] = fc_to_matrix(rsfc_sub, nparc)
         rsfc_thresh = np.tanh(rsfc.mean(axis=2))
         for i in range(rsfc_thresh.shape[0]):
             rsfc_thresh[i, rsfc_thresh[i, :] < np.percentile(rsfc_thresh[i, :], 90)] = 0
@@ -86,7 +77,7 @@ class CVFeatures(SimpleInterface):
                     params[f"{i}_{j}"] = [
                         results.params["Intercept"], results.params[f"features[{j}]"],
                         results.params["mean"]]
-            params.to_hdf(self._results["cv_features_file"], f"params{postfix}")
+            params.to_hdf(self._results["cv_features_file"], f"params_{feature}{postfix}")
 
     def _run_interface(self, runtime):
         tmp_dir = Path(self.inputs.config["work_dir"], "features_tmp")

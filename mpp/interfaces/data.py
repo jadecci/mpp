@@ -32,7 +32,8 @@ class PredictSublist(SimpleInterface):
 
     def _run_interface(self, runtime):
         self._results["sublists"] = {}
-        for dataset, sublist in zip(self.inputs.config["datasets"], self.inputs.config["sublists"]):
+        for dataset, listf in zip(self.inputs.config["datasets"], self.inputs.config["sublists"]):
+            sublist = pd.read_table(listf).squeeze("columns")
             self._results["sublists"][dataset] = []
             for subject in sublist:
                 subject_file = Path(self.inputs.config["features_dir"], dataset, f"{subject}.h5")
@@ -52,7 +53,6 @@ class PredictSublist(SimpleInterface):
 class _PredictionCombineInputSpec(BaseInterfaceInputSpec):
     config = traits.Dict(mandatory=True, desc="Workflow configurations")
     results = traits.List(dtype=dict, desc="accuracy results")
-    features = traits.List(dtype=str, mandatory=True, desc="feature types")
 
 
 class _PredictionCombineOutputSpec(TraitedSpec):
@@ -60,14 +60,15 @@ class _PredictionCombineOutputSpec(TraitedSpec):
 
 
 class PredictionCombine(SimpleInterface):
-    """Combine prediction results across prediction targets"""
+    """Combine prediction results across features"""
     input_spec = _PredictionCombineInputSpec
     output_spec = _PredictionCombineOutputSpec
 
     def _run_interface(self, runtime):
-        for feature, results in zip(self.inputs.features, self.inputs.results):
-            for key, val in results:
-                self._results["results"][f"{key}_{feature}"] = val
+        self._results["results"] = {}
+        for results in self.inputs.results:
+            for key, val in results.items():
+                self._results["results"].update({key: val})
 
         return runtime
 
@@ -75,7 +76,7 @@ class PredictionCombine(SimpleInterface):
 class _PredictionSaveInputSpec(BaseInterfaceInputSpec):
     config = traits.Dict(mandatory=True, desc="Workflow configurations")
     results = traits.List(dtype=dict, desc="accuracy results")
-    type = traits.Str(mandatory=True, desc="type of model used in prediction")
+    model_type = traits.Str(mandatory=True, desc="type of model used in prediction")
     target = traits.Str(mandatory=True, desc="prediction target")
 
 
@@ -85,8 +86,12 @@ class PredictionSave(SimpleInterface):
 
     def _run_interface(self, runtime):
         output_file = Path(
-            self.inputs.config["output_dir"], f"{self.inputs.type}_{self.inputs.target}.h5")
-        results = {key: val for d in self.inputs.results for key, val in d.items()}
-        pd.DataFrame(results).to_hdf(output_file, self.inputs.type)
+            self.inputs.config["output_dir"], f"{self.inputs.model_type}_{self.inputs.target}.h5")
+        for results in self.inputs.results:
+            for key, val in results.items():
+                if val.ndim == 0:
+                    pd.DataFrame({key: val}, index=[0]).to_hdf(output_file, key)
+                else:
+                    pd.DataFrame({key: val}).to_hdf(output_file, key)
 
         return runtime
