@@ -9,7 +9,7 @@ from sklearn.model_selection import RepeatedStratifiedKFold, StratifiedKFold, Gr
 import numpy as np
 import pandas as pd
 
-from mpp.utilities import find_sub_file, elastic_net
+from mpp.utilities import find_sub_file, fc_to_matrix, elastic_net
 
 
 class _CrossValSplitInputSpec(BaseInterfaceInputSpec):
@@ -73,27 +73,31 @@ class FeaturewiseModel(SimpleInterface):
     input_spec = _FeaturewiseModelInputSpec
     output_spec = _FeaturewiseModelOutputSpec
 
-    def _grad_feature(self, subject_file: Path) -> pd.DataFrame:
-        rsfc = pd.DataFrame(pd.read_hdf(subject_file, f"rs_sfc_level{self.inputs.config['level']}"))
-        embed = pd.DataFrame(pd.read_hdf(
-            self.inputs.cv_features_file, self.inputs.feature_type))
-        return embed @ rsfc
+    def _grad_feature(self, subject_file: Path, postfix: str) -> pd.DataFrame:
+        nparc_dict = {"1": 116, "2": 232, "3": 350, "4": 454}
+        rsfc_arr = pd.read_hdf(subject_file, f"rs_sfc_level{self.inputs.config['level']}")
+        rsfc = fc_to_matrix(rsfc_arr, nparc_dict[self.inputs.config["level"]])
+        embed = pd.read_hdf(self.inputs.cv_features_file, f"embed{postfix}")
+        grad = pd.DataFrame(np.array(embed @ rsfc).flatten()).T
+        return grad
 
-    def _ac_feature(self, subject_file: Path) -> pd.DataFrame:
+    def _ac_feature(self, subject_file: Path, postfix: str) -> pd.DataFrame:
         # see https://github.com/katielavigne/score/blob/main/score.py
         morph_feature = f"s_{self.inputs.feature_type.split('s_ac')[1]}"
-        morph = pd.DataFrame(pd.read_hdf(subject_file, morph_feature))
-        params = pd.DataFrame(pd.read_hdf(self.inputs.cv_features_file, self.inputs.feature_type))
-        ac = pd.DataFrame()
-        for i in range(morph.shape[0]):
-            for j in range(morph.shape[0]):
-                params_curr = pd.DataFrame(params)[f"{i}_{j}"]
-                ac[f"{self.inputs.feature_type}_{i}_{j}"] = (
-                        params_curr[0] + params_curr[1] * morph[f"{morph_feature}_{i}"]
-                        + params_curr[2] * morph.mean())
-        return ac
+        morph = pd.read_hdf(subject_file, f"{morph_feature}_level{self.inputs.config['level']}")
+        params = pd.read_hdf(
+            self.inputs.cv_features_file, f"params_{morph_feature.split('s_')[1]}{postfix}")
+        ac = []
+        for i in range(morph.shape[1]):
+            for j in range(morph.shape[1]):
+                params_curr = params[f"{i}_{j}"]
+                morph_curr = morph[f"{morph_feature}_{i}"]
+                ac.append((
+                        params_curr[0] + params_curr[1] * morph_curr + params_curr[2]
+                        * morph.mean(axis=1)).iloc[0])
+        return pd.DataFrame(ac).T
 
-    def _extract_data(self, subjects: list) -> tuple[np.ndarray, ...]:
+    def _extract_data(self, subjects: list, postfix: str = "") -> tuple[np.ndarray, ...]:
         y = pd.DataFrame()
         conf = pd.DataFrame()
         x = pd.DataFrame()
@@ -101,9 +105,9 @@ class FeaturewiseModel(SimpleInterface):
             subject_file, dti_file, subject_id = find_sub_file(
                 self.inputs.sublists, self.inputs.config["features_dir"], subject)
             if self.inputs.feature_type == "rs_grad":
-                x_curr = self._grad_feature(subject_file)
+                x_curr = self._grad_feature(subject_file, postfix)
             elif self.inputs.feature_type in ["s_acgmv", "s_accs", "s_acct"]:
-                x_curr = self._ac_feature(subject_file)
+                x_curr = self._ac_feature(subject_file, postfix)
             elif self.inputs.feature_type == "rs_stats":
                 x_cpl = pd.read_hdf(subject_file, f"rs_cpl_level{self.inputs.config['level']}")
                 x_eff = pd.read_hdf(subject_file, f"rs_eff_level{self.inputs.config['level']}")
@@ -112,10 +116,12 @@ class FeaturewiseModel(SimpleInterface):
                 x_curr = pd.concat([x_cpl, x_eff, x_mod, x_par], axis="columns")
             elif self.inputs.feature_type in ["d_fa", "d_md", "d_ad", "d_rd"]:
                 feature_curr = self.inputs.feature_type.split("d_")[1]
-                x_curr = pd.read_hdf(dti_file, f"{feature_curr}_{subject_id}")
+                x_curr = pd.read_hdf(dti_file, f"{feature_curr}_{subject_id}").T
             else:
                 x_curr = pd.read_hdf(
                     subject_file, f"{self.inputs.feature_type}_level{self.inputs.config['level']}")
+            x_curr = x_curr.replace(-np.inf, 0)
+            x_curr = x_curr.fillna(value=0)
             x = pd.concat([x, x_curr], axis="index")
             y_curr = pd.read_hdf(subject_file, "phenotype")
             y = pd.concat([y, y_curr[self.inputs.target]], axis="index")
@@ -147,19 +153,21 @@ class FeaturewiseModel(SimpleInterface):
         train_y, test_y = self._pheno_reg_conf(train_y, train_conf, test_y, test_conf)
         r, cod, test_ypred = elastic_net(train_x, train_y, test_x, test_y, n_alphas)
         self._results["results"] = {
-            f"r_{key_out}": r, f"cod_{key_out}": cod, f"ypred_{key_out}": test_ypred}
+            f"r_{key_out}": r, f"cod_{key_out}": cod, f"test_ypred_{key_out}": test_ypred}
 
         train_ypred = np.zeros(len(train_sub))
         for inner in range(5):
             inner_train_sub = self.inputs.cv_split[f"{key}_inner{inner}"]
             inner_test_i = self.inputs.cv_split[f"{key}_inner{inner}_test"]
             inner_test_sub = train_sub[inner_test_i]
-            train_x, train_y, train_conf = self._extract_data(inner_train_sub)
-            test_x, test_y, test_conf = self._extract_data(inner_test_sub)
+            train_x, train_y, train_conf = self._extract_data(
+                inner_train_sub, postfix=f"_inner{inner}")
+            test_x, test_y, test_conf = self._extract_data(inner_test_sub, postfix=f"_inner{inner}")
             train_y, test_y = self._pheno_reg_conf(train_y, train_conf, test_y, test_conf)
             _, _, train_ypred[inner_test_i] = elastic_net(
                 train_x, train_y, test_x, test_y, n_alphas)
-        self._results["results"] = {"train_ypred": train_ypred, "test_ypred": test_ypred}
+        self._results["results"].update({f"train_ypred_{key_out}": train_ypred})
+        self._results["fw_ypred"] = {"train_ypred": train_ypred, "test_ypred": test_ypred}
 
         return runtime
 
@@ -207,7 +215,7 @@ class ConfoundsModel(SimpleInterface):
         test_x, test_y = self._extract_data(test_sub)
         r, cod, test_ypred = elastic_net(train_x, train_y, test_x, test_y, n_alphas)
         self._results["results"] = {
-            f"r_{key_out}": r, f"cod_{key_out}": cod, f"ypred_{key_out}": test_ypred}
+            f"r_{key_out}": r, f"cod_{key_out}": cod, f"test_ypred_{key_out}": test_ypred}
 
         train_ypred = np.zeros(len(train_sub))
         for inner in range(5):
@@ -218,7 +226,8 @@ class ConfoundsModel(SimpleInterface):
             test_x, test_y = self._extract_data(inner_test_sub)
             _, _, train_ypred[inner_test_i] = elastic_net(
                 train_x, train_y, test_x, test_y, n_alphas)
-        self._results["results"] = {"train_ypred": train_ypred, "test_ypred": test_ypred}
+        self._results["results"].update({f"train_ypred_{key_out}": train_ypred})
+        self._results["c_ypred"] =  {"train_ypred": train_ypred, "test_ypred": test_ypred}
 
         return runtime
 
@@ -296,6 +305,8 @@ class IntegratedFeaturesModel(SimpleInterface):
         for n_feature in range(2, train_x.shape[1]+1):
             key_out = f"integrated_{key}_level{self.inputs.config['level']}_{n_feature}features"
             x_ind = feature_ranks[:n_feature]
+            self._results["results"][f"nfeature_{key}"] = n_feature
+            self._results["results"][f"rank_{key}"] = self.inputs.features[x_ind]
             self._random_forest_cv(train_x[:, x_ind], train_y, test_x[:, x_ind], test_y, key_out)
 
         return runtime

@@ -359,9 +359,12 @@ class SaveFeatures(SimpleInterface):
         data_pd.to_hdf(self._output, key, mode="a", format="fixed")
 
     def _run_interface(self, runtime):
-        self._output = Path(self.inputs.config["output_dir"], f"{self.inputs.config['subject']}.h5")
+        self._output = Path(
+            self.inputs.config["output_dir"], self.inputs.config["dataset"],
+            f"{self.inputs.config['subject']}.h5")
         if self._output.exists():
-            dl.unlock(self._output)
+            dl.get(self._output, dataset=self.inputs.config["output_dir"])
+            dl.unlock(self._output, dataset=self.inputs.config["output_dir"])
 
         self._write_data(self.inputs.conf, "confound")
         self._write_data(self.inputs.pheno, "phenotype")
