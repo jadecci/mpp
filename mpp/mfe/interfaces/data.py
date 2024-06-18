@@ -95,7 +95,7 @@ class InitData(SimpleInterface):
                             else:
                                 raise ValueError("file name %s has neither PA nor AP", val)
                             rs_files[key] = ""
-                            if rs_file_a.is_symlink:
+                            if rs_file_a.is_symlink():
                                 rs_files[key] = rs_file_a
                                 dl.get(rs_file_a, dataset=mni_dir)
                             if rs_file_b.is_symlink():
