@@ -17,6 +17,7 @@ class _CVFeaturesInputSpec(BaseInterfaceInputSpec):
     cv_split = traits.Dict(mandatory=True, dtype=list, desc="test subjects of each fold")
     repeat = traits.Int(mandatory=True, desc="current repeat of cross-validation")
     fold = traits.Int(mandatory=True, desc="current fold in the repeat")
+    target = traits.Str(mandatory=True, desc="prediction target")
 
 
 class _CVFeaturesOutputSpec(TraitedSpec):
@@ -80,7 +81,7 @@ class CVFeatures(SimpleInterface):
             params.to_hdf(self._results["cv_features_file"], f"params_{feature}{postfix}")
 
     def _run_interface(self, runtime):
-        tmp_dir = Path(self.inputs.config["work_dir"], "features_tmp")
+        tmp_dir = Path(self.inputs.config["work_dir"], f"{self.inputs.target}_features_tmp")
         tmp_dir.mkdir(parents=True, exist_ok=True)
         key = f"repeat{self.inputs.repeat}_fold{self.inputs.fold}"
         l_key = f"level{self.inputs.config['level']}"

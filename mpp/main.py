@@ -61,9 +61,9 @@ def main() -> None:
         ("fold", list(range(int(config["n_folds"]))))]
     features = pe.Node(CVFeatures(config=config), "features", iterables=cv_iterables)
     mpp_wf.connect([
-        (sublist, cv_split, [('sublists', 'sublists')]),
-        (sublist, features, [('sublists', 'sublists')]),
-        (cv_split, features, [('cv_split', 'cv_split')])])
+        (sublist, cv_split, [("sublists", "sublists"), ("target", "target")]),
+        (sublist, features, [("sublists", "sublists")]),
+        (cv_split, features, [("cv_split", "cv_split")])])
 
     # Feature-wise models
     features_iterables = [("feature_type", feature_list(config["datasets"]))]
