@@ -80,30 +80,32 @@ class InitData(SimpleInterface):
                         func_dir, run, f"{run}_Atlas_MSMAll_{param['clean']}.dtseries.nii")
                     rs_files[f"{run}_vol"] = Path(func_dir, run, f"{run}_{param['clean']}.nii.gz")
                 self._results["hcpd_b_runs"] = 0
+                hcp_b_runs = {}
                 for key, val in rs_files.items():
                     if val.is_symlink():
                         dl.get(val, dataset=mni_dir)
                     else:
                         if self.inputs.config["dataset"] == "HCP-D":
-                            if "AP" in val:
+                            if "AP" in str(val):
                                 rs_file_a = Path(str(val).replace("_AP", "a_AP"))
                                 rs_file_b = Path(str(val).replace("_AP", "b_AP"))
-                            elif "PA" in val:
-                                rs_file_a = str(val).replace("_PA", "a_PA")
-                                rs_file_b = str(val).replace("_PA", "b_PA")
+                            elif "PA" in str(val):
+                                rs_file_a = Path(str(val).replace("_PA", "a_PA"))
+                                rs_file_b = Path(str(val).replace("_PA", "b_PA"))
                             else:
                                 raise ValueError("file name %s has neither PA nor AP", val)
                             rs_files[key] = ""
-                            if rs_file_a.is_symlink:
+                            if rs_file_a.is_symlink():
                                 rs_files[key] = rs_file_a
                                 dl.get(rs_file_a, dataset=mni_dir)
                             if rs_file_b.is_symlink():
-                                rs_files[f"{key}b"] = rs_file_b
+                                hcp_b_runs[f"{key}b"] = rs_file_b
                                 dl.get(rs_file_b, dataset=mni_dir)
                                 self._results["hcpd_b_runs"] = self._results["hcpd_b_runs"] + 1
                         else:
                             rs_files[key] = ""
                 self._results["data_files"].update(rs_files)
+                self._results["data_files"].update(hcp_b_runs)
 
             if "tfMRI" in self.inputs.config["modality"]:
                 t_files = {"atlas_mask": Path(mni_dir, "ROIs", "Atlas_wmparc.2.nii.gz")}
