@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-def find_sub_file(sublists: dict, features_dir: Path, subject: str) -> Path:
+def find_sub_file(sublists: dict, features_dir: Path, subject: str) -> [Path, Path, str]:
     dataset = "HCP-YA"
     for key, val in sublists.items():
         if subject in val:
@@ -43,12 +43,12 @@ def feature_list(datasets: list) -> list:
 
 
 def fc_to_matrix(data_in: pd.DataFrame, nparc: int) -> np.ndarray:
-        arr_out = np.zeros((nparc, nparc))
-        for i in range(nparc):
-            for j in range(i+1, nparc):
-                arr_out[i, j] = float(data_in[f"rs_sfc_{i}_{j}"].values[0])
-                arr_out[j, i] = arr_out[i, j]
-        return arr_out
+    arr_out = np.zeros((nparc, nparc))
+    for i in range(nparc):
+        for j in range(i+1, nparc):
+            arr_out[i, j] = float(data_in[f"rs_sfc_{i}_{j}"].values[0])
+            arr_out[j, i] = arr_out[i, j]
+    return arr_out
 
 
 def elastic_net(

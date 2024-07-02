@@ -45,7 +45,7 @@ class CVFeatures(SimpleInterface):
         for sub_i, subject in enumerate(sublist):
             subject_file, _, _ = find_sub_file(
                 self.inputs.sublists, self.inputs.config["features_dir"], subject)
-            rsfc_sub = pd.read_hdf(subject_file, f"rs_sfc_{l_key}")
+            rsfc_sub = pd.DataFrame(pd.read_hdf(subject_file, f"rs_sfc_{l_key}"))
             rsfc[:, :, sub_i] = fc_to_matrix(rsfc_sub, nparc)
         rsfc_thresh = np.tanh(rsfc.mean(axis=2))
         for i in range(rsfc_thresh.shape[0]):
