@@ -76,7 +76,7 @@ class FeaturewiseModel(SimpleInterface):
     def _grad_feature(self, subject_file: Path, postfix: str) -> pd.DataFrame:
         nparc_dict = {"1": 116, "2": 232, "3": 350, "4": 454}
         rsfc_arr = pd.read_hdf(subject_file, f"rs_sfc_level{self.inputs.config['level']}")
-        rsfc = fc_to_matrix(rsfc_arr, nparc_dict[self.inputs.config["level"]])
+        rsfc = fc_to_matrix(pd.DataFrame(rsfc_arr), nparc_dict[self.inputs.config["level"]])
         embed = pd.read_hdf(self.inputs.cv_features_file, f"embed{postfix}")
         grad = pd.DataFrame(np.array(embed @ rsfc).flatten()).T
         return grad
@@ -84,9 +84,10 @@ class FeaturewiseModel(SimpleInterface):
     def _ac_feature(self, subject_file: Path, postfix: str) -> pd.DataFrame:
         # see https://github.com/katielavigne/score/blob/main/score.py
         morph_feature = f"s_{self.inputs.feature_type.split('s_ac')[1]}"
-        morph = pd.read_hdf(subject_file, f"{morph_feature}_level{self.inputs.config['level']}")
-        params = pd.read_hdf(
-            self.inputs.cv_features_file, f"params_{morph_feature.split('s_')[1]}{postfix}")
+        morph = pd.DataFrame(pd.read_hdf(
+            subject_file, f"{morph_feature}_level{self.inputs.config['level']}"))
+        params = pd.DataFrame(pd.read_hdf(
+            self.inputs.cv_features_file, f"params_{morph_feature.split('s_')[1]}{postfix}"))
         ac = []
         for i in range(morph.shape[1]):
             for j in range(morph.shape[1]):
@@ -98,6 +99,7 @@ class FeaturewiseModel(SimpleInterface):
         return pd.DataFrame(ac).T
 
     def _extract_data(self, subjects: list, postfix: str = "") -> tuple[np.ndarray, ...]:
+        level = self.inputs.config['level']
         y = pd.DataFrame()
         conf = pd.DataFrame()
         x = pd.DataFrame()
@@ -109,23 +111,23 @@ class FeaturewiseModel(SimpleInterface):
             elif self.inputs.feature_type in ["s_acgmv", "s_accs", "s_acct"]:
                 x_curr = self._ac_feature(subject_file, postfix)
             elif self.inputs.feature_type == "rs_stats":
-                x_cpl = pd.read_hdf(subject_file, f"rs_cpl_level{self.inputs.config['level']}")
-                x_eff = pd.read_hdf(subject_file, f"rs_eff_level{self.inputs.config['level']}")
-                x_mod = pd.read_hdf(subject_file, f"rs_mod_level{self.inputs.config['level']}")
-                x_par = pd.read_hdf(subject_file, f"rs_par_level{self.inputs.config['level']}")
+                x_cpl = pd.DataFrame(pd.read_hdf(subject_file, f"rs_cpl_level{level}"))
+                x_eff = pd.DataFrame(pd.read_hdf(subject_file, f"rs_eff_level{level}"))
+                x_mod = pd.DataFrame(pd.read_hdf(subject_file, f"rs_mod_level{level}"))
+                x_par = pd.DataFrame(pd.read_hdf(subject_file, f"rs_par_level{level}"))
                 x_curr = pd.concat([x_cpl, x_eff, x_mod, x_par], axis="columns")
             elif self.inputs.feature_type in ["d_fa", "d_md", "d_ad", "d_rd"]:
                 feature_curr = self.inputs.feature_type.split("d_")[1]
-                x_curr = pd.read_hdf(dti_file, f"{feature_curr}_{subject_id}").T
+                x_curr = pd.DataFrame(pd.read_hdf(dti_file, f"{feature_curr}_{subject_id}")).T
             else:
-                x_curr = pd.read_hdf(
-                    subject_file, f"{self.inputs.feature_type}_level{self.inputs.config['level']}")
+                x_curr = pd.DataFrame(pd.read_hdf(
+                    subject_file, f"{self.inputs.feature_type}_level{level}"))
             x_curr = x_curr.replace(-np.inf, 0)
             x_curr = x_curr.fillna(value=0)
             x = pd.concat([x, x_curr], axis="index")
-            y_curr = pd.read_hdf(subject_file, "phenotype")
+            y_curr = pd.DataFrame(pd.read_hdf(subject_file, "phenotype"))
             y = pd.concat([y, y_curr[self.inputs.target]], axis="index")
-            conf_curr = pd.read_hdf(subject_file, "confound")
+            conf_curr = pd.DataFrame(pd.read_hdf(subject_file, "confound"))
             conf = pd.concat([conf, conf_curr], axis="index")
         return x.to_numpy(), y.to_numpy(), conf.to_numpy()
 
@@ -197,9 +199,9 @@ class ConfoundsModel(SimpleInterface):
         for subject in subjects:
             subject_file, _, _ = find_sub_file(
                 self.inputs.sublists, self.inputs.config["features_dir"], subject)
-            y_curr = pd.read_hdf(subject_file, "phenotype")
+            y_curr = pd.DataFrame(pd.read_hdf(subject_file, "phenotype"))
             y = pd.concat([y, y_curr[self.inputs.target]], axis="index")
-            conf_curr = pd.read_hdf(subject_file, "confound")
+            conf_curr = pd.DataFrame(pd.read_hdf(subject_file, "confound"))
             conf = pd.concat([conf, conf_curr], axis="index")
         return conf.to_numpy(), y.to_numpy()
 

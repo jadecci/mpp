@@ -22,9 +22,9 @@ class PredictSublist(SimpleInterface):
     output_spec = _PredictSublistOutputSpec
 
     def _check_sub(self, subject_file: Path) -> bool:
-        pheno = pd.read_hdf(subject_file, "phenotype")
-        conf = pd.read_hdf(subject_file, "confound")
-        if pheno[self.inputs.target].isnull().values[0]:
+        pheno = pd.DataFrame(pd.read_hdf(subject_file, "phenotype"))
+        conf = pd.DataFrame(pd.read_hdf(subject_file, "confound"))
+        if pheno[self.inputs.target].isnull().values[0] or pheno[self.inputs.target] == 999:
             return False
         if conf.isnull().values.any():
             return False
