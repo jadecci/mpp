@@ -260,7 +260,7 @@ class IntegratedFeaturesModel(SimpleInterface):
         for subject in subjects:
             subject_file, _, _ = find_sub_file(
                 self.inputs.sublists, self.inputs.config["features_dir"], subject)
-            y_curr = pd.read_hdf(subject_file, "phenotype")
+            y_curr = pd.DataFrame(pd.read_hdf(subject_file, "phenotype"))
             y = pd.concat([y, y_curr[self.inputs.target]], axis="index")
 
         x = self.inputs.c_ypred[key]
