@@ -258,19 +258,19 @@ class IntegratedFeaturesModel(SimpleInterface):
         for subject in subjects:
             subject_file, _, _ = find_sub_file(
                 self.inputs.sublists, self.inputs.config["features_dir"], subject)
-            y_curr = pd.DataFrame(pd.read_hdf(subject_file, "phenotype"))
+            y_curr = pd.read_hdf(subject_file, "phenotype")
             y = pd.concat([y, y_curr[self.inputs.target]], axis="index")
 
         x = self.inputs.c_ypred[key]
         for fw_ypred in self.inputs.fw_ypred:
-            x = np.hstack((x, fw_ypred[key]))
-        return x, y.to_numpy()
+            x = np.vstack((x, fw_ypred[key]))
+        return x.T, y.to_numpy()
 
     def _train_ranks(self, train_y: np.ndarray) -> np.ndarray:
         cod = np.array([r2_score(train_y, self.inputs.c_ypred["train_ypred"])])
         for fw_ypred in self.inputs.fw_ypred:
             cod = np.concatenate((cod, [r2_score(train_y, fw_ypred["train_ypred"])]))
-        ranks = -np.argsort(-cod)
+        ranks = np.argsort(-cod)
         return ranks
 
     def _random_forest_cv(
@@ -286,13 +286,15 @@ class IntegratedFeaturesModel(SimpleInterface):
         rfr_cv.fit(train_x, train_y)
         test_ypred = rfr_cv.predict(test_x)
 
-        self._results["results"][f"r_{key}"] = np.corrcoef(test_y, test_ypred)[0, 1]
+        self._results["results"][f"r_{key}"] = np.corrcoef(
+            test_y.T, test_ypred[np.newaxis, :])[0, 1]
         self._results["results"][f"cod_{key}"] = rfr_cv.score(test_x, test_y)
         self._results["results"][f"ypred_{key}"] = test_ypred
 
     def _run_interface(self, runtime):
         key = f"repeat{self.inputs.repeat}_fold{self.inputs.fold}"
         key_out = f"integrated_{key}_level{self.inputs.config['level']}"
+        features = np.array(["conf"] + self.inputs.features)
 
         all_sub = sum(self.inputs.sublists.values(), [])
         train_sub = self.inputs.cv_split[key]
@@ -306,7 +308,7 @@ class IntegratedFeaturesModel(SimpleInterface):
             key_out = f"integrated_{key}_level{self.inputs.config['level']}_{n_feature}features"
             x_ind = feature_ranks[:n_feature]
             self._results["results"][f"nfeature_{key}"] = n_feature
-            self._results["results"][f"rank_{key}"] = self.inputs.features[x_ind]
+            self._results["results"][f"rank_{key}"] = features[x_ind]
             self._random_forest_cv(train_x[:, x_ind], train_y, test_x[:, x_ind], test_y, key_out)
 
         return runtime

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
+import numpy as np
 import pandas as pd
 
 from mpp.exceptions import DatasetError
@@ -89,7 +90,7 @@ class PredictionSave(SimpleInterface):
             self.inputs.config["output_dir"], f"{self.inputs.model_type}_{self.inputs.target}.h5")
         for results in self.inputs.results:
             for key, val in results.items():
-                if val.ndim == 0:
+                if np.array(val).ndim == 0:
                     pd.DataFrame({key: val}, index=[0]).to_hdf(output_file, key)
                 else:
                     pd.DataFrame({key: val}).to_hdf(output_file, key)
