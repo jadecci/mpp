@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from sklearn.linear_model import ElasticNetCV
+from sklearn.linear_model import ElasticNetCV, LinearRegression
 import numpy as np
 import pandas as pd
 
@@ -49,6 +49,16 @@ def fc_to_matrix(data_in: pd.DataFrame, nparc: int) -> np.ndarray:
             arr_out[i, j] = float(data_in[f"rs_sfc_{i}_{j}"].values[0])
             arr_out[j, i] = arr_out[i, j]
     return arr_out
+
+
+def pheno_reg_conf(
+            train_y: np.ndarray, train_conf: np.ndarray, test_y: np.ndarray,
+            test_conf: np.ndarray) -> tuple[np.ndarray, ...]:
+    conf_reg = LinearRegression()
+    conf_reg.fit(train_conf, train_y)
+    train_y_resid = train_y - conf_reg.predict(train_conf)
+    test_y_resid = test_y - conf_reg.predict(test_conf)
+    return train_y_resid, test_y_resid
 
 
 def elastic_net(

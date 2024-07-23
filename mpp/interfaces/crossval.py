@@ -4,12 +4,11 @@ import itertools
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
-from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import RepeatedStratifiedKFold, StratifiedKFold, GridSearchCV
 import numpy as np
 import pandas as pd
 
-from mpp.utilities import find_sub_file, fc_to_matrix, elastic_net
+from mpp.utilities import find_sub_file, fc_to_matrix, pheno_reg_conf, elastic_net
 
 
 class _CrossValSplitInputSpec(BaseInterfaceInputSpec):
@@ -131,16 +130,6 @@ class FeaturewiseModel(SimpleInterface):
             conf = pd.concat([conf, conf_curr], axis="index")
         return x.to_numpy(), y.to_numpy(), conf.to_numpy()
 
-    @staticmethod
-    def _pheno_reg_conf(
-            train_y: np.ndarray, train_conf: np.ndarray, test_y: np.ndarray,
-            test_conf: np.ndarray) -> tuple[np.ndarray, ...]:
-        conf_reg = LinearRegression()
-        conf_reg.fit(train_conf, train_y)
-        train_y_resid = train_y - conf_reg.predict(train_conf)
-        test_y_resid = test_y - conf_reg.predict(test_conf)
-        return train_y_resid, test_y_resid
-
     def _run_interface(self, runtime):
         key = f"repeat{self.inputs.repeat}_fold{self.inputs.fold}"
         key_out = f"{self.inputs.feature_type}_{key}_level{self.inputs.config['level']}"
@@ -152,7 +141,7 @@ class FeaturewiseModel(SimpleInterface):
         test_sub = [subject for subject in all_sub if subject not in train_sub]
         train_x, train_y, train_conf = self._extract_data(train_sub)
         test_x, test_y, test_conf = self._extract_data(test_sub)
-        train_y, test_y = self._pheno_reg_conf(train_y, train_conf, test_y, test_conf)
+        train_y, test_y = pheno_reg_conf(train_y, train_conf, test_y, test_conf)
         r, cod, test_ypred = elastic_net(train_x, train_y, test_x, test_y, n_alphas)
         self._results["results"] = {
             f"r_{key_out}": r, f"cod_{key_out}": cod, f"test_ypred_{key_out}": test_ypred}
@@ -165,7 +154,7 @@ class FeaturewiseModel(SimpleInterface):
             train_x, train_y, train_conf = self._extract_data(
                 inner_train_sub, postfix=f"_inner{inner}")
             test_x, test_y, test_conf = self._extract_data(inner_test_sub, postfix=f"_inner{inner}")
-            train_y, test_y = self._pheno_reg_conf(train_y, train_conf, test_y, test_conf)
+            train_y, test_y = pheno_reg_conf(train_y, train_conf, test_y, test_conf)
             _, _, train_ypred[inner_test_i] = elastic_net(
                 train_x, train_y, test_x, test_y, n_alphas)
         self._results["results"].update({f"train_ypred_{key_out}": train_ypred})
@@ -268,10 +257,10 @@ class IntegratedFeaturesModel(SimpleInterface):
             x = np.vstack((x, fw_ypred[key]))
         return x.T, y.to_numpy()
 
-    def _train_ranks(self, train_y: np.ndarray) -> np.ndarray:
+    def _train_ranks(self, train_y: np.ndarray, train_y_resid: np.ndarray) -> np.ndarray:
         cod = np.array([r2_score(train_y, self.inputs.c_ypred["train_ypred"])])
         for fw_ypred in self.inputs.fw_ypred:
-            cod = np.concatenate((cod, [r2_score(train_y, fw_ypred["train_ypred"])]))
+            cod = np.concatenate((cod, [r2_score(train_y_resid, fw_ypred["train_ypred"])]))
         ranks = np.argsort(-cod)
         return ranks
 
@@ -303,7 +292,8 @@ class IntegratedFeaturesModel(SimpleInterface):
         test_sub = [subject for subject in all_sub if subject not in train_sub]
         train_x, train_y = self._extract_data(train_sub, "train_ypred")
         test_x, test_y = self._extract_data(test_sub, "test_ypred")
-        feature_ranks = self._train_ranks(train_y)
+        train_y_resid, _ = pheno_reg_conf(train_y, train_x[:, 0], test_y, test_x[:, 0])
+        feature_ranks = self._train_ranks(train_y, train_y_resid)
 
         self._results["results"] = {}
         self._results["results"][f"rank_{key_out}"] = np.array(features)[feature_ranks]
