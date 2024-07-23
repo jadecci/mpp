@@ -23,9 +23,9 @@ class PredictSublist(SimpleInterface):
     output_spec = _PredictSublistOutputSpec
 
     def _check_sub(self, subject_file: Path) -> bool:
-        pheno = pd.DataFrame(pd.read_hdf(subject_file, "phenotype"))
+        pheno = pd.DataFrame(pd.read_hdf(subject_file, "phenotype"))[self.inputs.target]
         conf = pd.DataFrame(pd.read_hdf(subject_file, "confound"))
-        if pheno[self.inputs.target].isnull().values[0] or pheno[self.inputs.target] == 999:
+        if pheno.isnull().values[0] or (pheno == 999).values[0]:
             return False
         if conf.isnull().values.any():
             return False
@@ -34,7 +34,7 @@ class PredictSublist(SimpleInterface):
     def _run_interface(self, runtime):
         self._results["sublists"] = {}
         for dataset, listf in zip(self.inputs.config["datasets"], self.inputs.config["sublists"]):
-            sublist = pd.read_table(listf).squeeze("columns")
+            sublist = pd.read_table(listf, header=None).squeeze("columns")
             self._results["sublists"][dataset] = []
             for subject in sublist:
                 subject_file = Path(self.inputs.config["features_dir"], dataset, f"{subject}.h5")
