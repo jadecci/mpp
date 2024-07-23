@@ -306,7 +306,7 @@ class IntegratedFeaturesModel(SimpleInterface):
         feature_ranks = self._train_ranks(train_y)
 
         self._results["results"] = {}
-        self._results["results"][f"rank_{key}"] = features[feature_ranks]
+        self._results["results"][f"rank_{key_out}"] = features[feature_ranks]
         for n_feature in range(2, train_x.shape[1]+1):
             key_out = f"integrated_{key}_level{self.inputs.config['level']}_{n_feature}features"
             x_ind = feature_ranks[:n_feature]
