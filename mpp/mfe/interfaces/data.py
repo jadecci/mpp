@@ -375,17 +375,20 @@ class SaveFeatures(SimpleInterface):
             if "rfMRI" in self.inputs.config["modality"]:
                 self._write_data_level(level, self.inputs.s_rsfc, "rs_sfc", "conn_sym")
                 self._write_data_level(level, self.inputs.d_rsfc, "rs_dfc", "conn_asym")
-                self._write_data_level(level, self.inputs.e_rsfc, "rs_ec", "conn_asym")
                 for stat in ["cpl", "eff", "mod"]:
                     self._write_data(
                         {stat: self.inputs.rs_stats[stat][f"level{level}"]},
                         f"rs_{stat}_level{level}")
                 self._write_data_level(level, self.inputs.rs_stats["par"], "rs_par", "array")
+                if "dMRI" in self.inputs.config["modality"]:
+                    self._write_data_level(level, self.inputs.e_rsfc, "rs_ec", "conn_asym")
 
             if "tfMRI" in self.inputs.config["modality"]:
                 for key, val in self.inputs.s_tfc.items():
                     self._write_data_level(level, val, f"{key}_sfc", "conn_sym")
-                    self._write_data_level(level, self.inputs.e_tfc[key], f"{key}_ec", "conn_asym")
+                    if "dMRI" in self.inputs.config["modality"]:
+                        self._write_data_level(
+                            level, self.inputs.e_tfc[key], f"{key}_ec", "conn_asym")
 
             if "sMRI" in self.inputs.config["modality"]:
                 self._write_data_level(level, self.inputs.myelin, "s_myelin", "array")
