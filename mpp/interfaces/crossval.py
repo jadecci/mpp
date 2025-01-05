@@ -292,7 +292,8 @@ class IntegratedFeaturesModel(SimpleInterface):
         test_sub = [subject for subject in all_sub if subject not in train_sub]
         train_x, train_y = self._extract_data(train_sub, "train_ypred")
         test_x, test_y = self._extract_data(test_sub, "test_ypred")
-        train_y_resid, _ = pheno_reg_conf(train_y, train_x[:, 0], test_y, test_x[:, 0])
+        train_y_resid, _ = pheno_reg_conf(
+            train_y, train_x[:, 0].reshape(-1, 1), test_y, test_x[:, 0].reshape(-1, 1))
         feature_ranks = self._train_ranks(train_y, train_y_resid)
 
         self._results["results"] = {}
