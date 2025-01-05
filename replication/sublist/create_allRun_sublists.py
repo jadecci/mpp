@@ -16,7 +16,7 @@ args = parser.parse_args()
 hcpya_pheno_file = Path(args.pheno_dir, "unrestricted_hcpya.csv")
 hcpya_scores = ["Subject", "T1_Count", "3T_RS-fMRI_Count", "3T_tMRI_PctCompl", "3T_dMRI_PctCompl"]
 hcpya_data = pd.read_csv(hcpya_pheno_file, usecols=hcpya_scores)[hcpya_scores]
-hcpya_exclude = pd.read_csv(args.hcpya_excude, header=None).squeeze().to_list()
+hcpya_exclude = pd.read_csv(args.hcpya_exclude, header=None).squeeze().to_list()
 hcpya_data.drop(hcpya_data.loc[hcpya_data["Subject"].isin(hcpya_exclude)].index, inplace=True)
 hcpya_data.drop(hcpya_data.loc[hcpya_data["T1_Count"] == 0].index, inplace=True)
 hcpya_data.drop(hcpya_data.loc[hcpya_data["3T_RS-fMRI_Count"] == 0].index, inplace=True)
