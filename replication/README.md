@@ -29,7 +29,8 @@ ${project_dir}/phenotype
 python3 ${project_dir}/mpp/replication/sublist/create_allRun_sublists.py \
     ${project_dir}/phenotype ${project_dir}/sublist \
     ${project_dir}/mpp/replication/sublist/HCP-A_exclude.csv \
-    ${project_dir}/mpp/replication/sublist/HCP-D_exclude.csv
+    ${project_dir}/mpp/replication/sublist/HCP-D_exclude.csv \
+    ${project_dir}/mpp/replication/sublist/HCP-YA_exclude.csv
 ```
 
 ### 2.2. Preprocess diffusion data (HCP-A & HCP-D)
