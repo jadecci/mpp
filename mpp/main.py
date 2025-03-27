@@ -33,6 +33,8 @@ def main() -> None:
         "--config", type=Path, dest="config", default=files(mpp)/"default.config",
         help="Configuration file for cross-validation")
     optional.add_argument(
+        "--hcpya_res", type=Path, desc="hcpya_res", default="", help="HCP-YA restricted data csv")
+    optional.add_argument(
         "--work_dir", type=Path, dest="work_dir", default=Path.cwd(), help="Work directory")
     optional.add_argument(
         "--output_dir", type=Path, dest="output_dir", default=Path.cwd(), help="output directory")

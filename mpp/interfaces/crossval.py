@@ -29,13 +29,42 @@ class CrossValSplit(SimpleInterface):
         subjects = sum(self.inputs.sublists.values(), [])
         datasets = [[ds] * len(self.inputs.sublists[ds]) for ds in self.inputs.sublists]
         datasets = list(itertools.chain.from_iterable(datasets))
-
         self._results["cv_split"] = {}
         n_repeats = int(self.inputs.config["n_repeats"])
         n_folds = int(self.inputs.config["n_folds"])
-        rskf = RepeatedStratifiedKFold(
-            n_splits=n_folds, n_repeats=n_repeats, random_state=int(self.inputs.config["cv_seed"]))
-        for fold, (train_ind, _) in enumerate(rskf.split(subjects, datasets)):
+
+        if len(np.unique(datasets)) == 1 and np.unique(datasets)[0] == "HCP-YA":
+            fam_id = pd.read_csv(self.inputs.config["hcpya_res"], usecols=["Subject", "Family_ID"])
+            fam_id = fam_id.loc[fam_id["Subject"].isin(subjects)]
+            rng = np.random.default_rng(seed=int(self.inputs.config["cv_seed"]))
+            cv_iter = [[[], []] for i in range(n_repeats * n_folds)]
+            fold_size_min = np.round(len(subjects) / n_folds)
+            for repeat in range(n_repeats):
+                ind_to_fill = np.arange(len(subjects))
+                for fold in range(n_folds):
+                    cv_ind = fold + repeat * n_folds
+                    n_max = len(subjects) - (fold + 1) * fold_size_min
+                    while len(ind_to_fill) > n_max and len(ind_to_fill):
+                        fill_start = rng.integers(low=0, high=len(ind_to_fill))
+                        fill_start_ind = ind_to_fill[fill_start]
+                        cv_iter[cv_ind][1].append(fill_start_ind)
+                        ind_to_fill = np.delete(ind_to_fill, fill_start)
+
+                        fill_fam_id = fam_id["Family_ID"].iloc[fill_start_ind]
+                        fill_fam = fam_id["Subject"].loc[
+                            (fam_id["Family_ID"] == fill_fam_id) & (fam_id.index != fill_start_ind)]
+                        for ind in fill_fam.index.to_list():
+                            cv_iter[cv_ind][1].append(ind)
+                            ind_to_fill = np.delete(ind_to_fill, np.where(ind_to_fill == ind))
+                    cv_iter[cv_ind][0] = [
+                        i for i in range(len(subjects)) if i not in cv_iter[cv_ind][1]]
+        else:
+            rskf = RepeatedStratifiedKFold(
+                n_splits=n_folds, n_repeats=n_repeats,
+                random_state=int(self.inputs.config["cv_seed"]))
+            cv_iter = rskf.split(subjects, datasets)
+
+        for fold, (train_ind, _) in enumerate(cv_iter):
             key = f"repeat{int(np.floor(fold / n_folds))}_fold{int(fold % n_folds)}"
             train_sub = np.array(subjects)[train_ind]
             self._results["cv_split"][key] = train_sub
