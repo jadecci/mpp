@@ -1,0 +1,253 @@
+,Dataset,Target var,Target,Domain,Accuracy type,Type,Number of features
+best_HCP-A_totalcogcomp_r,HCP-A,totalcogcomp,Total cognition,Cognition,r,best,24
+nec_HCP-A_totalcogcomp_r,HCP-A,totalcogcomp,Total cognition,Cognition,r,necessary,4
+best_HCP-A_crycogcomp_r,HCP-A,crycogcomp,Crystallized cognition,Cognition,r,best,11
+nec_HCP-A_crycogcomp_r,HCP-A,crycogcomp,Crystallized cognition,Cognition,r,necessary,4
+best_HCP-A_fluidcogcomp_r,HCP-A,fluidcogcomp,Fluid cognition,Cognition,r,best,15
+nec_HCP-A_fluidcogcomp_r,HCP-A,fluidcogcomp,Fluid cognition,Cognition,r,necessary,3
+best_HCP-A_cardsort_r,HCP-A,cardsort,Cognitive flexibility,Cognition,r,best,24
+nec_HCP-A_cardsort_r,HCP-A,cardsort,Cognitive flexibility,Cognition,r,necessary,1
+best_HCP-A_flanker_r,HCP-A,flanker,Inhibitory control,Cognition,r,best,1
+nec_HCP-A_flanker_r,HCP-A,flanker,Inhibitory control,Cognition,r,necessary,1
+best_HCP-A_reading_r,HCP-A,reading,Reading,Cognition,r,best,25
+nec_HCP-A_reading_r,HCP-A,reading,Reading,Cognition,r,necessary,1
+best_HCP-A_picvocab_r,HCP-A,picvocab,Picture vocabulary,Cognition,r,best,19
+nec_HCP-A_picvocab_r,HCP-A,picvocab,Picture vocabulary,Cognition,r,necessary,7
+best_HCP-A_procspeed_r,HCP-A,procspeed,Processing speed,Cognition,r,best,22
+nec_HCP-A_procspeed_r,HCP-A,procspeed,Processing speed,Cognition,r,necessary,1
+best_HCP-A_listsort_r,HCP-A,listsort,Working memory,Cognition,r,best,23
+nec_HCP-A_listsort_r,HCP-A,listsort,Working memory,Cognition,r,necessary,1
+best_HCP-A_anger_r,HCP-A,anger,Anger affect,Mental health,r,best,1
+nec_HCP-A_anger_r,HCP-A,anger,Anger affect,Mental health,r,necessary,1
+best_HCP-A_fear_r,HCP-A,fear,Fear affect,Mental health,r,best,1
+nec_HCP-A_fear_r,HCP-A,fear,Fear affect,Mental health,r,necessary,1
+best_HCP-A_sadness_r,HCP-A,sadness,Sadness,Mental health,r,best,23
+nec_HCP-A_sadness_r,HCP-A,sadness,Sadness,Mental health,r,necessary,1
+best_HCP-A_posaffect_r,HCP-A,posaffect,Positive affect,Mental health,r,best,6
+nec_HCP-A_posaffect_r,HCP-A,posaffect,Positive affect,Mental health,r,necessary,1
+best_HCP-A_emotsupp_r,HCP-A,emotsupp,Emotional Support,Mental health,r,best,14
+nec_HCP-A_emotsupp_r,HCP-A,emotsupp,Emotional Support,Mental health,r,necessary,1
+best_HCP-A_friendship_r,HCP-A,friendship,Friendship,Mental health,r,best,1
+nec_HCP-A_friendship_r,HCP-A,friendship,Friendship,Mental health,r,necessary,1
+best_HCP-A_loneliness_r,HCP-A,loneliness,Loneliness,Mental health,r,best,1
+nec_HCP-A_loneliness_r,HCP-A,loneliness,Loneliness,Mental health,r,necessary,1
+best_HCP-A_neoffi_n_r,HCP-A,neoffi_n,Neuroticism (NEO),Personality,r,best,20
+nec_HCP-A_neoffi_n_r,HCP-A,neoffi_n,Neuroticism (NEO),Personality,r,necessary,1
+best_HCP-A_neoffi_e_r,HCP-A,neoffi_e,Extraversion (NEO),Personality,r,best,1
+nec_HCP-A_neoffi_e_r,HCP-A,neoffi_e,Extraversion (NEO),Personality,r,necessary,1
+best_HCP-A_neoffi_o_r,HCP-A,neoffi_o,Openness (NEO),Personality,r,best,25
+nec_HCP-A_neoffi_o_r,HCP-A,neoffi_o,Openness (NEO),Personality,r,necessary,1
+best_HCP-A_neoffi_a_r,HCP-A,neoffi_a,Agreeableness (NEO),Personality,r,best,15
+nec_HCP-A_neoffi_a_r,HCP-A,neoffi_a,Agreeableness (NEO),Personality,r,necessary,1
+best_HCP-A_neoffi_c_r,HCP-A,neoffi_c,Conscientiousness (NEO),Personality,r,best,1
+nec_HCP-A_neoffi_c_r,HCP-A,neoffi_c,Conscientiousness (NEO),Personality,r,necessary,1
+best_HCP-A_totalcogcomp_cod,HCP-A,totalcogcomp,Total cognition,Cognition,cod,best,24
+nec_HCP-A_totalcogcomp_cod,HCP-A,totalcogcomp,Total cognition,Cognition,cod,necessary,4
+best_HCP-A_crycogcomp_cod,HCP-A,crycogcomp,Crystallized cognition,Cognition,cod,best,11
+nec_HCP-A_crycogcomp_cod,HCP-A,crycogcomp,Crystallized cognition,Cognition,cod,necessary,4
+best_HCP-A_fluidcogcomp_cod,HCP-A,fluidcogcomp,Fluid cognition,Cognition,cod,best,15
+nec_HCP-A_fluidcogcomp_cod,HCP-A,fluidcogcomp,Fluid cognition,Cognition,cod,necessary,3
+best_HCP-A_cardsort_cod,HCP-A,cardsort,Cognitive flexibility,Cognition,cod,best,24
+nec_HCP-A_cardsort_cod,HCP-A,cardsort,Cognitive flexibility,Cognition,cod,necessary,1
+best_HCP-A_flanker_cod,HCP-A,flanker,Inhibitory control,Cognition,cod,best,1
+nec_HCP-A_flanker_cod,HCP-A,flanker,Inhibitory control,Cognition,cod,necessary,1
+best_HCP-A_reading_cod,HCP-A,reading,Reading,Cognition,cod,best,25
+nec_HCP-A_reading_cod,HCP-A,reading,Reading,Cognition,cod,necessary,1
+best_HCP-A_picvocab_cod,HCP-A,picvocab,Picture vocabulary,Cognition,cod,best,19
+nec_HCP-A_picvocab_cod,HCP-A,picvocab,Picture vocabulary,Cognition,cod,necessary,6
+best_HCP-A_procspeed_cod,HCP-A,procspeed,Processing speed,Cognition,cod,best,22
+nec_HCP-A_procspeed_cod,HCP-A,procspeed,Processing speed,Cognition,cod,necessary,1
+best_HCP-A_listsort_cod,HCP-A,listsort,Working memory,Cognition,cod,best,25
+nec_HCP-A_listsort_cod,HCP-A,listsort,Working memory,Cognition,cod,necessary,1
+best_HCP-A_anger_cod,HCP-A,anger,Anger affect,Mental health,cod,best,1
+nec_HCP-A_anger_cod,HCP-A,anger,Anger affect,Mental health,cod,necessary,1
+best_HCP-A_fear_cod,HCP-A,fear,Fear affect,Mental health,cod,best,1
+nec_HCP-A_fear_cod,HCP-A,fear,Fear affect,Mental health,cod,necessary,1
+best_HCP-A_sadness_cod,HCP-A,sadness,Sadness,Mental health,cod,best,1
+nec_HCP-A_sadness_cod,HCP-A,sadness,Sadness,Mental health,cod,necessary,1
+best_HCP-A_posaffect_cod,HCP-A,posaffect,Positive affect,Mental health,cod,best,1
+nec_HCP-A_posaffect_cod,HCP-A,posaffect,Positive affect,Mental health,cod,necessary,1
+best_HCP-A_emotsupp_cod,HCP-A,emotsupp,Emotional Support,Mental health,cod,best,1
+nec_HCP-A_emotsupp_cod,HCP-A,emotsupp,Emotional Support,Mental health,cod,necessary,1
+best_HCP-A_friendship_cod,HCP-A,friendship,Friendship,Mental health,cod,best,1
+nec_HCP-A_friendship_cod,HCP-A,friendship,Friendship,Mental health,cod,necessary,1
+best_HCP-A_loneliness_cod,HCP-A,loneliness,Loneliness,Mental health,cod,best,1
+nec_HCP-A_loneliness_cod,HCP-A,loneliness,Loneliness,Mental health,cod,necessary,1
+best_HCP-A_neoffi_n_cod,HCP-A,neoffi_n,Neuroticism (NEO),Personality,cod,best,25
+nec_HCP-A_neoffi_n_cod,HCP-A,neoffi_n,Neuroticism (NEO),Personality,cod,necessary,1
+best_HCP-A_neoffi_e_cod,HCP-A,neoffi_e,Extraversion (NEO),Personality,cod,best,1
+nec_HCP-A_neoffi_e_cod,HCP-A,neoffi_e,Extraversion (NEO),Personality,cod,necessary,1
+best_HCP-A_neoffi_o_cod,HCP-A,neoffi_o,Openness (NEO),Personality,cod,best,25
+nec_HCP-A_neoffi_o_cod,HCP-A,neoffi_o,Openness (NEO),Personality,cod,necessary,1
+best_HCP-A_neoffi_a_cod,HCP-A,neoffi_a,Agreeableness (NEO),Personality,cod,best,1
+nec_HCP-A_neoffi_a_cod,HCP-A,neoffi_a,Agreeableness (NEO),Personality,cod,necessary,1
+best_HCP-A_neoffi_c_cod,HCP-A,neoffi_c,Conscientiousness (NEO),Personality,cod,best,1
+nec_HCP-A_neoffi_c_cod,HCP-A,neoffi_c,Conscientiousness (NEO),Personality,cod,necessary,1
+best_HCP-YA_totalcogcomp_r,HCP-YA,totalcogcomp,Total cognition,Cognition,r,best,12
+nec_HCP-YA_totalcogcomp_r,HCP-YA,totalcogcomp,Total cognition,Cognition,r,necessary,6
+best_HCP-YA_crycogcomp_r,HCP-YA,crycogcomp,Crystallized cognition,Cognition,r,best,19
+nec_HCP-YA_crycogcomp_r,HCP-YA,crycogcomp,Crystallized cognition,Cognition,r,necessary,5
+best_HCP-YA_fluidcogcomp_r,HCP-YA,fluidcogcomp,Fluid cognition,Cognition,r,best,27
+nec_HCP-YA_fluidcogcomp_r,HCP-YA,fluidcogcomp,Fluid cognition,Cognition,r,necessary,1
+best_HCP-YA_cardsort_r,HCP-YA,cardsort,Cognitive flexibility,Cognition,r,best,1
+nec_HCP-YA_cardsort_r,HCP-YA,cardsort,Cognitive flexibility,Cognition,r,necessary,1
+best_HCP-YA_flanker_r,HCP-YA,flanker,Inhibitory control,Cognition,r,best,7
+nec_HCP-YA_flanker_r,HCP-YA,flanker,Inhibitory control,Cognition,r,necessary,1
+best_HCP-YA_reading_r,HCP-YA,reading,Reading,Cognition,r,best,12
+nec_HCP-YA_reading_r,HCP-YA,reading,Reading,Cognition,r,necessary,5
+best_HCP-YA_picvocab_r,HCP-YA,picvocab,Picture vocabulary,Cognition,r,best,12
+nec_HCP-YA_picvocab_r,HCP-YA,picvocab,Picture vocabulary,Cognition,r,necessary,7
+best_HCP-YA_procspeed_r,HCP-YA,procspeed,Processing speed,Cognition,r,best,13
+nec_HCP-YA_procspeed_r,HCP-YA,procspeed,Processing speed,Cognition,r,necessary,1
+best_HCP-YA_listsort_r,HCP-YA,listsort,Working memory,Cognition,r,best,7
+nec_HCP-YA_listsort_r,HCP-YA,listsort,Working memory,Cognition,r,necessary,2
+best_HCP-YA_anger_r,HCP-YA,anger,Anger affect,Mental health,r,best,15
+nec_HCP-YA_anger_r,HCP-YA,anger,Anger affect,Mental health,r,necessary,1
+best_HCP-YA_fear_r,HCP-YA,fear,Fear affect,Mental health,r,best,22
+nec_HCP-YA_fear_r,HCP-YA,fear,Fear affect,Mental health,r,necessary,1
+best_HCP-YA_sadness_r,HCP-YA,sadness,Sadness,Mental health,r,best,1
+nec_HCP-YA_sadness_r,HCP-YA,sadness,Sadness,Mental health,r,necessary,1
+best_HCP-YA_posaffect_r,HCP-YA,posaffect,Positive affect,Mental health,r,best,4
+nec_HCP-YA_posaffect_r,HCP-YA,posaffect,Positive affect,Mental health,r,necessary,1
+best_HCP-YA_emotsupp_r,HCP-YA,emotsupp,Emotional Support,Mental health,r,best,31
+nec_HCP-YA_emotsupp_r,HCP-YA,emotsupp,Emotional Support,Mental health,r,necessary,1
+best_HCP-YA_friendship_r,HCP-YA,friendship,Friendship,Mental health,r,best,2
+nec_HCP-YA_friendship_r,HCP-YA,friendship,Friendship,Mental health,r,necessary,1
+best_HCP-YA_loneliness_r,HCP-YA,loneliness,Loneliness,Mental health,r,best,25
+nec_HCP-YA_loneliness_r,HCP-YA,loneliness,Loneliness,Mental health,r,necessary,1
+best_HCP-YA_neoffi_n_r,HCP-YA,neoffi_n,Neuroticism (NEO),Personality,r,best,1
+nec_HCP-YA_neoffi_n_r,HCP-YA,neoffi_n,Neuroticism (NEO),Personality,r,necessary,1
+best_HCP-YA_neoffi_e_r,HCP-YA,neoffi_e,Extraversion (NEO),Personality,r,best,1
+nec_HCP-YA_neoffi_e_r,HCP-YA,neoffi_e,Extraversion (NEO),Personality,r,necessary,1
+best_HCP-YA_neoffi_o_r,HCP-YA,neoffi_o,Openness (NEO),Personality,r,best,24
+nec_HCP-YA_neoffi_o_r,HCP-YA,neoffi_o,Openness (NEO),Personality,r,necessary,1
+best_HCP-YA_neoffi_a_r,HCP-YA,neoffi_a,Agreeableness (NEO),Personality,r,best,33
+nec_HCP-YA_neoffi_a_r,HCP-YA,neoffi_a,Agreeableness (NEO),Personality,r,necessary,10
+best_HCP-YA_neoffi_c_r,HCP-YA,neoffi_c,Conscientiousness (NEO),Personality,r,best,27
+nec_HCP-YA_neoffi_c_r,HCP-YA,neoffi_c,Conscientiousness (NEO),Personality,r,necessary,1
+best_HCP-YA_totalcogcomp_cod,HCP-YA,totalcogcomp,Total cognition,Cognition,cod,best,13
+nec_HCP-YA_totalcogcomp_cod,HCP-YA,totalcogcomp,Total cognition,Cognition,cod,necessary,6
+best_HCP-YA_crycogcomp_cod,HCP-YA,crycogcomp,Crystallized cognition,Cognition,cod,best,19
+nec_HCP-YA_crycogcomp_cod,HCP-YA,crycogcomp,Crystallized cognition,Cognition,cod,necessary,5
+best_HCP-YA_fluidcogcomp_cod,HCP-YA,fluidcogcomp,Fluid cognition,Cognition,cod,best,27
+nec_HCP-YA_fluidcogcomp_cod,HCP-YA,fluidcogcomp,Fluid cognition,Cognition,cod,necessary,1
+best_HCP-YA_cardsort_cod,HCP-YA,cardsort,Cognitive flexibility,Cognition,cod,best,1
+nec_HCP-YA_cardsort_cod,HCP-YA,cardsort,Cognitive flexibility,Cognition,cod,necessary,1
+best_HCP-YA_flanker_cod,HCP-YA,flanker,Inhibitory control,Cognition,cod,best,7
+nec_HCP-YA_flanker_cod,HCP-YA,flanker,Inhibitory control,Cognition,cod,necessary,1
+best_HCP-YA_reading_cod,HCP-YA,reading,Reading,Cognition,cod,best,12
+nec_HCP-YA_reading_cod,HCP-YA,reading,Reading,Cognition,cod,necessary,5
+best_HCP-YA_picvocab_cod,HCP-YA,picvocab,Picture vocabulary,Cognition,cod,best,12
+nec_HCP-YA_picvocab_cod,HCP-YA,picvocab,Picture vocabulary,Cognition,cod,necessary,7
+best_HCP-YA_procspeed_cod,HCP-YA,procspeed,Processing speed,Cognition,cod,best,1
+nec_HCP-YA_procspeed_cod,HCP-YA,procspeed,Processing speed,Cognition,cod,necessary,1
+best_HCP-YA_listsort_cod,HCP-YA,listsort,Working memory,Cognition,cod,best,7
+nec_HCP-YA_listsort_cod,HCP-YA,listsort,Working memory,Cognition,cod,necessary,1
+best_HCP-YA_anger_cod,HCP-YA,anger,Anger affect,Mental health,cod,best,1
+nec_HCP-YA_anger_cod,HCP-YA,anger,Anger affect,Mental health,cod,necessary,1
+best_HCP-YA_fear_cod,HCP-YA,fear,Fear affect,Mental health,cod,best,1
+nec_HCP-YA_fear_cod,HCP-YA,fear,Fear affect,Mental health,cod,necessary,1
+best_HCP-YA_sadness_cod,HCP-YA,sadness,Sadness,Mental health,cod,best,1
+nec_HCP-YA_sadness_cod,HCP-YA,sadness,Sadness,Mental health,cod,necessary,1
+best_HCP-YA_posaffect_cod,HCP-YA,posaffect,Positive affect,Mental health,cod,best,1
+nec_HCP-YA_posaffect_cod,HCP-YA,posaffect,Positive affect,Mental health,cod,necessary,1
+best_HCP-YA_emotsupp_cod,HCP-YA,emotsupp,Emotional Support,Mental health,cod,best,1
+nec_HCP-YA_emotsupp_cod,HCP-YA,emotsupp,Emotional Support,Mental health,cod,necessary,1
+best_HCP-YA_friendship_cod,HCP-YA,friendship,Friendship,Mental health,cod,best,1
+nec_HCP-YA_friendship_cod,HCP-YA,friendship,Friendship,Mental health,cod,necessary,1
+best_HCP-YA_loneliness_cod,HCP-YA,loneliness,Loneliness,Mental health,cod,best,1
+nec_HCP-YA_loneliness_cod,HCP-YA,loneliness,Loneliness,Mental health,cod,necessary,1
+best_HCP-YA_neoffi_n_cod,HCP-YA,neoffi_n,Neuroticism (NEO),Personality,cod,best,1
+nec_HCP-YA_neoffi_n_cod,HCP-YA,neoffi_n,Neuroticism (NEO),Personality,cod,necessary,1
+best_HCP-YA_neoffi_e_cod,HCP-YA,neoffi_e,Extraversion (NEO),Personality,cod,best,1
+nec_HCP-YA_neoffi_e_cod,HCP-YA,neoffi_e,Extraversion (NEO),Personality,cod,necessary,1
+best_HCP-YA_neoffi_o_cod,HCP-YA,neoffi_o,Openness (NEO),Personality,cod,best,1
+nec_HCP-YA_neoffi_o_cod,HCP-YA,neoffi_o,Openness (NEO),Personality,cod,necessary,1
+best_HCP-YA_neoffi_a_cod,HCP-YA,neoffi_a,Agreeableness (NEO),Personality,cod,best,33
+nec_HCP-YA_neoffi_a_cod,HCP-YA,neoffi_a,Agreeableness (NEO),Personality,cod,necessary,1
+best_HCP-YA_neoffi_c_cod,HCP-YA,neoffi_c,Conscientiousness (NEO),Personality,cod,best,1
+nec_HCP-YA_neoffi_c_cod,HCP-YA,neoffi_c,Conscientiousness (NEO),Personality,cod,necessary,1
+best_HCP-D_totalcogcomp_r,HCP-D,totalcogcomp,Total cognition,Cognition,r,best,23
+nec_HCP-D_totalcogcomp_r,HCP-D,totalcogcomp,Total cognition,Cognition,r,necessary,7
+best_HCP-D_crycogcomp_r,HCP-D,crycogcomp,Crystallized cognition,Cognition,r,best,12
+nec_HCP-D_crycogcomp_r,HCP-D,crycogcomp,Crystallized cognition,Cognition,r,necessary,1
+best_HCP-D_fluidcogcomp_r,HCP-D,fluidcogcomp,Fluid cognition,Cognition,r,best,16
+nec_HCP-D_fluidcogcomp_r,HCP-D,fluidcogcomp,Fluid cognition,Cognition,r,necessary,1
+best_HCP-D_cardsort_r,HCP-D,cardsort,Cognitive flexibility,Cognition,r,best,23
+nec_HCP-D_cardsort_r,HCP-D,cardsort,Cognitive flexibility,Cognition,r,necessary,1
+best_HCP-D_flanker_r,HCP-D,flanker,Inhibitory control,Cognition,r,best,1
+nec_HCP-D_flanker_r,HCP-D,flanker,Inhibitory control,Cognition,r,necessary,1
+best_HCP-D_reading_r,HCP-D,reading,Reading,Cognition,r,best,20
+nec_HCP-D_reading_r,HCP-D,reading,Reading,Cognition,r,necessary,1
+best_HCP-D_picvocab_r,HCP-D,picvocab,Picture vocabulary,Cognition,r,best,24
+nec_HCP-D_picvocab_r,HCP-D,picvocab,Picture vocabulary,Cognition,r,necessary,1
+best_HCP-D_procspeed_r,HCP-D,procspeed,Processing speed,Cognition,r,best,1
+nec_HCP-D_procspeed_r,HCP-D,procspeed,Processing speed,Cognition,r,necessary,1
+best_HCP-D_listsort_r,HCP-D,listsort,Working memory,Cognition,r,best,2
+nec_HCP-D_listsort_r,HCP-D,listsort,Working memory,Cognition,r,necessary,1
+best_HCP-D_anger_r,HCP-D,anger,Anger affect,Mental health,r,best,25
+nec_HCP-D_anger_r,HCP-D,anger,Anger affect,Mental health,r,necessary,1
+best_HCP-D_fear_r,HCP-D,fear,Fear affect,Mental health,r,best,1
+nec_HCP-D_fear_r,HCP-D,fear,Fear affect,Mental health,r,necessary,1
+best_HCP-D_sadness_r,HCP-D,sadness,Sadness,Mental health,r,best,11
+nec_HCP-D_sadness_r,HCP-D,sadness,Sadness,Mental health,r,necessary,1
+best_HCP-D_posaffect_r,HCP-D,posaffect,Positive affect,Mental health,r,best,19
+nec_HCP-D_posaffect_r,HCP-D,posaffect,Positive affect,Mental health,r,necessary,1
+best_HCP-D_emotsupp_r,HCP-D,emotsupp,Emotional Support,Mental health,r,best,1
+nec_HCP-D_emotsupp_r,HCP-D,emotsupp,Emotional Support,Mental health,r,necessary,1
+best_HCP-D_friendship_r,HCP-D,friendship,Friendship,Mental health,r,best,25
+nec_HCP-D_friendship_r,HCP-D,friendship,Friendship,Mental health,r,necessary,1
+best_HCP-D_loneliness_r,HCP-D,loneliness,Loneliness,Mental health,r,best,3
+nec_HCP-D_loneliness_r,HCP-D,loneliness,Loneliness,Mental health,r,necessary,1
+best_HCP-D_neoffi_n_r,HCP-D,neoffi_n,Neuroticism (NEO),Personality,r,best,3
+nec_HCP-D_neoffi_n_r,HCP-D,neoffi_n,Neuroticism (NEO),Personality,r,necessary,1
+best_HCP-D_neoffi_e_r,HCP-D,neoffi_e,Extraversion (NEO),Personality,r,best,1
+nec_HCP-D_neoffi_e_r,HCP-D,neoffi_e,Extraversion (NEO),Personality,r,necessary,1
+best_HCP-D_neoffi_o_r,HCP-D,neoffi_o,Openness (NEO),Personality,r,best,13
+nec_HCP-D_neoffi_o_r,HCP-D,neoffi_o,Openness (NEO),Personality,r,necessary,1
+best_HCP-D_neoffi_a_r,HCP-D,neoffi_a,Agreeableness (NEO),Personality,r,best,1
+nec_HCP-D_neoffi_a_r,HCP-D,neoffi_a,Agreeableness (NEO),Personality,r,necessary,1
+best_HCP-D_neoffi_c_r,HCP-D,neoffi_c,Conscientiousness (NEO),Personality,r,best,1
+nec_HCP-D_neoffi_c_r,HCP-D,neoffi_c,Conscientiousness (NEO),Personality,r,necessary,1
+best_HCP-D_totalcogcomp_cod,HCP-D,totalcogcomp,Total cognition,Cognition,cod,best,23
+nec_HCP-D_totalcogcomp_cod,HCP-D,totalcogcomp,Total cognition,Cognition,cod,necessary,6
+best_HCP-D_crycogcomp_cod,HCP-D,crycogcomp,Crystallized cognition,Cognition,cod,best,23
+nec_HCP-D_crycogcomp_cod,HCP-D,crycogcomp,Crystallized cognition,Cognition,cod,necessary,1
+best_HCP-D_fluidcogcomp_cod,HCP-D,fluidcogcomp,Fluid cognition,Cognition,cod,best,25
+nec_HCP-D_fluidcogcomp_cod,HCP-D,fluidcogcomp,Fluid cognition,Cognition,cod,necessary,1
+best_HCP-D_cardsort_cod,HCP-D,cardsort,Cognitive flexibility,Cognition,cod,best,1
+nec_HCP-D_cardsort_cod,HCP-D,cardsort,Cognitive flexibility,Cognition,cod,necessary,1
+best_HCP-D_flanker_cod,HCP-D,flanker,Inhibitory control,Cognition,cod,best,1
+nec_HCP-D_flanker_cod,HCP-D,flanker,Inhibitory control,Cognition,cod,necessary,1
+best_HCP-D_reading_cod,HCP-D,reading,Reading,Cognition,cod,best,1
+nec_HCP-D_reading_cod,HCP-D,reading,Reading,Cognition,cod,necessary,1
+best_HCP-D_picvocab_cod,HCP-D,picvocab,Picture vocabulary,Cognition,cod,best,24
+nec_HCP-D_picvocab_cod,HCP-D,picvocab,Picture vocabulary,Cognition,cod,necessary,1
+best_HCP-D_procspeed_cod,HCP-D,procspeed,Processing speed,Cognition,cod,best,1
+nec_HCP-D_procspeed_cod,HCP-D,procspeed,Processing speed,Cognition,cod,necessary,1
+best_HCP-D_listsort_cod,HCP-D,listsort,Working memory,Cognition,cod,best,1
+nec_HCP-D_listsort_cod,HCP-D,listsort,Working memory,Cognition,cod,necessary,1
+best_HCP-D_anger_cod,HCP-D,anger,Anger affect,Mental health,cod,best,1
+nec_HCP-D_anger_cod,HCP-D,anger,Anger affect,Mental health,cod,necessary,1
+best_HCP-D_fear_cod,HCP-D,fear,Fear affect,Mental health,cod,best,1
+nec_HCP-D_fear_cod,HCP-D,fear,Fear affect,Mental health,cod,necessary,1
+best_HCP-D_sadness_cod,HCP-D,sadness,Sadness,Mental health,cod,best,1
+nec_HCP-D_sadness_cod,HCP-D,sadness,Sadness,Mental health,cod,necessary,1
+best_HCP-D_posaffect_cod,HCP-D,posaffect,Positive affect,Mental health,cod,best,1
+nec_HCP-D_posaffect_cod,HCP-D,posaffect,Positive affect,Mental health,cod,necessary,1
+best_HCP-D_emotsupp_cod,HCP-D,emotsupp,Emotional Support,Mental health,cod,best,1
+nec_HCP-D_emotsupp_cod,HCP-D,emotsupp,Emotional Support,Mental health,cod,necessary,1
+best_HCP-D_friendship_cod,HCP-D,friendship,Friendship,Mental health,cod,best,1
+nec_HCP-D_friendship_cod,HCP-D,friendship,Friendship,Mental health,cod,necessary,1
+best_HCP-D_loneliness_cod,HCP-D,loneliness,Loneliness,Mental health,cod,best,3
+nec_HCP-D_loneliness_cod,HCP-D,loneliness,Loneliness,Mental health,cod,necessary,1
+best_HCP-D_neoffi_n_cod,HCP-D,neoffi_n,Neuroticism (NEO),Personality,cod,best,1
+nec_HCP-D_neoffi_n_cod,HCP-D,neoffi_n,Neuroticism (NEO),Personality,cod,necessary,1
+best_HCP-D_neoffi_e_cod,HCP-D,neoffi_e,Extraversion (NEO),Personality,cod,best,1
+nec_HCP-D_neoffi_e_cod,HCP-D,neoffi_e,Extraversion (NEO),Personality,cod,necessary,1
+best_HCP-D_neoffi_o_cod,HCP-D,neoffi_o,Openness (NEO),Personality,cod,best,1
+nec_HCP-D_neoffi_o_cod,HCP-D,neoffi_o,Openness (NEO),Personality,cod,necessary,1
+best_HCP-D_neoffi_a_cod,HCP-D,neoffi_a,Agreeableness (NEO),Personality,cod,best,1
+nec_HCP-D_neoffi_a_cod,HCP-D,neoffi_a,Agreeableness (NEO),Personality,cod,necessary,1
+best_HCP-D_neoffi_c_cod,HCP-D,neoffi_c,Conscientiousness (NEO),Personality,cod,best,1
+nec_HCP-D_neoffi_c_cod,HCP-D,neoffi_c,Conscientiousness (NEO),Personality,cod,necessary,1

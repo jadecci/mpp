@@ -8,6 +8,7 @@ python3 -m venv ~/.venvs/mpp-features
 source ~/.venvs/mpp-features/bin/activate
 datalad clone git@gin.g-node.org:/jadecci/MPP.git ${project_dir}/mpp
 cd ${project_dir}/mpp && datalad get -r . && cd ${project_dir}
+python3 install ${project_dir}/mpp
 ```
 
 ### 1.2. Download phenotype files
@@ -86,7 +87,7 @@ simg=${project_dir}/mpp/replication/singularity_files/mdiffusion.simg
 for subject in cat `${project_dir}/sublist/HCP-YA_allRun.csv`; do
     mfe HCP-YA ${subject} --modality rfMRI tfMRI sMRI dMRI \
         --pheno_dir ${project_dir}/mpp/replication/phenotype \
-        --work_dir ${project_dir}/work --output_dir ${project_dir}/mfe_output  \
+        --work_dir ${project_dir}/work --output_dir ${project_dir}/mfe_output/${dataset}  \
         --simg ${simg}
 done
 
@@ -94,18 +95,59 @@ for dataset in HCP-A HCP-D; do
     for subject in cat `${project_dir}/sublist/${dataset}_allRun.csv`; do
         mfe ${dataset} ${subject} --modality rfMRI tfMRI sMRI dMRI \
             --pheno_dir ${project_dir}/mpp/replication/phenotype/${dataset} \
-            --work_dir ${project_dir}/work --output_dir ${project_dir}/mfe_output \
+            --work_dir ${project_dir}/work --output_dir ${project_dir}/mfe_output/${dataset} \
             --simg ${simg}
     done
 done
 ```
 
-## 3. Prediction
+## 3. Multimodal Prediction
+
+### 3.1. Run predictions
 
 ```bash
-mpp
+mpp --datasets HCP-YA \
+    --targets totalcogcomp crycogcomp fluidcogcomp cardsort flanker reading picvocab procspeed \
+        listsort anger fear sadness posaffect emotsupp friendship loneliness neoffi_n neoffi_e \
+        neoffi_o neoffi_a neoffi_c \
+    --features_dir ${project_dir}/mfe_output \
+    --sublists ${project_dir}/sublist/HCP-YA_allRun.csv \
+    --level 3 \
+    --hcpya_res ${project_dir}/mpp/replication/phenotype/restricted_hcpya.csv \
+    --work_dir ${project_dir}/work \
+    --output_dir ${project_dir}/mpp_output/${dataset}
+
+for dataset in HCP-A HCP-D; do
+    mpp --datasets $dataset \
+        --targets totalcogcomp crycogcomp fluidcogcomp cardsort flanker reading picvocab procspeed \
+            listsort anger fear sadness posaffect emotsupp friendship loneliness neoffi_n neoffi_e \
+            neoffi_o neoffi_a neoffi_c \
+        --features_dir ${project_dir}/mfe_output \
+        --sublists ${project_dir}/sublist/${dataset}_allRun.csv \
+        --level 3 \
+        --work_dir ${project_dir}/work \
+        --output_dir ${project_dir}/mpp_output/${dataset}
+done
 ```
 
+### 3.2. Plot results
+
+Collect prediction results into tables for plotting:
+
+```bash
+python3 ${project_dir}/mpp/replication/figures/collect_results.py \
+    --datasets HCP-A HCP-YA HCP-D \
+    --pred_dir ${project_dir}/mpp_output \
+    --out_dir ${project_dir}/figures
+```
+
+Plot all figures:
+
+```bash
+python3 ${project_dir}/mpp/replication/figures/plot_figures.py \
+    --res_dir ${project_dir}/figures \
+    --out_dir ${project_dir}/figures
+```
 
 ## Additional information
 
