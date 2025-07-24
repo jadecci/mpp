@@ -33,6 +33,12 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[project.optional-dependencies]
+figures = [
+    "matplotlib ~= 3.9.0",
+    "seaborn ~= 0.13.2",
+]
+
 [project.scripts]
 mpp = "mpp.main:main"
 mfe = "mpp.mfe.main:main"
