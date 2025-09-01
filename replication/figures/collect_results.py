@@ -40,7 +40,7 @@ features = {
         "tfMRI_GAMBLING_ec", "tfMRI_LANGUAGE_ec", "tfMRI_MOTOR_ec", "tfMRI_WM_ec",
         "tfMRI_RELATIONAL_ec", "tfMRI_SOCIAL_ec"]}
 feature_names = {
-    "rs_sfc": "rest static FC", "rs_dfc": "rest dynamic FC", "rs_ec": "rest EC",
+    "rs_sfc": "rest static FC", "rs_dfc": "time-varying FC", "rs_ec": "rest EC",
     "rs_stats": "rest network statisics", "rs_grad": "rest gradients",
     "tfMRI_CARIT_PA_sfc": "CARIT static FC", "tfMRI_FACENAME_PA_sfc": "FACENAME static FC",
     "tfMRI_VISMOTOR_PA_sfc": "VISMOTOR static FC", "tfMRI_CARIT_PA_ec": "CARIT EC",
@@ -53,8 +53,8 @@ feature_names = {
     "tfMRI_RELATIONAL_sfc": "RELATIONAL static FC", "tfMRI_SOCIAL_sfc": "SOCIAL static FC",
     "tfMRI_GAMBLING_ec": "GAMBLING EC", "tfMRI_LANGUAGE_ec": "LANGUAGE EC",
     "tfMRI_MOTOR_ec": "MOTOR EC", "tfMRI_WM_ec": "WM EC", "tfMRI_RELATIONAL_ec": "RELATIONAL EC",
-    "tfMRI_SOCIAL_ec": "SOCIAL EC", "s_myelin": "myelin estimate", "s_gmv": "GMV", "s_cs": "CS",
-    "s_ct": "CT", "s_acgmv": "GMV Connectivity", "s_accs": "CS Connectivity",
+    "tfMRI_SOCIAL_ec": "SOCIAL EC", "s_myelin": "myelin estimate", "s_gmv": "GMV", "s_cs": "SA",
+    "s_ct": "CT", "s_acgmv": "GMV Connectivity", "s_accs": "SA Connectivity",
     "s_acct": "CT Connectivity", "d_scc": "SC (count)", "d_scl": "SC (length)", "d_fa": "FA",
     "d_md": "MD", "d_ad": "AD", "d_rd": "RD", "confounds": "confound", "conf": "confound"}
 n_feature_max = {"HCP-A": 25, "HCP-D": 25, "HCP-YA": 33}

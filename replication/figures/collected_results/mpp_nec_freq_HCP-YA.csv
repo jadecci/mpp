@@ -1,15 +1,15 @@
 ,Cognitive flexibility,Crystallized cognition,Fluid cognition,Loneliness,Openness (NEO),Picture vocabulary,Processing speed,Reading,Total cognition,Working memory
 rest static FC,0.0,0.196,0.0,0.0,0.0,0.14,0.0,0.194,0.11,0.57
-rest dynamic FC,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+time-varying FC,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 rest EC,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 rest network statisics,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 rest gradients,0.0,0.002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 myelin estimate,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 GMV,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
-CS,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+SA,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 CT,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 GMV Connectivity,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
-CS Connectivity,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+SA Connectivity,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 CT Connectivity,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 SC (count),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 SC (length),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0

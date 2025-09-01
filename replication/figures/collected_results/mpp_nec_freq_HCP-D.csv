@@ -1,15 +1,15 @@
 ,Crystallized cognition,Emotional Support,Inhibitory control,Picture vocabulary,Total cognition
 rest static FC,1.0,0.0,0.0,0.0,0.14
-rest dynamic FC,0.0,0.0,0.0,0.0,0.0007692307692307692
+time-varying FC,0.0,0.0,0.0,0.0,0.0007692307692307692
 rest EC,0.0,0.0,0.0,0.0,0.12076923076923077
 rest network statisics,0.0,0.0,0.0,0.0,0.0
 rest gradients,0.0,0.0,0.0,0.0,0.0
 myelin estimate,0.0,0.0,0.0,0.0,0.018461538461538463
 GMV,0.0,0.0,0.0,0.0,0.0015384615384615385
-CS,0.0,0.0,0.0,0.0,0.0
+SA,0.0,0.0,0.0,0.0,0.0
 CT,0.0,0.0,0.0,0.0,0.011538461538461539
 GMV Connectivity,0.0,0.0,0.0,0.0,0.0
-CS Connectivity,0.0,0.0,0.0,0.0,0.0
+SA Connectivity,0.0,0.0,0.0,0.0,0.0
 CT Connectivity,0.0,0.0,0.0,0.0,0.0015384615384615385
 SC (count),0.0,0.0,0.0,0.0,0.040769230769230766
 SC (length),0.0,0.0,0.0,0.0,0.0
