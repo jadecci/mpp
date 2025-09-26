@@ -7,14 +7,14 @@ import seaborn as sns
 
 
 features = [
-    "rest static FC", "time-varying FC", "rest EC", "rest network statisics", "rest gradients",
-    "CARIT static FC", "FACENAME static FC", "VISMOTOR static FC", "CARIT EC", "FACENAME EC",
-    "VISMOTOR EC", "CARIT static FC", "EMOTION static FC", "GUESSING static FC", "CARIT EC",
-    "EMOTION EC", "GUESSING EC", "GAMBLING static FC", "LANGUAGE static FC", "MOTOR static FC",
-    "WM static FC", "RELATIONAL static FC", "SOCIAL static FC", "GAMBLING EC", "LANGUAGE EC",
-    "MOTOR EC", "WM EC", "RELATIONAL EC", "SOCIAL EC", "myelin estimate", "GMV", "SA", "CT",
-    "GMV Connectivity", "SA Connectivity", "CT Connectivity", "SC (count)", "SC (length)", "FA",
-    "MD", "AD", "RD", "confound"]
+    "rest model-free FC", "time-varying FC", "rest EC", "rest network statisics", "rest gradients",
+    "CARIT model-free FC", "FACENAME model-free FC", "VISMOTOR model-free FC", "CARIT EC",
+    "FACENAME EC", "VISMOTOR EC", "CARIT model-free FC", "EMOTION model-free FC",
+    "GUESSING model-free FC", "CARIT EC", "EMOTION EC", "GUESSING EC", "GAMBLING model-free FC",
+    "LANGUAGE model-free FC", "MOTOR model-free FC", "WM model-free FC", "RELATIONAL model-free FC",
+    "SOCIAL model-free FC", "GAMBLING EC", "LANGUAGE EC", "MOTOR EC", "WM EC", "RELATIONAL EC",
+    "SOCIAL EC", "myelin estimate", "GMV", "SA", "CT", "GMV Connectivity", "SA Connectivity",
+    "CT Connectivity", "SC (count)", "SC (length)", "FA", "MD", "AD", "RD", "confound"]
 targets = [
     "Total cognition", "Crystallized cognition", "Fluid cognition", "Cognitive flexibility",
     "Inhibitory control", "Reading", "Picture vocabulary", "Processing speed", "Working memory",
