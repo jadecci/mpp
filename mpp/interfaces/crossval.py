@@ -171,9 +171,13 @@ class FeaturewiseModel(SimpleInterface):
         train_x, train_y, train_conf = self._extract_data(train_sub)
         test_x, test_y, test_conf = self._extract_data(test_sub)
         train_y, test_y = pheno_reg_conf(train_y, train_conf, test_y, test_conf)
-        r, cod, test_ypred = elastic_net(train_x, train_y, test_x, test_y, n_alphas)
+        if self.inputs.config["model"] == "default":
+            r, cod, test_ypred = elastic_net(train_x, train_y, test_x, test_y, n_alphas)
+        elif self.inputs.config["model"] == "alternative":
+            key_out = f"{key_out}_alternative"
         self._results["results"] = {
-            f"r_{key_out}": r, f"cod_{key_out}": cod, f"test_ypred_{key_out}": test_ypred}
+            f"r_{key_out}": r, f"cod_{key_out}": cod, f"test_ypred_{key_out}": test_ypred,
+            f"test_yresid_{key_out}": test_y}
 
         train_ypred = np.zeros(len(train_sub))
         for inner in range(5):
@@ -184,8 +188,9 @@ class FeaturewiseModel(SimpleInterface):
                 inner_train_sub, postfix=f"_inner{inner}")
             test_x, test_y, test_conf = self._extract_data(inner_test_sub, postfix=f"_inner{inner}")
             train_y, test_y = pheno_reg_conf(train_y, train_conf, test_y, test_conf)
-            _, _, train_ypred[inner_test_i] = elastic_net(
-                train_x, train_y, test_x, test_y, n_alphas)
+            if self.inputs.config["model"] == "default":
+                _, _, train_ypred[inner_test_i] = elastic_net(
+                    train_x, train_y, test_x, test_y, n_alphas)
         self._results["results"].update({f"train_ypred_{key_out}": train_ypred})
         self._results["fw_ypred"] = {"train_ypred": train_ypred, "test_ypred": test_ypred}
 
@@ -203,7 +208,6 @@ class _ConfoundsModelInputSpec(BaseInterfaceInputSpec):
 
 class _ConfoundsModelOutputSpec(TraitedSpec):
     results = traits.Dict(desc='accuracy results')
-    c_ypred = traits.Dict(desc='Predicted psychometric values')
 
 
 class ConfoundsModel(SimpleInterface):
@@ -233,21 +237,13 @@ class ConfoundsModel(SimpleInterface):
         test_sub = [subject for subject in all_sub if subject not in train_sub]
         train_x, train_y = self._extract_data(train_sub)
         test_x, test_y = self._extract_data(test_sub)
-        r, cod, test_ypred = elastic_net(train_x, train_y, test_x, test_y, n_alphas)
+        if self.inputs.config["model"] == "default":
+            r, cod, test_ypred = elastic_net(train_x, train_y, test_x, test_y, n_alphas)
+        elif self.inputs.config["model"] == "alternative":
+            key_out = f"{key_out}_alternative"
         self._results["results"] = {
-            f"r_{key_out}": r, f"cod_{key_out}": cod, f"test_ypred_{key_out}": test_ypred}
-
-        train_ypred = np.zeros(len(train_sub))
-        for inner in range(5):
-            inner_train_sub = self.inputs.cv_split[f"{key}_inner{inner}"]
-            inner_test_i = self.inputs.cv_split[f"{key}_inner{inner}_test"]
-            inner_test_sub = train_sub[inner_test_i]
-            train_x, train_y = self._extract_data(inner_train_sub)
-            test_x, test_y = self._extract_data(inner_test_sub)
-            _, _, train_ypred[inner_test_i] = elastic_net(
-                train_x, train_y, test_x, test_y, n_alphas)
-        self._results["results"].update({f"train_ypred_{key_out}": train_ypred})
-        self._results["c_ypred"] =  {"train_ypred": train_ypred, "test_ypred": test_ypred}
+            f"r_{key_out}": r, f"cod_{key_out}": cod, f"test_ypred_{key_out}": test_ypred,
+            f"test_y_{key_out}": test_y}
 
         return runtime
 
@@ -261,7 +257,6 @@ class _IntegratedFeaturesModelInputSpec(BaseInterfaceInputSpec):
     fold = traits.Int(mandatory=True, desc="current fold in the repeat")
     fw_ypred = traits.List(dtype=dict, mandatory=True, desc="Feature-wise predicted values")
     features = traits.List(dtype=str, mandatory=True, desc="feature types")
-    c_ypred = traits.Dict(mandatory=True, desc="Confound predicted values")
 
 
 class _IntegratedFeaturesModelOutputSpec(TraitedSpec):
@@ -274,17 +269,18 @@ class IntegratedFeaturesModel(SimpleInterface):
     output_spec = _IntegratedFeaturesModelOutputSpec
 
     def _extract_data(self, subjects: list, key: str) -> tuple[np.ndarray, ...]:
+        fw_ypred = [ypred[key] for ypred in self.inputs.fw_ypred]
+        x = np.vstack(tuple(fw_ypred)).T
         y = pd.DataFrame()
+        conf = pd.DataFrame()
         for subject in subjects:
             subject_file, _, _ = find_sub_file(
                 self.inputs.sublists, self.inputs.config["features_dir"], subject)
             y_curr = pd.DataFrame(pd.read_hdf(subject_file, "phenotype"))
+            conf_curr = pd.DataFrame(pd.read_hdf(subject_file, "confound"))
             y = pd.concat([y, y_curr[self.inputs.target]], axis="index")
-
-        x = self.inputs.c_ypred[key]
-        for fw_ypred in self.inputs.fw_ypred:
-            x = np.vstack((x, fw_ypred[key]))
-        return x.T, y.to_numpy()
+            conf = pd.concat([conf, conf_curr], axis="index")
+        return x, y.to_numpy(), conf.to_numpy()
 
     def _train_ranks(self, train_y: np.ndarray, train_y_resid: np.ndarray) -> np.ndarray:
         cod = np.array([r2_score(train_y, self.inputs.c_ypred["train_ypred"])])
@@ -310,26 +306,28 @@ class IntegratedFeaturesModel(SimpleInterface):
             test_y.T, test_ypred[np.newaxis, :])[0, 1]
         self._results["results"][f"cod_{key}"] = rfr_cv.score(test_x, test_y)
         self._results["results"][f"ypred_{key}"] = test_ypred
+        self._results["results"][f"yresid_{key}"] = test_y
 
     def _run_interface(self, runtime):
         key = f"repeat{self.inputs.repeat}_fold{self.inputs.fold}"
         key_out = f"integrated_{key}_level{self.inputs.config['level']}"
+        if self.inputs.config["model"] == "alternative":
+            key_out = f"{key_out}_alternative"
         features = np.array(["conf"] + self.inputs.features)
 
         all_sub = sum(self.inputs.sublists.values(), [])
         train_sub = self.inputs.cv_split[key]
         test_sub = [subject for subject in all_sub if subject not in train_sub]
-        train_x, train_y = self._extract_data(train_sub, "train_ypred")
-        test_x, test_y = self._extract_data(test_sub, "test_ypred")
-        train_y_resid, _ = pheno_reg_conf(
-            train_y, train_x[:, 0].reshape(-1, 1), test_y, test_x[:, 0].reshape(-1, 1))
+        train_x, train_y, train_conf = self._extract_data(train_sub, "train_ypred")
+        test_x, test_y, test_conf = self._extract_data(test_sub, "test_ypred")
+        train_y_resid, test_y = pheno_reg_conf(train_y, train_conf, test_y, test_conf)
         feature_ranks = self._train_ranks(train_y, train_y_resid)
 
         self._results["results"] = {}
         self._results["results"][f"rank_{key_out}"] = np.array(features)[feature_ranks]
         for n_feature in range(2, train_x.shape[1]+1):
-            key_out = f"integrated_{key}_level{self.inputs.config['level']}_{n_feature}features"
+            key_curr = f"{key_out}_{n_feature}features"
             x_ind = feature_ranks[:n_feature]
-            self._random_forest_cv(train_x[:, x_ind], train_y, test_x[:, x_ind], test_y, key_out)
+            self._random_forest_cv(train_x[:, x_ind], train_y, test_x[:, x_ind], test_y, key_curr)
 
         return runtime

@@ -39,6 +39,9 @@ def main() -> None:
     optional.add_argument(
         "--output_dir", type=Path, dest="output_dir", default=Path.cwd(), help="output directory")
     optional.add_argument(
+        "--model", type=str, dest="model", default="default",
+        help="use default or alternative model")
+    optional.add_argument(
         "--overwrite", dest="overwrite", action="store_true", help="overwrite existing results")
     optional.add_argument(
         "--condordag", dest="condordag", action="store_true", help="submit graph to HTCondor")
@@ -109,7 +112,6 @@ def main() -> None:
         (cv_split, if_model, [("cv_split", "cv_split")]),
         (features, if_model, [("repeat", "repeat"), ("fold", "fold")]),
         (fw_model, if_model, [("fw_ypred", "fw_ypred")]),
-        (conf_model, if_model, [("c_ypred", "c_ypred")]),
         (sublist, if_save, [("target", "target")]),
         (if_model, if_save, [("results", "results")])])
 
