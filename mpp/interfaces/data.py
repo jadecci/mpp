@@ -93,6 +93,6 @@ class PredictionSave(SimpleInterface):
                 if np.array(val).ndim == 0:
                     pd.DataFrame({key: val}, index=[0]).to_hdf(output_file, key)
                 else:
-                    pd.DataFrame({key: val}).to_hdf(output_file, key)
+                    pd.DataFrame({key: val.reshape(-1)}).to_hdf(output_file, key)
 
         return runtime

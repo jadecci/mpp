@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from sklearn.linear_model import ElasticNetCV, LinearRegression
+from sklearn.svm import LinearSVR
 import numpy as np
 import pandas as pd
 
@@ -71,3 +72,14 @@ def elastic_net(
     ypred = en.predict(test_x)
     r = np.corrcoef(test_y.T, ypred[np.newaxis, :])[0, 1]
     return r, en.score(test_x, test_y), ypred
+
+
+def linear_svr(
+        train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray,
+        test_y: np.ndarray) -> tuple[float, float, np.ndarray]:
+    # for a simple linear SVR implementation, use all default options
+    svr = LinearSVR()
+    svr.fit(train_x, train_y)
+    ypred = svr.predict(test_x)
+    r = np.corrcoef(test_y.T, ypred[np.newaxis, :])[0, 1]
+    return r, svr.score(test_x, test_y), ypred

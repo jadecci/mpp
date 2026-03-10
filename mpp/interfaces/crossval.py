@@ -8,7 +8,7 @@ from sklearn.model_selection import RepeatedStratifiedKFold, StratifiedKFold, Gr
 import numpy as np
 import pandas as pd
 
-from mpp.utilities import find_sub_file, fc_to_matrix, pheno_reg_conf, elastic_net
+from mpp.utilities import find_sub_file, fc_to_matrix, pheno_reg_conf, elastic_net, linear_svr
 
 
 class _CrossValSplitInputSpec(BaseInterfaceInputSpec):
@@ -175,6 +175,7 @@ class FeaturewiseModel(SimpleInterface):
             r, cod, test_ypred = elastic_net(train_x, train_y, test_x, test_y, n_alphas)
         elif self.inputs.config["model"] == "alternative":
             key_out = f"{key_out}_alternative"
+            r, cod, test_ypred = linear_svr(train_x, train_y, test_x, test_y)
         self._results["results"] = {
             f"r_{key_out}": r, f"cod_{key_out}": cod, f"test_ypred_{key_out}": test_ypred,
             f"test_yresid_{key_out}": test_y}
@@ -191,6 +192,8 @@ class FeaturewiseModel(SimpleInterface):
             if self.inputs.config["model"] == "default":
                 _, _, train_ypred[inner_test_i] = elastic_net(
                     train_x, train_y, test_x, test_y, n_alphas)
+            elif self.inputs.config["model"] == "alternative":
+                _, _, train_ypred[inner_test_i] = linear_svr(train_x, train_y, test_x, test_y)
         self._results["results"].update({f"train_ypred_{key_out}": train_ypred})
         self._results["fw_ypred"] = {"train_ypred": train_ypred, "test_ypred": test_ypred}
 
@@ -241,6 +244,7 @@ class ConfoundsModel(SimpleInterface):
             r, cod, test_ypred = elastic_net(train_x, train_y, test_x, test_y, n_alphas)
         elif self.inputs.config["model"] == "alternative":
             key_out = f"{key_out}_alternative"
+            r, cod, test_ypred = linear_svr(train_x, train_y, test_x, test_y)
         self._results["results"] = {
             f"r_{key_out}": r, f"cod_{key_out}": cod, f"test_ypred_{key_out}": test_ypred,
             f"test_y_{key_out}": test_y}
@@ -282,10 +286,10 @@ class IntegratedFeaturesModel(SimpleInterface):
             conf = pd.concat([conf, conf_curr], axis="index")
         return x, y.to_numpy(), conf.to_numpy()
 
-    def _train_ranks(self, train_y: np.ndarray, train_y_resid: np.ndarray) -> np.ndarray:
-        cod = np.array([r2_score(train_y, self.inputs.c_ypred["train_ypred"])])
-        for fw_ypred in self.inputs.fw_ypred:
-            cod = np.concatenate((cod, [r2_score(train_y_resid, fw_ypred["train_ypred"])]))
+    def _train_ranks(self, train_y_resid: np.ndarray) -> np.ndarray:
+        cod = np.empty(len(self.inputs.fw_ypred))
+        for i, fw_ypred in enumerate(self.inputs.fw_ypred):
+            cod[i] = [r2_score(train_y_resid, fw_ypred["train_ypred"])]
         ranks = np.argsort(-cod)
         return ranks
 
@@ -321,7 +325,7 @@ class IntegratedFeaturesModel(SimpleInterface):
         train_x, train_y, train_conf = self._extract_data(train_sub, "train_ypred")
         test_x, test_y, test_conf = self._extract_data(test_sub, "test_ypred")
         train_y_resid, test_y = pheno_reg_conf(train_y, train_conf, test_y, test_conf)
-        feature_ranks = self._train_ranks(train_y, train_y_resid)
+        feature_ranks = self._train_ranks(train_y_resid)
 
         self._results["results"] = {}
         self._results["results"][f"rank_{key_out}"] = np.array(features)[feature_ranks]
