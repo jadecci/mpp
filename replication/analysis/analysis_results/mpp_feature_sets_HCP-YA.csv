@@ -1,0 +1,169 @@
+,Dataset,Target var,Target,Domain,Accuracy type,Type,Number of features
+best_top1_HCP-YA_totalcogcomp_r,HCP-YA,totalcogcomp,Total cognition,Cognition,r,best_top1,32
+best_top2_HCP-YA_totalcogcomp_r,HCP-YA,totalcogcomp,Total cognition,Cognition,r,best_top2,31
+best_top3_HCP-YA_totalcogcomp_r,HCP-YA,totalcogcomp,Total cognition,Cognition,r,best_top3,29
+nec_HCP-YA_totalcogcomp_r,HCP-YA,totalcogcomp,Total cognition,Cognition,r,necessary,4
+best_top1_HCP-YA_crycogcomp_r,HCP-YA,crycogcomp,Crystallized cognition,Cognition,r,best_top1,31
+best_top2_HCP-YA_crycogcomp_r,HCP-YA,crycogcomp,Crystallized cognition,Cognition,r,best_top2,7
+best_top3_HCP-YA_crycogcomp_r,HCP-YA,crycogcomp,Crystallized cognition,Cognition,r,best_top3,32
+nec_HCP-YA_crycogcomp_r,HCP-YA,crycogcomp,Crystallized cognition,Cognition,r,necessary,4
+best_top1_HCP-YA_fluidcogcomp_r,HCP-YA,fluidcogcomp,Fluid cognition,Cognition,r,best_top1,32
+best_top2_HCP-YA_fluidcogcomp_r,HCP-YA,fluidcogcomp,Fluid cognition,Cognition,r,best_top2,30
+best_top3_HCP-YA_fluidcogcomp_r,HCP-YA,fluidcogcomp,Fluid cognition,Cognition,r,best_top3,31
+nec_HCP-YA_fluidcogcomp_r,HCP-YA,fluidcogcomp,Fluid cognition,Cognition,r,necessary,5
+best_top1_HCP-YA_cardsort_r,HCP-YA,cardsort,Cognitive flexibility,Cognition,r,best_top1,1
+best_top2_HCP-YA_cardsort_r,HCP-YA,cardsort,Cognitive flexibility,Cognition,r,best_top2,4
+best_top3_HCP-YA_cardsort_r,HCP-YA,cardsort,Cognitive flexibility,Cognition,r,best_top3,5
+nec_HCP-YA_cardsort_r,HCP-YA,cardsort,Cognitive flexibility,Cognition,r,necessary,1
+best_top1_HCP-YA_flanker_r,HCP-YA,flanker,Inhibitory control,Cognition,r,best_top1,32
+best_top2_HCP-YA_flanker_r,HCP-YA,flanker,Inhibitory control,Cognition,r,best_top2,6
+best_top3_HCP-YA_flanker_r,HCP-YA,flanker,Inhibitory control,Cognition,r,best_top3,26
+nec_HCP-YA_flanker_r,HCP-YA,flanker,Inhibitory control,Cognition,r,necessary,4
+best_top1_HCP-YA_reading_r,HCP-YA,reading,Reading,Cognition,r,best_top1,6
+best_top2_HCP-YA_reading_r,HCP-YA,reading,Reading,Cognition,r,best_top2,24
+best_top3_HCP-YA_reading_r,HCP-YA,reading,Reading,Cognition,r,best_top3,31
+nec_HCP-YA_reading_r,HCP-YA,reading,Reading,Cognition,r,necessary,4
+best_top1_HCP-YA_picvocab_r,HCP-YA,picvocab,Picture vocabulary,Cognition,r,best_top1,11
+best_top2_HCP-YA_picvocab_r,HCP-YA,picvocab,Picture vocabulary,Cognition,r,best_top2,24
+best_top3_HCP-YA_picvocab_r,HCP-YA,picvocab,Picture vocabulary,Cognition,r,best_top3,26
+nec_HCP-YA_picvocab_r,HCP-YA,picvocab,Picture vocabulary,Cognition,r,necessary,4
+best_top1_HCP-YA_procspeed_r,HCP-YA,procspeed,Processing speed,Cognition,r,best_top1,32
+best_top2_HCP-YA_procspeed_r,HCP-YA,procspeed,Processing speed,Cognition,r,best_top2,21
+best_top3_HCP-YA_procspeed_r,HCP-YA,procspeed,Processing speed,Cognition,r,best_top3,29
+nec_HCP-YA_procspeed_r,HCP-YA,procspeed,Processing speed,Cognition,r,necessary,5
+best_top1_HCP-YA_listsort_r,HCP-YA,listsort,Working memory,Cognition,r,best_top1,32
+best_top2_HCP-YA_listsort_r,HCP-YA,listsort,Working memory,Cognition,r,best_top2,7
+best_top3_HCP-YA_listsort_r,HCP-YA,listsort,Working memory,Cognition,r,best_top3,28
+nec_HCP-YA_listsort_r,HCP-YA,listsort,Working memory,Cognition,r,necessary,5
+best_top1_HCP-YA_anger_r,HCP-YA,anger,Anger affect,Mental health,r,best_top1,15
+best_top2_HCP-YA_anger_r,HCP-YA,anger,Anger affect,Mental health,r,best_top2,14
+best_top3_HCP-YA_anger_r,HCP-YA,anger,Anger affect,Mental health,r,best_top3,30
+nec_HCP-YA_anger_r,HCP-YA,anger,Anger affect,Mental health,r,necessary,6
+best_top1_HCP-YA_fear_r,HCP-YA,fear,Fear affect,Mental health,r,best_top1,22
+best_top2_HCP-YA_fear_r,HCP-YA,fear,Fear affect,Mental health,r,best_top2,19
+best_top3_HCP-YA_fear_r,HCP-YA,fear,Fear affect,Mental health,r,best_top3,14
+nec_HCP-YA_fear_r,HCP-YA,fear,Fear affect,Mental health,r,necessary,4
+best_top1_HCP-YA_sadness_r,HCP-YA,sadness,Sadness,Mental health,r,best_top1,1
+best_top2_HCP-YA_sadness_r,HCP-YA,sadness,Sadness,Mental health,r,best_top2,32
+best_top3_HCP-YA_sadness_r,HCP-YA,sadness,Sadness,Mental health,r,best_top3,30
+nec_HCP-YA_sadness_r,HCP-YA,sadness,Sadness,Mental health,r,necessary,1
+best_top1_HCP-YA_posaffect_r,HCP-YA,posaffect,Positive affect,Mental health,r,best_top1,4
+best_top2_HCP-YA_posaffect_r,HCP-YA,posaffect,Positive affect,Mental health,r,best_top2,27
+best_top3_HCP-YA_posaffect_r,HCP-YA,posaffect,Positive affect,Mental health,r,best_top3,3
+nec_HCP-YA_posaffect_r,HCP-YA,posaffect,Positive affect,Mental health,r,necessary,4
+best_top1_HCP-YA_emotsupp_r,HCP-YA,emotsupp,Emotional Support,Mental health,r,best_top1,31
+best_top2_HCP-YA_emotsupp_r,HCP-YA,emotsupp,Emotional Support,Mental health,r,best_top2,27
+best_top3_HCP-YA_emotsupp_r,HCP-YA,emotsupp,Emotional Support,Mental health,r,best_top3,16
+nec_HCP-YA_emotsupp_r,HCP-YA,emotsupp,Emotional Support,Mental health,r,necessary,5
+best_top1_HCP-YA_friendship_r,HCP-YA,friendship,Friendship,Mental health,r,best_top1,1
+best_top2_HCP-YA_friendship_r,HCP-YA,friendship,Friendship,Mental health,r,best_top2,2
+best_top3_HCP-YA_friendship_r,HCP-YA,friendship,Friendship,Mental health,r,best_top3,6
+nec_HCP-YA_friendship_r,HCP-YA,friendship,Friendship,Mental health,r,necessary,1
+best_top1_HCP-YA_loneliness_r,HCP-YA,loneliness,Loneliness,Mental health,r,best_top1,25
+best_top2_HCP-YA_loneliness_r,HCP-YA,loneliness,Loneliness,Mental health,r,best_top2,32
+best_top3_HCP-YA_loneliness_r,HCP-YA,loneliness,Loneliness,Mental health,r,best_top3,21
+nec_HCP-YA_loneliness_r,HCP-YA,loneliness,Loneliness,Mental health,r,necessary,5
+best_top1_HCP-YA_neoffi_n_r,HCP-YA,neoffi_n,Neuroticism (NEO),Personality,r,best_top1,1
+best_top2_HCP-YA_neoffi_n_r,HCP-YA,neoffi_n,Neuroticism (NEO),Personality,r,best_top2,16
+best_top3_HCP-YA_neoffi_n_r,HCP-YA,neoffi_n,Neuroticism (NEO),Personality,r,best_top3,15
+nec_HCP-YA_neoffi_n_r,HCP-YA,neoffi_n,Neuroticism (NEO),Personality,r,necessary,1
+best_top1_HCP-YA_neoffi_e_r,HCP-YA,neoffi_e,Extraversion (NEO),Personality,r,best_top1,1
+best_top2_HCP-YA_neoffi_e_r,HCP-YA,neoffi_e,Extraversion (NEO),Personality,r,best_top2,28
+best_top3_HCP-YA_neoffi_e_r,HCP-YA,neoffi_e,Extraversion (NEO),Personality,r,best_top3,31
+nec_HCP-YA_neoffi_e_r,HCP-YA,neoffi_e,Extraversion (NEO),Personality,r,necessary,1
+best_top1_HCP-YA_neoffi_o_r,HCP-YA,neoffi_o,Openness (NEO),Personality,r,best_top1,24
+best_top2_HCP-YA_neoffi_o_r,HCP-YA,neoffi_o,Openness (NEO),Personality,r,best_top2,25
+best_top3_HCP-YA_neoffi_o_r,HCP-YA,neoffi_o,Openness (NEO),Personality,r,best_top3,17
+nec_HCP-YA_neoffi_o_r,HCP-YA,neoffi_o,Openness (NEO),Personality,r,necessary,4
+best_top1_HCP-YA_neoffi_a_r,HCP-YA,neoffi_a,Agreeableness (NEO),Personality,r,best_top1,23
+best_top2_HCP-YA_neoffi_a_r,HCP-YA,neoffi_a,Agreeableness (NEO),Personality,r,best_top2,29
+best_top3_HCP-YA_neoffi_a_r,HCP-YA,neoffi_a,Agreeableness (NEO),Personality,r,best_top3,26
+nec_HCP-YA_neoffi_a_r,HCP-YA,neoffi_a,Agreeableness (NEO),Personality,r,necessary,12
+best_top1_HCP-YA_neoffi_c_r,HCP-YA,neoffi_c,Conscientiousness (NEO),Personality,r,best_top1,27
+best_top2_HCP-YA_neoffi_c_r,HCP-YA,neoffi_c,Conscientiousness (NEO),Personality,r,best_top2,32
+best_top3_HCP-YA_neoffi_c_r,HCP-YA,neoffi_c,Conscientiousness (NEO),Personality,r,best_top3,31
+nec_HCP-YA_neoffi_c_r,HCP-YA,neoffi_c,Conscientiousness (NEO),Personality,r,necessary,11
+best_top1_HCP-YA_totalcogcomp_cod,HCP-YA,totalcogcomp,Total cognition,Cognition,cod,best_top1,31
+best_top2_HCP-YA_totalcogcomp_cod,HCP-YA,totalcogcomp,Total cognition,Cognition,cod,best_top2,29
+best_top3_HCP-YA_totalcogcomp_cod,HCP-YA,totalcogcomp,Total cognition,Cognition,cod,best_top3,30
+nec_HCP-YA_totalcogcomp_cod,HCP-YA,totalcogcomp,Total cognition,Cognition,cod,necessary,7
+best_top1_HCP-YA_crycogcomp_cod,HCP-YA,crycogcomp,Crystallized cognition,Cognition,cod,best_top1,31
+best_top2_HCP-YA_crycogcomp_cod,HCP-YA,crycogcomp,Crystallized cognition,Cognition,cod,best_top2,7
+best_top3_HCP-YA_crycogcomp_cod,HCP-YA,crycogcomp,Crystallized cognition,Cognition,cod,best_top3,14
+nec_HCP-YA_crycogcomp_cod,HCP-YA,crycogcomp,Crystallized cognition,Cognition,cod,necessary,6
+best_top1_HCP-YA_fluidcogcomp_cod,HCP-YA,fluidcogcomp,Fluid cognition,Cognition,cod,best_top1,30
+best_top2_HCP-YA_fluidcogcomp_cod,HCP-YA,fluidcogcomp,Fluid cognition,Cognition,cod,best_top2,31
+best_top3_HCP-YA_fluidcogcomp_cod,HCP-YA,fluidcogcomp,Fluid cognition,Cognition,cod,best_top3,27
+nec_HCP-YA_fluidcogcomp_cod,HCP-YA,fluidcogcomp,Fluid cognition,Cognition,cod,necessary,8
+best_top1_HCP-YA_cardsort_cod,HCP-YA,cardsort,Cognitive flexibility,Cognition,cod,best_top1,1
+best_top2_HCP-YA_cardsort_cod,HCP-YA,cardsort,Cognitive flexibility,Cognition,cod,best_top2,29
+best_top3_HCP-YA_cardsort_cod,HCP-YA,cardsort,Cognitive flexibility,Cognition,cod,best_top3,31
+nec_HCP-YA_cardsort_cod,HCP-YA,cardsort,Cognitive flexibility,Cognition,cod,necessary,1
+best_top1_HCP-YA_flanker_cod,HCP-YA,flanker,Inhibitory control,Cognition,cod,best_top1,1
+best_top2_HCP-YA_flanker_cod,HCP-YA,flanker,Inhibitory control,Cognition,cod,best_top2,31
+best_top3_HCP-YA_flanker_cod,HCP-YA,flanker,Inhibitory control,Cognition,cod,best_top3,29
+nec_HCP-YA_flanker_cod,HCP-YA,flanker,Inhibitory control,Cognition,cod,necessary,1
+best_top1_HCP-YA_reading_cod,HCP-YA,reading,Reading,Cognition,cod,best_top1,6
+best_top2_HCP-YA_reading_cod,HCP-YA,reading,Reading,Cognition,cod,best_top2,11
+best_top3_HCP-YA_reading_cod,HCP-YA,reading,Reading,Cognition,cod,best_top3,7
+nec_HCP-YA_reading_cod,HCP-YA,reading,Reading,Cognition,cod,necessary,6
+best_top1_HCP-YA_picvocab_cod,HCP-YA,picvocab,Picture vocabulary,Cognition,cod,best_top1,11
+best_top2_HCP-YA_picvocab_cod,HCP-YA,picvocab,Picture vocabulary,Cognition,cod,best_top2,24
+best_top3_HCP-YA_picvocab_cod,HCP-YA,picvocab,Picture vocabulary,Cognition,cod,best_top3,8
+nec_HCP-YA_picvocab_cod,HCP-YA,picvocab,Picture vocabulary,Cognition,cod,necessary,6
+best_top1_HCP-YA_procspeed_cod,HCP-YA,procspeed,Processing speed,Cognition,cod,best_top1,1
+best_top2_HCP-YA_procspeed_cod,HCP-YA,procspeed,Processing speed,Cognition,cod,best_top2,29
+best_top3_HCP-YA_procspeed_cod,HCP-YA,procspeed,Processing speed,Cognition,cod,best_top3,26
+nec_HCP-YA_procspeed_cod,HCP-YA,procspeed,Processing speed,Cognition,cod,necessary,1
+best_top1_HCP-YA_listsort_cod,HCP-YA,listsort,Working memory,Cognition,cod,best_top1,28
+best_top2_HCP-YA_listsort_cod,HCP-YA,listsort,Working memory,Cognition,cod,best_top2,27
+best_top3_HCP-YA_listsort_cod,HCP-YA,listsort,Working memory,Cognition,cod,best_top3,31
+nec_HCP-YA_listsort_cod,HCP-YA,listsort,Working memory,Cognition,cod,necessary,8
+best_top1_HCP-YA_anger_cod,HCP-YA,anger,Anger affect,Mental health,cod,best_top1,1
+best_top2_HCP-YA_anger_cod,HCP-YA,anger,Anger affect,Mental health,cod,best_top2,30
+best_top3_HCP-YA_anger_cod,HCP-YA,anger,Anger affect,Mental health,cod,best_top3,31
+nec_HCP-YA_anger_cod,HCP-YA,anger,Anger affect,Mental health,cod,necessary,1
+best_top1_HCP-YA_fear_cod,HCP-YA,fear,Fear affect,Mental health,cod,best_top1,1
+best_top2_HCP-YA_fear_cod,HCP-YA,fear,Fear affect,Mental health,cod,best_top2,3
+best_top3_HCP-YA_fear_cod,HCP-YA,fear,Fear affect,Mental health,cod,best_top3,5
+nec_HCP-YA_fear_cod,HCP-YA,fear,Fear affect,Mental health,cod,necessary,1
+best_top1_HCP-YA_sadness_cod,HCP-YA,sadness,Sadness,Mental health,cod,best_top1,1
+best_top2_HCP-YA_sadness_cod,HCP-YA,sadness,Sadness,Mental health,cod,best_top2,32
+best_top3_HCP-YA_sadness_cod,HCP-YA,sadness,Sadness,Mental health,cod,best_top3,31
+nec_HCP-YA_sadness_cod,HCP-YA,sadness,Sadness,Mental health,cod,necessary,1
+best_top1_HCP-YA_posaffect_cod,HCP-YA,posaffect,Positive affect,Mental health,cod,best_top1,1
+best_top2_HCP-YA_posaffect_cod,HCP-YA,posaffect,Positive affect,Mental health,cod,best_top2,31
+best_top3_HCP-YA_posaffect_cod,HCP-YA,posaffect,Positive affect,Mental health,cod,best_top3,32
+nec_HCP-YA_posaffect_cod,HCP-YA,posaffect,Positive affect,Mental health,cod,necessary,1
+best_top1_HCP-YA_emotsupp_cod,HCP-YA,emotsupp,Emotional Support,Mental health,cod,best_top1,1
+best_top2_HCP-YA_emotsupp_cod,HCP-YA,emotsupp,Emotional Support,Mental health,cod,best_top2,23
+best_top3_HCP-YA_emotsupp_cod,HCP-YA,emotsupp,Emotional Support,Mental health,cod,best_top3,32
+nec_HCP-YA_emotsupp_cod,HCP-YA,emotsupp,Emotional Support,Mental health,cod,necessary,1
+best_top1_HCP-YA_friendship_cod,HCP-YA,friendship,Friendship,Mental health,cod,best_top1,1
+best_top2_HCP-YA_friendship_cod,HCP-YA,friendship,Friendship,Mental health,cod,best_top2,31
+best_top3_HCP-YA_friendship_cod,HCP-YA,friendship,Friendship,Mental health,cod,best_top3,29
+nec_HCP-YA_friendship_cod,HCP-YA,friendship,Friendship,Mental health,cod,necessary,1
+best_top1_HCP-YA_loneliness_cod,HCP-YA,loneliness,Loneliness,Mental health,cod,best_top1,1
+best_top2_HCP-YA_loneliness_cod,HCP-YA,loneliness,Loneliness,Mental health,cod,best_top2,32
+best_top3_HCP-YA_loneliness_cod,HCP-YA,loneliness,Loneliness,Mental health,cod,best_top3,7
+nec_HCP-YA_loneliness_cod,HCP-YA,loneliness,Loneliness,Mental health,cod,necessary,1
+best_top1_HCP-YA_neoffi_n_cod,HCP-YA,neoffi_n,Neuroticism (NEO),Personality,cod,best_top1,1
+best_top2_HCP-YA_neoffi_n_cod,HCP-YA,neoffi_n,Neuroticism (NEO),Personality,cod,best_top2,3
+best_top3_HCP-YA_neoffi_n_cod,HCP-YA,neoffi_n,Neuroticism (NEO),Personality,cod,best_top3,5
+nec_HCP-YA_neoffi_n_cod,HCP-YA,neoffi_n,Neuroticism (NEO),Personality,cod,necessary,1
+best_top1_HCP-YA_neoffi_e_cod,HCP-YA,neoffi_e,Extraversion (NEO),Personality,cod,best_top1,1
+best_top2_HCP-YA_neoffi_e_cod,HCP-YA,neoffi_e,Extraversion (NEO),Personality,cod,best_top2,3
+best_top3_HCP-YA_neoffi_e_cod,HCP-YA,neoffi_e,Extraversion (NEO),Personality,cod,best_top3,28
+nec_HCP-YA_neoffi_e_cod,HCP-YA,neoffi_e,Extraversion (NEO),Personality,cod,necessary,1
+best_top1_HCP-YA_neoffi_o_cod,HCP-YA,neoffi_o,Openness (NEO),Personality,cod,best_top1,1
+best_top2_HCP-YA_neoffi_o_cod,HCP-YA,neoffi_o,Openness (NEO),Personality,cod,best_top2,24
+best_top3_HCP-YA_neoffi_o_cod,HCP-YA,neoffi_o,Openness (NEO),Personality,cod,best_top3,29
+nec_HCP-YA_neoffi_o_cod,HCP-YA,neoffi_o,Openness (NEO),Personality,cod,necessary,1
+best_top1_HCP-YA_neoffi_a_cod,HCP-YA,neoffi_a,Agreeableness (NEO),Personality,cod,best_top1,29
+best_top2_HCP-YA_neoffi_a_cod,HCP-YA,neoffi_a,Agreeableness (NEO),Personality,cod,best_top2,32
+best_top3_HCP-YA_neoffi_a_cod,HCP-YA,neoffi_a,Agreeableness (NEO),Personality,cod,best_top3,31
+nec_HCP-YA_neoffi_a_cod,HCP-YA,neoffi_a,Agreeableness (NEO),Personality,cod,necessary,16
+best_top1_HCP-YA_neoffi_c_cod,HCP-YA,neoffi_c,Conscientiousness (NEO),Personality,cod,best_top1,1
+best_top2_HCP-YA_neoffi_c_cod,HCP-YA,neoffi_c,Conscientiousness (NEO),Personality,cod,best_top2,27
+best_top3_HCP-YA_neoffi_c_cod,HCP-YA,neoffi_c,Conscientiousness (NEO),Personality,cod,best_top3,32
+nec_HCP-YA_neoffi_c_cod,HCP-YA,neoffi_c,Conscientiousness (NEO),Personality,cod,necessary,1

@@ -14,13 +14,21 @@ features = [
     "LANGUAGE model-free FC", "MOTOR model-free FC", "WM model-free FC", "RELATIONAL model-free FC",
     "SOCIAL model-free FC", "GAMBLING EC", "LANGUAGE EC", "MOTOR EC", "WM EC", "RELATIONAL EC",
     "SOCIAL EC", "myelin estimate", "GMV", "SA", "CT", "GMV Connectivity", "SA Connectivity",
-    "CT Connectivity", "SC (count)", "SC (length)", "FA", "MD", "AD", "RD", "confound"]
+    "CT Connectivity", "SC (count)", "SC (length)", "FA", "MD", "AD", "RD"]
 targets = [
     "Total cognition", "Crystallized cognition", "Fluid cognition", "Cognitive flexibility",
     "Inhibitory control", "Reading", "Picture vocabulary", "Processing speed", "Working memory",
     "Anger affect", "Fear affect", "Sadness", "Positive affect", "Emotional Support", "Friendship",
     "Loneliness", "Neuroticism (NEO)", "Extraversion (NEO)", "Openness (NEO)",
     "Agreeableness (NEO)", "Conscientiousness (NEO)"]
+
+def read_results(res_dir, prefix):
+    res = []
+    for ds in ["HCP-D", "HCP-YA", "HCP-A"]:
+        res_curr = pd.read_csv(Path(res_dir, f"mpp_{prefix}_{ds}.csv"), index_col=0)
+        res.append(res_curr.assign(Dataset=ds))
+    res = pd.concat(res, axis="index")
+    return res
 
 parser = argparse.ArgumentParser(
     description="Plot figures using collected results",
@@ -46,11 +54,11 @@ sns.set_theme(style="white", context="paper", font_scale=2, font="Arial")
 for acc_type in ["r", "cod"]:
     if_acc_file = Path(args.out_dir, f"if_acc_{acc_type}.png")
     if (not if_acc_file.exists()) or args.overwrite:
-        results = pd.read_csv(Path(args.res_dir, "mpp_acc_nfeature.csv"))
+        results = read_results(args.res_dir, "acc_nfeature")
         g = sns.relplot(
             data=results.loc[results["Accuracy type"] == acc_type], kind="line",
-            x="Number of features", y="Accuracy", hue="Target", col="Dataset",
-            col_order=dataset_order, palette=cmap, marker="o", errorbar=("ci", 95),
+            x="Number of features", y="Accuracy", hue="Target", col="Dataset", style="Target",
+            col_order=dataset_order, palette=cmap, markers=True, errorbar=("ci", 95),
             height=15, aspect=0.4, facet_kws={"sharey": True, "sharex": False})
         for ax in g.axes.flat:
             ax.axhline(color="black", linestyle="--")
@@ -61,7 +69,7 @@ for acc_type in ["r", "cod"]:
 for acc_type in ["r", "cod"]:
     if_nfeature_file = Path(args.out_dir, f"if_nfeature_{acc_type}.png")
     if (not if_nfeature_file.exists()) or args.overwrite:
-        feature_sets = pd.read_csv(Path(args.res_dir, "mpp_feature_sets.csv"))
+        feature_sets = read_results(args.res_dir, "feature_sets")
         sns.displot(
             data=feature_sets.loc[feature_sets["Accuracy type"] == acc_type], kind="hist",
             x="Number of features", col="Type", hue="Dataset", palette="Greys", binwidth=1,
@@ -74,7 +82,7 @@ for acc_type in ["r", "cod"]:
 for acc_type in ["r", "cod"]:
     nec_acc_file = Path(args.out_dir, f"nec_acc_{acc_type}.png")
     if (not nec_acc_file.exists()) or args.overwrite:
-        nec_acc = pd.read_csv(Path(args.res_dir, "mpp_nec_acc.csv"))
+        nec_acc = read_results(args.res_dir, "nec_acc")
         g = sns.catplot(
             data=nec_acc.loc[nec_acc["Accuracy type"] == acc_type], kind="box", y="Target",
             x="Accuracy", hue="Target", col="Dataset", col_order=dataset_order, orient="h",
@@ -87,9 +95,9 @@ for acc_type in ["r", "cod"]:
         plt.close()
 
 # Necessary feature set: necessary feature frequency by dataset
-nec_features_file = Path(args.out_dir, f"nec_features_dataset.png")
+nec_features_file = Path(args.out_dir, "nec_features_dataset.png")
 if (not nec_features_file.exists()) or args.overwrite:
-    nec_features = pd.read_csv(Path(args.res_dir, "mpp_nec_features.csv"))
+    nec_features = read_results(args.res_dir, "nec_features")
     nec_sorted = nec_features.sort_values(
         by="Feature", key=lambda column: column.map(lambda x: features.index(x)))
     sns.displot(
@@ -103,7 +111,7 @@ if (not nec_features_file.exists()) or args.overwrite:
 for dataset in ["HCP-A", "HCP-YA", "HCP-D"]:
     nec_freq_file = Path(args.out_dir, f"nec_freq_{dataset}.png")
     if (not nec_freq_file.exists()) or args.overwrite:
-        nec_freq = pd.read_csv(Path(args.res_dir, f"mpp_nec_freq_{dataset}.csv"), index_col=0)
+        nec_freq = read_results(args.res_dir, "nec_freq")
         annot = nec_freq.map("{:.0%}".format).astype(str).replace("0%", "")
         nec_freq = nec_freq.mul(100)
         plt.figure(figsize=(nec_freq.shape[1]*1.2, nec_freq.shape[0]*0.5))
