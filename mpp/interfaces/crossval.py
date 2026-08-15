@@ -289,7 +289,7 @@ class IntegratedFeaturesModel(SimpleInterface):
     def _train_ranks(self, train_y_resid: np.ndarray) -> np.ndarray:
         cod = np.empty(len(self.inputs.fw_ypred))
         for i, fw_ypred in enumerate(self.inputs.fw_ypred):
-            cod[i] = [r2_score(train_y_resid, fw_ypred["train_ypred"])]
+            cod[i] = r2_score(train_y_resid, fw_ypred["train_ypred"])
         ranks = np.argsort(-cod)
         return ranks
 
@@ -317,7 +317,7 @@ class IntegratedFeaturesModel(SimpleInterface):
         key_out = f"integrated_{key}_level{self.inputs.config['level']}"
         if self.inputs.config["model"] == "alternative":
             key_out = f"{key_out}_alternative"
-        features = np.array(["conf"] + self.inputs.features)
+        features = np.array(self.inputs.features)
 
         all_sub = sum(self.inputs.sublists.values(), [])
         train_sub = self.inputs.cv_split[key]
@@ -332,6 +332,7 @@ class IntegratedFeaturesModel(SimpleInterface):
         for n_feature in range(2, train_x.shape[1]+1):
             key_curr = f"{key_out}_{n_feature}features"
             x_ind = feature_ranks[:n_feature]
-            self._random_forest_cv(train_x[:, x_ind], train_y, test_x[:, x_ind], test_y, key_curr)
+            self._random_forest_cv(
+                train_x[:, x_ind], train_y_resid, test_x[:, x_ind], test_y, key_curr)
 
         return runtime
