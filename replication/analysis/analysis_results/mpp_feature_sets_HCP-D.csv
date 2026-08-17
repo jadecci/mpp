@@ -2,19 +2,19 @@
 best_top1_HCP-D_totalcogcomp_r,totalcogcomp,Total cognition,Cognition,r,best,24
 best_top2_HCP-D_totalcogcomp_r,totalcogcomp,Total cognition,Cognition,r,best,23
 best_top3_HCP-D_totalcogcomp_r,totalcogcomp,Total cognition,Cognition,r,best,21
-nec_HCP-D_totalcogcomp_r,totalcogcomp,Total cognition,Cognition,r,necessary,17
+nec_HCP-D_totalcogcomp_r,totalcogcomp,Total cognition,Cognition,r,necessary,11
 best_top1_HCP-D_crycogcomp_r,crycogcomp,Crystallized cognition,Cognition,r,best,21
-best_top2_HCP-D_crycogcomp_r,crycogcomp,Crystallized cognition,Cognition,r,best,24
-best_top3_HCP-D_crycogcomp_r,crycogcomp,Crystallized cognition,Cognition,r,best,18
-nec_HCP-D_crycogcomp_r,crycogcomp,Crystallized cognition,Cognition,r,necessary,20
+best_top2_HCP-D_crycogcomp_r,crycogcomp,Crystallized cognition,Cognition,r,best,18
+best_top3_HCP-D_crycogcomp_r,crycogcomp,Crystallized cognition,Cognition,r,best,12
+nec_HCP-D_crycogcomp_r,crycogcomp,Crystallized cognition,Cognition,r,necessary,16
 best_top1_HCP-D_fluidcogcomp_r,fluidcogcomp,Fluid cognition,Cognition,r,best,8
-best_top2_HCP-D_fluidcogcomp_r,fluidcogcomp,Fluid cognition,Cognition,r,best,18
-best_top3_HCP-D_fluidcogcomp_r,fluidcogcomp,Fluid cognition,Cognition,r,best,23
+best_top2_HCP-D_fluidcogcomp_r,fluidcogcomp,Fluid cognition,Cognition,r,best,24
+best_top3_HCP-D_fluidcogcomp_r,fluidcogcomp,Fluid cognition,Cognition,r,best,18
 nec_HCP-D_fluidcogcomp_r,fluidcogcomp,Fluid cognition,Cognition,r,necessary,7
 best_top1_HCP-D_cardsort_r,cardsort,Cognitive flexibility,Cognition,r,best,23
 best_top2_HCP-D_cardsort_r,cardsort,Cognitive flexibility,Cognition,r,best,20
 best_top3_HCP-D_cardsort_r,cardsort,Cognitive flexibility,Cognition,r,best,24
-nec_HCP-D_cardsort_r,cardsort,Cognitive flexibility,Cognition,r,necessary,23
+nec_HCP-D_cardsort_r,cardsort,Cognitive flexibility,Cognition,r,necessary,20
 best_top1_HCP-D_flanker_r,flanker,Inhibitory control,Cognition,r,best,1
 best_top2_HCP-D_flanker_r,flanker,Inhibitory control,Cognition,r,best,24
 best_top3_HCP-D_flanker_r,flanker,Inhibitory control,Cognition,r,best,21
@@ -26,7 +26,7 @@ nec_HCP-D_reading_r,reading,Reading,Cognition,r,necessary,16
 best_top1_HCP-D_picvocab_r,picvocab,Picture vocabulary,Cognition,r,best,24
 best_top2_HCP-D_picvocab_r,picvocab,Picture vocabulary,Cognition,r,best,23
 best_top3_HCP-D_picvocab_r,picvocab,Picture vocabulary,Cognition,r,best,22
-nec_HCP-D_picvocab_r,picvocab,Picture vocabulary,Cognition,r,necessary,22
+nec_HCP-D_picvocab_r,picvocab,Picture vocabulary,Cognition,r,necessary,20
 best_top1_HCP-D_procspeed_r,procspeed,Processing speed,Cognition,r,best,1
 best_top2_HCP-D_procspeed_r,procspeed,Processing speed,Cognition,r,best,24
 best_top3_HCP-D_procspeed_r,procspeed,Processing speed,Cognition,r,best,6
@@ -35,18 +35,18 @@ best_top1_HCP-D_listsort_r,listsort,Working memory,Cognition,r,best,2
 best_top2_HCP-D_listsort_r,listsort,Working memory,Cognition,r,best,3
 best_top3_HCP-D_listsort_r,listsort,Working memory,Cognition,r,best,5
 nec_HCP-D_listsort_r,listsort,Working memory,Cognition,r,necessary,2
-best_top1_HCP-D_anger_r,anger,Anger affect,Mental health,r,best,24
-best_top2_HCP-D_anger_r,anger,Anger affect,Mental health,r,best,20
-best_top3_HCP-D_anger_r,anger,Anger affect,Mental health,r,best,21
-nec_HCP-D_anger_r,anger,Anger affect,Mental health,r,necessary,24
+best_top1_HCP-D_anger_r,anger,Anger affect,Mental health,r,best,20
+best_top2_HCP-D_anger_r,anger,Anger affect,Mental health,r,best,21
+best_top3_HCP-D_anger_r,anger,Anger affect,Mental health,r,best,22
+nec_HCP-D_anger_r,anger,Anger affect,Mental health,r,necessary,20
 best_top1_HCP-D_fear_r,fear,Fear affect,Mental health,r,best,10
 best_top2_HCP-D_fear_r,fear,Fear affect,Mental health,r,best,9
 best_top3_HCP-D_fear_r,fear,Fear affect,Mental health,r,best,11
 nec_HCP-D_fear_r,fear,Fear affect,Mental health,r,necessary,10
-best_top1_HCP-D_sadness_r,sadness,Sadness,Mental health,r,best,24
-best_top2_HCP-D_sadness_r,sadness,Sadness,Mental health,r,best,9
-best_top3_HCP-D_sadness_r,sadness,Sadness,Mental health,r,best,17
-nec_HCP-D_sadness_r,sadness,Sadness,Mental health,r,necessary,24
+best_top1_HCP-D_sadness_r,sadness,Sadness,Mental health,r,best,9
+best_top2_HCP-D_sadness_r,sadness,Sadness,Mental health,r,best,17
+best_top3_HCP-D_sadness_r,sadness,Sadness,Mental health,r,best,10
+nec_HCP-D_sadness_r,sadness,Sadness,Mental health,r,necessary,9
 best_top1_HCP-D_posaffect_r,posaffect,Positive affect,Mental health,r,best,20
 best_top2_HCP-D_posaffect_r,posaffect,Positive affect,Mental health,r,best,21
 best_top3_HCP-D_posaffect_r,posaffect,Positive affect,Mental health,r,best,19
@@ -58,7 +58,7 @@ nec_HCP-D_emotsupp_r,emotsupp,Emotional Support,Mental health,r,necessary,21
 best_top1_HCP-D_friendship_r,friendship,Friendship,Mental health,r,best,24
 best_top2_HCP-D_friendship_r,friendship,Friendship,Mental health,r,best,19
 best_top3_HCP-D_friendship_r,friendship,Friendship,Mental health,r,best,21
-nec_HCP-D_friendship_r,friendship,Friendship,Mental health,r,necessary,19
+nec_HCP-D_friendship_r,friendship,Friendship,Mental health,r,necessary,24
 best_top1_HCP-D_loneliness_r,loneliness,Loneliness,Mental health,r,best,1
 best_top2_HCP-D_loneliness_r,loneliness,Loneliness,Mental health,r,best,2
 best_top3_HCP-D_loneliness_r,loneliness,Loneliness,Mental health,r,best,8
@@ -81,63 +81,63 @@ best_top3_HCP-D_neoffi_a_r,neoffi_a,Agreeableness (NEO),Personality,r,best,17
 nec_HCP-D_neoffi_a_r,neoffi_a,Agreeableness (NEO),Personality,r,necessary,18
 best_top1_HCP-D_neoffi_c_r,neoffi_c,Conscientiousness (NEO),Personality,r,best,1
 best_top2_HCP-D_neoffi_c_r,neoffi_c,Conscientiousness (NEO),Personality,r,best,18
-best_top3_HCP-D_neoffi_c_r,neoffi_c,Conscientiousness (NEO),Personality,r,best,16
+best_top3_HCP-D_neoffi_c_r,neoffi_c,Conscientiousness (NEO),Personality,r,best,24
 nec_HCP-D_neoffi_c_r,neoffi_c,Conscientiousness (NEO),Personality,r,necessary,1
-best_top1_HCP-D_totalcogcomp_cod,totalcogcomp,Total cognition,Cognition,cod,best,23
-best_top2_HCP-D_totalcogcomp_cod,totalcogcomp,Total cognition,Cognition,cod,best,21
-best_top3_HCP-D_totalcogcomp_cod,totalcogcomp,Total cognition,Cognition,cod,best,18
-nec_HCP-D_totalcogcomp_cod,totalcogcomp,Total cognition,Cognition,cod,necessary,23
+best_top1_HCP-D_totalcogcomp_cod,totalcogcomp,Total cognition,Cognition,cod,best,24
+best_top2_HCP-D_totalcogcomp_cod,totalcogcomp,Total cognition,Cognition,cod,best,23
+best_top3_HCP-D_totalcogcomp_cod,totalcogcomp,Total cognition,Cognition,cod,best,21
+nec_HCP-D_totalcogcomp_cod,totalcogcomp,Total cognition,Cognition,cod,necessary,24
 best_top1_HCP-D_crycogcomp_cod,crycogcomp,Crystallized cognition,Cognition,cod,best,21
-best_top2_HCP-D_crycogcomp_cod,crycogcomp,Crystallized cognition,Cognition,cod,best,22
-best_top3_HCP-D_crycogcomp_cod,crycogcomp,Crystallized cognition,Cognition,cod,best,20
+best_top2_HCP-D_crycogcomp_cod,crycogcomp,Crystallized cognition,Cognition,cod,best,24
+best_top3_HCP-D_crycogcomp_cod,crycogcomp,Crystallized cognition,Cognition,cod,best,22
 nec_HCP-D_crycogcomp_cod,crycogcomp,Crystallized cognition,Cognition,cod,necessary,21
-best_top1_HCP-D_fluidcogcomp_cod,fluidcogcomp,Fluid cognition,Cognition,cod,best,23
-best_top2_HCP-D_fluidcogcomp_cod,fluidcogcomp,Fluid cognition,Cognition,cod,best,18
-best_top3_HCP-D_fluidcogcomp_cod,fluidcogcomp,Fluid cognition,Cognition,cod,best,21
-nec_HCP-D_fluidcogcomp_cod,fluidcogcomp,Fluid cognition,Cognition,cod,necessary,23
+best_top1_HCP-D_fluidcogcomp_cod,fluidcogcomp,Fluid cognition,Cognition,cod,best,24
+best_top2_HCP-D_fluidcogcomp_cod,fluidcogcomp,Fluid cognition,Cognition,cod,best,23
+best_top3_HCP-D_fluidcogcomp_cod,fluidcogcomp,Fluid cognition,Cognition,cod,best,18
+nec_HCP-D_fluidcogcomp_cod,fluidcogcomp,Fluid cognition,Cognition,cod,necessary,24
 best_top1_HCP-D_cardsort_cod,cardsort,Cognitive flexibility,Cognition,cod,best,1
 best_top2_HCP-D_cardsort_cod,cardsort,Cognitive flexibility,Cognition,cod,best,23
-best_top3_HCP-D_cardsort_cod,cardsort,Cognitive flexibility,Cognition,cod,best,20
+best_top3_HCP-D_cardsort_cod,cardsort,Cognitive flexibility,Cognition,cod,best,24
 nec_HCP-D_cardsort_cod,cardsort,Cognitive flexibility,Cognition,cod,necessary,1
 best_top1_HCP-D_flanker_cod,flanker,Inhibitory control,Cognition,cod,best,1
-best_top2_HCP-D_flanker_cod,flanker,Inhibitory control,Cognition,cod,best,23
-best_top3_HCP-D_flanker_cod,flanker,Inhibitory control,Cognition,cod,best,21
+best_top2_HCP-D_flanker_cod,flanker,Inhibitory control,Cognition,cod,best,24
+best_top3_HCP-D_flanker_cod,flanker,Inhibitory control,Cognition,cod,best,23
 nec_HCP-D_flanker_cod,flanker,Inhibitory control,Cognition,cod,necessary,1
 best_top1_HCP-D_reading_cod,reading,Reading,Cognition,cod,best,1
 best_top2_HCP-D_reading_cod,reading,Reading,Cognition,cod,best,21
 best_top3_HCP-D_reading_cod,reading,Reading,Cognition,cod,best,17
 nec_HCP-D_reading_cod,reading,Reading,Cognition,cod,necessary,1
 best_top1_HCP-D_picvocab_cod,picvocab,Picture vocabulary,Cognition,cod,best,23
-best_top2_HCP-D_picvocab_cod,picvocab,Picture vocabulary,Cognition,cod,best,22
-best_top3_HCP-D_picvocab_cod,picvocab,Picture vocabulary,Cognition,cod,best,21
+best_top2_HCP-D_picvocab_cod,picvocab,Picture vocabulary,Cognition,cod,best,24
+best_top3_HCP-D_picvocab_cod,picvocab,Picture vocabulary,Cognition,cod,best,22
 nec_HCP-D_picvocab_cod,picvocab,Picture vocabulary,Cognition,cod,necessary,23
-best_top1_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,best,23
-best_top2_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,best,22
-best_top3_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,best,21
-nec_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,necessary,23
+best_top1_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,best,24
+best_top2_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,best,23
+best_top3_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,best,22
+nec_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,necessary,24
 best_top1_HCP-D_listsort_cod,listsort,Working memory,Cognition,cod,best,1
-best_top2_HCP-D_listsort_cod,listsort,Working memory,Cognition,cod,best,20
-best_top3_HCP-D_listsort_cod,listsort,Working memory,Cognition,cod,best,21
+best_top2_HCP-D_listsort_cod,listsort,Working memory,Cognition,cod,best,24
+best_top3_HCP-D_listsort_cod,listsort,Working memory,Cognition,cod,best,20
 nec_HCP-D_listsort_cod,listsort,Working memory,Cognition,cod,necessary,1
 best_top1_HCP-D_anger_cod,anger,Anger affect,Mental health,cod,best,1
-best_top2_HCP-D_anger_cod,anger,Anger affect,Mental health,cod,best,24
-best_top3_HCP-D_anger_cod,anger,Anger affect,Mental health,cod,best,22
+best_top2_HCP-D_anger_cod,anger,Anger affect,Mental health,cod,best,22
+best_top3_HCP-D_anger_cod,anger,Anger affect,Mental health,cod,best,24
 nec_HCP-D_anger_cod,anger,Anger affect,Mental health,cod,necessary,1
 best_top1_HCP-D_fear_cod,fear,Fear affect,Mental health,cod,best,1
-best_top2_HCP-D_fear_cod,fear,Fear affect,Mental health,cod,best,23
-best_top3_HCP-D_fear_cod,fear,Fear affect,Mental health,cod,best,20
+best_top2_HCP-D_fear_cod,fear,Fear affect,Mental health,cod,best,24
+best_top3_HCP-D_fear_cod,fear,Fear affect,Mental health,cod,best,23
 nec_HCP-D_fear_cod,fear,Fear affect,Mental health,cod,necessary,1
 best_top1_HCP-D_sadness_cod,sadness,Sadness,Mental health,cod,best,1
-best_top2_HCP-D_sadness_cod,sadness,Sadness,Mental health,cod,best,23
-best_top3_HCP-D_sadness_cod,sadness,Sadness,Mental health,cod,best,21
+best_top2_HCP-D_sadness_cod,sadness,Sadness,Mental health,cod,best,24
+best_top3_HCP-D_sadness_cod,sadness,Sadness,Mental health,cod,best,23
 nec_HCP-D_sadness_cod,sadness,Sadness,Mental health,cod,necessary,1
-best_top1_HCP-D_posaffect_cod,posaffect,Positive affect,Mental health,cod,best,23
-best_top2_HCP-D_posaffect_cod,posaffect,Positive affect,Mental health,cod,best,1
-best_top3_HCP-D_posaffect_cod,posaffect,Positive affect,Mental health,cod,best,22
-nec_HCP-D_posaffect_cod,posaffect,Positive affect,Mental health,cod,necessary,23
+best_top1_HCP-D_posaffect_cod,posaffect,Positive affect,Mental health,cod,best,24
+best_top2_HCP-D_posaffect_cod,posaffect,Positive affect,Mental health,cod,best,23
+best_top3_HCP-D_posaffect_cod,posaffect,Positive affect,Mental health,cod,best,1
+nec_HCP-D_posaffect_cod,posaffect,Positive affect,Mental health,cod,necessary,24
 best_top1_HCP-D_emotsupp_cod,emotsupp,Emotional Support,Mental health,cod,best,1
-best_top2_HCP-D_emotsupp_cod,emotsupp,Emotional Support,Mental health,cod,best,21
-best_top3_HCP-D_emotsupp_cod,emotsupp,Emotional Support,Mental health,cod,best,23
+best_top2_HCP-D_emotsupp_cod,emotsupp,Emotional Support,Mental health,cod,best,24
+best_top3_HCP-D_emotsupp_cod,emotsupp,Emotional Support,Mental health,cod,best,21
 nec_HCP-D_emotsupp_cod,emotsupp,Emotional Support,Mental health,cod,necessary,1
 best_top1_HCP-D_friendship_cod,friendship,Friendship,Mental health,cod,best,1
 best_top2_HCP-D_friendship_cod,friendship,Friendship,Mental health,cod,best,24
@@ -145,25 +145,25 @@ best_top3_HCP-D_friendship_cod,friendship,Friendship,Mental health,cod,best,23
 nec_HCP-D_friendship_cod,friendship,Friendship,Mental health,cod,necessary,1
 best_top1_HCP-D_loneliness_cod,loneliness,Loneliness,Mental health,cod,best,1
 best_top2_HCP-D_loneliness_cod,loneliness,Loneliness,Mental health,cod,best,18
-best_top3_HCP-D_loneliness_cod,loneliness,Loneliness,Mental health,cod,best,21
+best_top3_HCP-D_loneliness_cod,loneliness,Loneliness,Mental health,cod,best,24
 nec_HCP-D_loneliness_cod,loneliness,Loneliness,Mental health,cod,necessary,1
 best_top1_HCP-D_neoffi_n_cod,neoffi_n,Neuroticism (NEO),Personality,cod,best,1
 best_top2_HCP-D_neoffi_n_cod,neoffi_n,Neuroticism (NEO),Personality,cod,best,24
 best_top3_HCP-D_neoffi_n_cod,neoffi_n,Neuroticism (NEO),Personality,cod,best,23
 nec_HCP-D_neoffi_n_cod,neoffi_n,Neuroticism (NEO),Personality,cod,necessary,1
 best_top1_HCP-D_neoffi_e_cod,neoffi_e,Extraversion (NEO),Personality,cod,best,1
-best_top2_HCP-D_neoffi_e_cod,neoffi_e,Extraversion (NEO),Personality,cod,best,24
-best_top3_HCP-D_neoffi_e_cod,neoffi_e,Extraversion (NEO),Personality,cod,best,20
+best_top2_HCP-D_neoffi_e_cod,neoffi_e,Extraversion (NEO),Personality,cod,best,20
+best_top3_HCP-D_neoffi_e_cod,neoffi_e,Extraversion (NEO),Personality,cod,best,22
 nec_HCP-D_neoffi_e_cod,neoffi_e,Extraversion (NEO),Personality,cod,necessary,1
 best_top1_HCP-D_neoffi_o_cod,neoffi_o,Openness (NEO),Personality,cod,best,1
-best_top2_HCP-D_neoffi_o_cod,neoffi_o,Openness (NEO),Personality,cod,best,23
-best_top3_HCP-D_neoffi_o_cod,neoffi_o,Openness (NEO),Personality,cod,best,24
+best_top2_HCP-D_neoffi_o_cod,neoffi_o,Openness (NEO),Personality,cod,best,24
+best_top3_HCP-D_neoffi_o_cod,neoffi_o,Openness (NEO),Personality,cod,best,23
 nec_HCP-D_neoffi_o_cod,neoffi_o,Openness (NEO),Personality,cod,necessary,1
 best_top1_HCP-D_neoffi_a_cod,neoffi_a,Agreeableness (NEO),Personality,cod,best,1
 best_top2_HCP-D_neoffi_a_cod,neoffi_a,Agreeableness (NEO),Personality,cod,best,21
 best_top3_HCP-D_neoffi_a_cod,neoffi_a,Agreeableness (NEO),Personality,cod,best,24
 nec_HCP-D_neoffi_a_cod,neoffi_a,Agreeableness (NEO),Personality,cod,necessary,1
 best_top1_HCP-D_neoffi_c_cod,neoffi_c,Conscientiousness (NEO),Personality,cod,best,1
-best_top2_HCP-D_neoffi_c_cod,neoffi_c,Conscientiousness (NEO),Personality,cod,best,24
-best_top3_HCP-D_neoffi_c_cod,neoffi_c,Conscientiousness (NEO),Personality,cod,best,23
+best_top2_HCP-D_neoffi_c_cod,neoffi_c,Conscientiousness (NEO),Personality,cod,best,23
+best_top3_HCP-D_neoffi_c_cod,neoffi_c,Conscientiousness (NEO),Personality,cod,best,24
 nec_HCP-D_neoffi_c_cod,neoffi_c,Conscientiousness (NEO),Personality,cod,necessary,1

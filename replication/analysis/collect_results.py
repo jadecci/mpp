@@ -255,7 +255,6 @@ else:
 nec_acc_curr = nec_acc.loc[nec_acc["Accuracy type"] == "cod"]
 nec_freq_file = Path(args.out_dir, f"mpp_nec_freq_{args.dataset}.csv")
 if (not nec_freq_file.exists()) or args.overwrite:
-    valid_list = []
     nec_freq = {}
     for target_domain, target_list in targets.items():
         for target in target_list:
@@ -265,13 +264,19 @@ if (not nec_freq_file.exists()) or args.overwrite:
             nec_acc_ci = t.interval(0.95, df=(df - 1), loc=nec_acc_target.mean(), scale=scale)
 
             if nec_acc_ci[0] > 0:
-                valid_list.append(target)
                 target_pd = nec_features.loc[nec_features["Target var"] == target]
+                feature_pd = feature_sets.loc[
+                    (feature_sets["Target var"] == target)
+                    & (feature_sets["Accuracy type"] == "cod")
+                    & (feature_sets["Type"] == "necessary")]
+                print(
+                    f"Valid model for target {target} "
+                    f"({feature_pd['Number of features'].values[0]} features)")
+
                 nec_freq[target] = {}
                 for feature in features["all"]+features[args.dataset]:
                     feature_name = feature_names[feature]
                     feature_pd = target_pd.loc[target_pd["Feature"] == feature_name]
                     nec_freq[target][feature_name] = feature_pd.shape[0] / target_pd.shape[0]
-    print(*valid_list, sep=", ")
     nec_freq = pd.DataFrame(nec_freq)
     nec_freq.to_csv(nec_freq_file)
