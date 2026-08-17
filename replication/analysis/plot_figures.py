@@ -22,6 +22,7 @@ targets = [
     "Loneliness", "Neuroticism (NEO)", "Extraversion (NEO)", "Openness (NEO)",
     "Agreeableness (NEO)", "Conscientiousness (NEO)"]
 
+
 def read_results(res_dir, prefix):
     res = []
     for ds in ["HCP-D", "HCP-YA", "HCP-A"]:
@@ -29,6 +30,7 @@ def read_results(res_dir, prefix):
         res.append(res_curr.assign(Dataset=ds))
     res = pd.concat(res, axis="index")
     return res
+
 
 parser = argparse.ArgumentParser(
     description="Plot figures using collected results",
@@ -111,7 +113,7 @@ if (not nec_features_file.exists()) or args.overwrite:
 for dataset in ["HCP-A", "HCP-YA", "HCP-D"]:
     nec_freq_file = Path(args.out_dir, f"nec_freq_{dataset}.png")
     if (not nec_freq_file.exists()) or args.overwrite:
-        nec_freq = read_results(args.res_dir, "nec_freq")
+        nec_freq = pd.read_csv(Path(args.res_dir, f"mpp_nec_freq_{dataset}.csv"), index_col=0)
         annot = nec_freq.map("{:.0%}".format).astype(str).replace("0%", "")
         nec_freq = nec_freq.mul(100)
         plt.figure(figsize=(nec_freq.shape[1]*1.2, nec_freq.shape[0]*0.5))
