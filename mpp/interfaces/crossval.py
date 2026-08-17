@@ -14,10 +14,12 @@ from mpp.utilities import find_sub_file, fc_to_matrix, pheno_reg_conf, elastic_n
 class _CrossValSplitInputSpec(BaseInterfaceInputSpec):
     sublists = traits.Dict(mandatory=True, dtype=list, desc="availabel subjects in each dataset")
     config = traits.Dict(mandatory=True, desc="workflow configurations")
+    shuffle = traits.Bool(False, desc="whether to shuffle data for permutation test")
 
 
 class _CrossValSplitOutputSpec(TraitedSpec):
     cv_split = traits.Dict(dtype=list, desc="list of subjects in the training split of each fold")
+    shuffle_ind = traits.List(desc="list of indices to shuffle data with")
 
 
 class CrossValSplit(SimpleInterface):
@@ -32,6 +34,9 @@ class CrossValSplit(SimpleInterface):
         self._results["cv_split"] = {}
         n_repeats = int(self.inputs.config["n_repeats"])
         n_folds = int(self.inputs.config["n_folds"])
+
+        if self.inputs.shuffle:
+            self._results["shuffle_ind"] = np.random.permutation(len(subjects))
 
         if len(np.unique(datasets)) == 1 and np.unique(datasets)[0] == "HCP-YA":
             fam_id = pd.read_csv(self.inputs.config["hcpya_res"], usecols=["Subject", "Family_ID"])
@@ -88,6 +93,8 @@ class _FeaturewiseModelInputSpec(BaseInterfaceInputSpec):
     cv_features_file = traits.File(mandatory=True, desc="file containing CV features")
     repeat = traits.Int(mandatory=True, desc="current repeat of cross-validation")
     fold = traits.Int(mandatory=True, desc="current fold in the repeat")
+    shuffle = traits.Bool(False, desc="whether to shuffle data for permutation test")
+    shuffle_ind = traits.List([], desc="list of indices to shuffle data with")
 
 
 class _FeaturewiseModelOutputSpec(TraitedSpec):
@@ -159,6 +166,12 @@ class FeaturewiseModel(SimpleInterface):
             conf = pd.concat([conf, conf_curr], axis="index")
         return x.to_numpy(), y.to_numpy(), conf.to_numpy()
 
+    def shuffle_y(self, y_train: np.ndarray, y_test: np.ndarray) -> tuple[np.ndarray, ...]:
+        len_train = len(y_train)
+        y_all = np.concatenate((y_train, y_test), axis=0)
+        y_perm = y_all[self.inputs.shuffle_ind]
+        return y_perm[:len_train], y_perm[len_train:]
+
     def _run_interface(self, runtime):
         key = f"repeat{self.inputs.repeat}_fold{self.inputs.fold}"
         key_out = f"{self.inputs.feature_type}_{key}_level{self.inputs.config['level']}"
@@ -171,6 +184,10 @@ class FeaturewiseModel(SimpleInterface):
         train_x, train_y, train_conf = self._extract_data(train_sub)
         test_x, test_y, test_conf = self._extract_data(test_sub)
         train_y, test_y = pheno_reg_conf(train_y, train_conf, test_y, test_conf)
+
+        if self.inputs.shuffle:
+            train_y, test_y = self.shuffle_y(train_y, test_y)
+
         if self.inputs.config["model"] == "default":
             r, cod, test_ypred = elastic_net(train_x, train_y, test_x, test_y, n_alphas)
         elif self.inputs.config["model"] == "alternative":
@@ -261,6 +278,8 @@ class _IntegratedFeaturesModelInputSpec(BaseInterfaceInputSpec):
     fold = traits.Int(mandatory=True, desc="current fold in the repeat")
     fw_ypred = traits.List(dtype=dict, mandatory=True, desc="Feature-wise predicted values")
     features = traits.List(dtype=str, mandatory=True, desc="feature types")
+    shuffle = traits.Bool(False, desc="whether to shuffle data for permutation test")
+    shuffle_ind = traits.List([], desc="list of indices to shuffle data with")
 
 
 class _IntegratedFeaturesModelOutputSpec(TraitedSpec):
@@ -293,6 +312,12 @@ class IntegratedFeaturesModel(SimpleInterface):
         ranks = np.argsort(-cod)
         return ranks
 
+    def shuffle_y(self, y_train: np.ndarray, y_test: np.ndarray) -> tuple[np.ndarray, ...]:
+        len_train = len(y_train)
+        y_all = np.concatenate((y_train, y_test), axis=0)
+        y_perm = y_all[self.inputs.shuffle_ind]
+        return y_perm[:len_train], y_perm[len_train:]
+
     def _random_forest_cv(
             self, train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray, test_y: np.ndarray,
             key: str) -> None:
@@ -324,15 +349,21 @@ class IntegratedFeaturesModel(SimpleInterface):
         test_sub = [subject for subject in all_sub if subject not in train_sub]
         train_x, train_y, train_conf = self._extract_data(train_sub, "train_ypred")
         test_x, test_y, test_conf = self._extract_data(test_sub, "test_ypred")
-        train_y_resid, test_y = pheno_reg_conf(train_y, train_conf, test_y, test_conf)
+        train_y_resid, test_y_resid = pheno_reg_conf(train_y, train_conf, test_y, test_conf)
         feature_ranks = self._train_ranks(train_y_resid)
+
+        if self.inputs.shuffle:
+            train_y_resid, test_y_resid = self.shuffle_y(train_y_resid, test_y_resid)
+            n_feature_list = self.inputs.config["n_feature"]
+        else:
+            n_feature_list = range(2, train_x.shape[1]+1)
 
         self._results["results"] = {}
         self._results["results"][f"rank_{key_out}"] = np.array(features)[feature_ranks]
-        for n_feature in range(2, train_x.shape[1]+1):
+        for n_feature in n_feature_list:
             key_curr = f"{key_out}_{n_feature}features"
             x_ind = feature_ranks[:n_feature]
             self._random_forest_cv(
-                train_x[:, x_ind], train_y_resid, test_x[:, x_ind], test_y, key_curr)
+                train_x[:, x_ind], train_y_resid, test_x[:, x_ind], test_y_resid, key_curr)
 
         return runtime
