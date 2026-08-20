@@ -263,7 +263,7 @@ if (not nec_freq_file.exists()) or args.overwrite:
             scale = nec_acc_target.std() / np.sqrt(df)
             nec_acc_ci = t.interval(0.95, df=(df - 1), loc=nec_acc_target.mean(), scale=scale)
 
-            if nec_acc_ci[0] > 0:
+            if nec_acc_ci[0] > 0 and nec_acc_target.mean() >= 0.05:
                 target_pd = nec_features.loc[nec_features["Target var"] == target]
                 feature_pd = feature_sets.loc[
                     (feature_sets["Target var"] == target)
