@@ -111,10 +111,10 @@ best_top1_HCP-D_picvocab_cod,picvocab,Picture vocabulary,Cognition,cod,best,23
 best_top2_HCP-D_picvocab_cod,picvocab,Picture vocabulary,Cognition,cod,best,24
 best_top3_HCP-D_picvocab_cod,picvocab,Picture vocabulary,Cognition,cod,best,22
 nec_HCP-D_picvocab_cod,picvocab,Picture vocabulary,Cognition,cod,necessary,23
-best_top1_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,best,24
-best_top2_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,best,23
-best_top3_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,best,22
-nec_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,necessary,24
+best_top1_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,best,1
+best_top2_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,best,24
+best_top3_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,best,23
+nec_HCP-D_procspeed_cod,procspeed,Processing speed,Cognition,cod,necessary,1
 best_top1_HCP-D_listsort_cod,listsort,Working memory,Cognition,cod,best,1
 best_top2_HCP-D_listsort_cod,listsort,Working memory,Cognition,cod,best,24
 best_top3_HCP-D_listsort_cod,listsort,Working memory,Cognition,cod,best,20

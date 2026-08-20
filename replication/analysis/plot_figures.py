@@ -60,7 +60,7 @@ for acc_type in ["r", "cod"]:
         g = sns.relplot(
             data=results.loc[results["Accuracy type"] == acc_type], kind="line",
             x="Number of features", y="Accuracy", hue="Target", col="Dataset", style="Target",
-            col_order=dataset_order, palette=cmap, markers=True, errorbar=("ci", 95),
+            col_order=dataset_order, palette=cmap, markers=True, ms=10, errorbar=("ci", 95),
             height=15, aspect=0.4, facet_kws={"sharey": True, "sharex": False})
         for ax in g.axes.flat:
             ax.axhline(color="black", linestyle="--")
@@ -118,8 +118,8 @@ for dataset in ["HCP-A", "HCP-YA", "HCP-D"]:
         nec_freq = nec_freq.mul(100)
         plt.figure(figsize=(nec_freq.shape[1]*1.2, nec_freq.shape[0]*0.5))
         ax = sns.heatmap(
-            data=nec_freq, vmin=0, cbar=True, cmap=cmap_heat, annot=annot, fmt="", linewidth=.5,
-            cbar_kws={"format": "%d%%", "label": "Probability"})
+            data=nec_freq, vmin=0, vmax=100, cbar=True, cmap=cmap_heat, annot=annot, fmt="",
+            linewidth=.5, cbar_kws={"format": "%d%%", "label": "Probability"})
         ax.tick_params(axis="x", labelrotation=45, labeltop=True, labelbottom=False)
         ax.set_xticklabels(ax.get_xticklabels(), ha="left")
         plt.savefig(nec_freq_file, bbox_inches="tight", dpi=500)
