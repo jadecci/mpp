@@ -21,6 +21,15 @@ targets = [
     "Anger affect", "Fear affect", "Sadness", "Positive affect", "Emotional Support", "Friendship",
     "Loneliness", "Neuroticism (NEO)", "Extraversion (NEO)", "Openness (NEO)",
     "Agreeableness (NEO)", "Conscientiousness (NEO)"]
+target_names = {
+    "totalcogcomp": "Total cognition", "crycogcomp": "Crystallized cognition",
+    "fluidcogcomp": "Fluid cognition", "cardsort": "Cognitive flexibility",
+    "flanker": "Inhibitory control", "reading": "Reading", "picvocab": "Picture vocabulary",
+    "procspeed": "Processing speed", "listsort": "Working memory", "anger": "Anger affect",
+    "fear": "Fear affect", "sadness": "Sadness", "posaffect": "Positive affect",
+    "emotsupp": "Emotional Support", "friendship": "Friendship", "loneliness": "Loneliness",
+    "neoffi_n": "Neuroticism (NEO)", "neoffi_e": "Extraversion (NEO)", "neoffi_o": "Openness (NEO)",
+    "neoffi_a": "Agreeableness (NEO)", "neoffi_c": "Conscientiousness (NEO)"}
 
 
 def read_results(res_dir, prefix):
@@ -121,6 +130,7 @@ for dataset in ["HCP-A", "HCP-YA", "HCP-D"]:
             data=nec_freq, vmin=0, vmax=100, cbar=True, cmap=cmap_heat, annot=annot, fmt="",
             linewidth=.5, cbar_kws={"format": "%d%%", "label": "Probability"})
         ax.tick_params(axis="x", labelrotation=45, labeltop=True, labelbottom=False)
-        ax.set_xticklabels(ax.get_xticklabels(), ha="left")
+        xlabels = [target_names[label.get_text()] for label in ax.get_xticklabels()]
+        ax.set_xticklabels(xlabels, ha="left")
         plt.savefig(nec_freq_file, bbox_inches="tight", dpi=500)
         plt.close()
