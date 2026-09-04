@@ -3,7 +3,7 @@ import argparse
 
 from mpp.utilities import pheno_reg_conf
 from scipy.stats import pearsonr
-from sklearn.decomposition import CCA
+from sklearn.cross_decomposition import CCA
 from sklearn.model_selection import RepeatedKFold
 from statsmodels.formula.api import ols
 import numpy as np
@@ -54,7 +54,7 @@ parser.add_argument(
 parser.add_argument(
     "--out_dir", type=Path, dest="out_dir", required=True, help="Absolute path to output directory")
 parser.add_argument(
-    "--hcpya_res", type=Path, dest="hcpya_res", required=True, help="HCP-YA restricted data file")
+    "--hcpya_res", type=str, dest="hcpya_res", default="", help="HCP-YA restricted data file")
 args = parser.parse_args()
 
 # Set-up
@@ -110,7 +110,7 @@ else:
     cv_iter = rkf.split(subjects)
 
 # Iterate through folds
-results = []
+out_file = Path(args.out_dir, f"fusion_cca_{args.dataset}.csv")
 for fold, (train_ind, test_ind) in enumerate(cv_iter):
     train_x = x.iloc[train_ind]
     test_x = x.iloc[test_ind]
@@ -178,7 +178,9 @@ for fold, (train_ind, test_ind) in enumerate(cv_iter):
                 test_x_edge = pd.concat(test_x_edge, axis="columns")
                 res_curr = res_curr | cca(train_x_edge, train_y, test_x_edge, test_y)
 
-                results.append(pd.DataFrame(res_curr, index=[f"edge_{edge}"]))
+                results = pd.DataFrame(res_curr, index=[f"edge_{edge}"])
+                write_header = edge == 0
+                results.to_csv(out_file, mode="a", header=write_header)
                 edge += 1
 
         # For region-wise features, iterate through brain regions
@@ -194,7 +196,8 @@ for fold, (train_ind, test_ind) in enumerate(cv_iter):
             test_x_regions = test_x[cols]
 
             res_curr = res_curr | cca(train_x_region, train_y, test_x_regions, test_x)
-            results.append(pd.DataFrame(res_curr, index=[f"region_{region}"]))
+            results = pd.DataFrame(res_curr, index=[f"region_{region}"])
+            results.to_csv(out_file, mode="a", header=False)
 
         # For DTI features, iterate through the 50 parcels in the white matter atlas
         for region in range(50):
@@ -207,7 +210,6 @@ for fold, (train_ind, test_ind) in enumerate(cv_iter):
             test_x_d = test_x[cols]
 
             res_curr = res_curr | cca(train_x_d, train_y, test_x_d, test_x)
-            results.append(pd.DataFrame(res_curr, index=[f"dti_region_{region}"]))
-
-# Save all resutls together
-pd.concat(results, axis="index").to_csv(Path(args.out_dir, f"fusion_cca_{args.dataset}.csv"))
+            results = pd.DataFrame(res_curr, index=[f"dti_region_{region}"])
+            results.to_csv(out_file, mode = "a", header = False)
+        print(f"Computed and save results for fold {fold} {target}")

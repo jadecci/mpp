@@ -49,17 +49,19 @@ sublist = pd.read_table(
 dti_file = Path(root_mfe_dir, f"{args.dataset}_dti.h5")
 dl.get(dti_file, dataset=root_mfe_dir)
 
-# Iterate through subjects in the dataset
-y = []
-conf = []
-x = []
+# Output file paths
+y_out = Path(args.out_dir, f"{args.dataset}_y.csv")
+conf_out = Path(args.out_dir, f"{args.dataset}_conf.csv")
+x_out = Path(args.out_dir, f"{args.dataset}_x.csv")
+
+# Iterate through subjects in the dataset, writing output incrementally to avoid OOM
 for i, subject in enumerate(sublist):
     sub_file = Path(root_mfe_dir, args.dataset, f"{subject}.h5")
     dl.get(sub_file, dataset=root_mfe_dir)
 
     # Get phenotypes and confounds
-    y.append(pd.DataFrame(pd.read_hdf(sub_file, "phenotype")))
-    conf.append(pd.DataFrame(pd.read_hdf(sub_file, "confound")))
+    y_df = pd.DataFrame(pd.read_hdf(sub_file, "phenotype"))
+    conf_df = pd.DataFrame(pd.read_hdf(sub_file, "confound"))
 
     # Iterate through feature types
     x_sub = []
@@ -75,15 +77,16 @@ for i, subject in enumerate(sublist):
         x_curr = x_curr.fillna(value=0)
         x_curr.columns = [f"{feature}_{col}" for col in range(len(x_curr.columns))]
         x_sub.append(x_curr)
-    x.append(pd.concat(x_sub, axis="columns"))
+    x_df = pd.concat(x_sub, axis="columns")
 
-    print(f"Extracted data for {args.dataset }subject {i}: {subject}")
+    # Write this subject's data immediately; only write the header on the first subject
+    write_header = i == 0
+    y_df.to_csv(y_out, mode="a", header=write_header)
+    conf_df.to_csv(conf_out, mode="a", header=write_header)
+    x_df.to_csv(x_out, mode="a", header=write_header)
+
+    print(f"Extracted data for {args.dataset} subject {i}: {subject}")
     dl.drop(sub_file, dataset=root_mfe_dir)
 dl.drop(dti_file, dataset=root_mfe_dir)
-
-# Save data
-pd.concat(y, axis="index").to_csv(Path(args.out_dir, f"{args.dataset}_y.csv"))
-pd.concat(conf, axis="index").to_csv(Path(args.out_dir, f"{args.dataset}_conf.csv"))
-pd.concat(x, axis="index").to_csv(Path(args.out_dir, f"{args.dataset}_x.csv"))
 
 dl.remove(dataset=root_mfe_dir, reckless="kill")
