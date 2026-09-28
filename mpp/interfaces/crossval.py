@@ -2,6 +2,7 @@ from pathlib import Path
 import itertools
 
 from nipype.interfaces.base import BaseInterfaceInputSpec, TraitedSpec, SimpleInterface, traits
+from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
 from sklearn.model_selection import RepeatedStratifiedKFold, StratifiedKFold, GridSearchCV
@@ -193,9 +194,17 @@ class FeaturewiseModel(SimpleInterface):
         elif self.inputs.config["model"] == "alternative":
             key_out = f"{key_out}_alternative"
             r, cod, test_ypred = linear_svr(train_x, train_y, test_x, test_y)
+        elif self.inputs.config["model"] == "pca-en":
+            pca = PCA(n_components=0.95) # select number of components to explain 95% variance
+            train_x_pca = pca.fit_transform(train_x)
+            test_x_pca = pca.transform(test_x)
+            r, cod, test_ypred = elastic_net(train_x_pca, train_y, test_x_pca, test_y, n_alphas)    
+        
         self._results["results"] = {
             f"r_{key_out}": r, f"cod_{key_out}": cod, f"test_ypred_{key_out}": test_ypred,
             f"test_yresid_{key_out}": test_y}
+        if self.inputs.config["model"] == "pca-an":
+            self._results["results"][f"n_comp_{key_out}"] = pca.n_components_
 
         train_ypred = np.zeros(len(train_sub))
         for inner in range(5):

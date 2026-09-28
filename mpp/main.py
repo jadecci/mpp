@@ -40,7 +40,7 @@ def main() -> None:
         "--output_dir", type=Path, dest="output_dir", default=Path.cwd(), help="output directory")
     optional.add_argument(
         "--model", type=str, dest="model", default="default",
-        help="use default or alternative model")
+        help="use default, alternative, or pca-en model")
     optional.add_argument(
         "--overwrite", dest="overwrite", action="store_true", help="overwrite existing results")
     optional.add_argument(
@@ -89,16 +89,17 @@ def main() -> None:
         (fw_combine, fw_save, [("results", "results")])])
 
     # Confound models
-    conf_model = pe.Node(ConfoundsModel(config=config), "conf_model")
-    conf_save = pe.JoinNode(
-        PredictionSave(config=config, model_type="confounds"), "conf_save",
-        joinsource="features", joinfield=["results"])
-    mpp_wf.connect([
-        (sublist, conf_model, [("sublists", "sublists"), ("target", "target")]),
-        (features, conf_model, [("repeat", "repeat"), ("fold", "fold")]),
-        (cv_split, conf_model, [("cv_split", "cv_split")]),
-        (sublist, conf_save, [("target", "target")]),
-        (conf_model, conf_save, [("results", "results")])])
+    if config["model"] != "pca-en":
+        conf_model = pe.Node(ConfoundsModel(config=config), "conf_model")
+        conf_save = pe.JoinNode(
+            PredictionSave(config=config, model_type="confounds"), "conf_save",
+            joinsource="features", joinfield=["results"])
+        mpp_wf.connect([
+            (sublist, conf_model, [("sublists", "sublists"), ("target", "target")]),
+            (features, conf_model, [("repeat", "repeat"), ("fold", "fold")]),
+            (cv_split, conf_model, [("cv_split", "cv_split")]),
+            (sublist, conf_save, [("target", "target")]),
+            (conf_model, conf_save, [("results", "results")])])
 
     # Integrated-features set models
     if_model = pe.JoinNode(

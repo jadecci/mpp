@@ -31,6 +31,7 @@ subjects = x.index.to_list()
 if args.dataset == "HCP-YA":
     fam_id = pd.read_csv(args.hcpya_res, usecols=["Subject", "Family_ID"])
     fam_id = fam_id.loc[fam_id["Subject"].isin(subjects)]
+    fam_id = fam_id.reset_index(drop=True)
     rng = np.random.default_rng(seed=cv_seed)
     cv_iter = [[[], []] for i in range(n_repeats * n_folds)]
     fold_size_min = np.round(len(subjects) / n_folds)
