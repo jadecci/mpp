@@ -1,0 +1,9 @@
+,Target var,Target,Accuracy type,Type,Number of features
+best_top1_HCP-D_totalcogcomp_r,totalcogcomp,Total cognition,r,best,23
+best_top2_HCP-D_totalcogcomp_r,totalcogcomp,Total cognition,r,best,24
+best_top3_HCP-D_totalcogcomp_r,totalcogcomp,Total cognition,r,best,19
+nec_HCP-D_totalcogcomp_r,totalcogcomp,Total cognition,r,necessary,11
+best_top1_HCP-D_totalcogcomp_cod,totalcogcomp,Total cognition,cod,best,23
+best_top2_HCP-D_totalcogcomp_cod,totalcogcomp,Total cognition,cod,best,21
+best_top3_HCP-D_totalcogcomp_cod,totalcogcomp,Total cognition,cod,best,24
+nec_HCP-D_totalcogcomp_cod,totalcogcomp,Total cognition,cod,necessary,23

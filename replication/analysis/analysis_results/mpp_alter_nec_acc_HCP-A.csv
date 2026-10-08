@@ -1,0 +1,1001 @@
+,Accuracy type,Target var,Target,Accuracy
+HCP-A_totalcogcomp_r_repeat0_fold0,r,totalcogcomp,Total cognition,0.5142444733238312
+HCP-A_totalcogcomp_r_repeat0_fold1,r,totalcogcomp,Total cognition,0.6096886728396375
+HCP-A_totalcogcomp_r_repeat0_fold2,r,totalcogcomp,Total cognition,0.45080719489610027
+HCP-A_totalcogcomp_r_repeat0_fold3,r,totalcogcomp,Total cognition,0.632457666325534
+HCP-A_totalcogcomp_r_repeat0_fold4,r,totalcogcomp,Total cognition,0.5174383802926295
+HCP-A_totalcogcomp_r_repeat0_fold5,r,totalcogcomp,Total cognition,0.4249322630139146
+HCP-A_totalcogcomp_r_repeat0_fold6,r,totalcogcomp,Total cognition,0.5058118661279303
+HCP-A_totalcogcomp_r_repeat0_fold7,r,totalcogcomp,Total cognition,0.4749588976016206
+HCP-A_totalcogcomp_r_repeat0_fold8,r,totalcogcomp,Total cognition,0.5540116025917377
+HCP-A_totalcogcomp_r_repeat0_fold9,r,totalcogcomp,Total cognition,0.6066134202213856
+HCP-A_totalcogcomp_r_repeat1_fold0,r,totalcogcomp,Total cognition,0.5983066301204758
+HCP-A_totalcogcomp_r_repeat1_fold1,r,totalcogcomp,Total cognition,0.6340999554029035
+HCP-A_totalcogcomp_r_repeat1_fold2,r,totalcogcomp,Total cognition,0.43662953815673144
+HCP-A_totalcogcomp_r_repeat1_fold3,r,totalcogcomp,Total cognition,0.4578336352776504
+HCP-A_totalcogcomp_r_repeat1_fold4,r,totalcogcomp,Total cognition,0.5744125133627486
+HCP-A_totalcogcomp_r_repeat1_fold5,r,totalcogcomp,Total cognition,0.5584159368001079
+HCP-A_totalcogcomp_r_repeat1_fold6,r,totalcogcomp,Total cognition,0.5983925316027335
+HCP-A_totalcogcomp_r_repeat1_fold7,r,totalcogcomp,Total cognition,0.42920374871424144
+HCP-A_totalcogcomp_r_repeat1_fold8,r,totalcogcomp,Total cognition,0.6066758035806903
+HCP-A_totalcogcomp_r_repeat1_fold9,r,totalcogcomp,Total cognition,0.6593277299115649
+HCP-A_totalcogcomp_r_repeat2_fold0,r,totalcogcomp,Total cognition,0.5713950522247428
+HCP-A_totalcogcomp_r_repeat2_fold1,r,totalcogcomp,Total cognition,0.49371400873432825
+HCP-A_totalcogcomp_r_repeat2_fold2,r,totalcogcomp,Total cognition,0.6484410473167692
+HCP-A_totalcogcomp_r_repeat2_fold3,r,totalcogcomp,Total cognition,0.5127255481115977
+HCP-A_totalcogcomp_r_repeat2_fold4,r,totalcogcomp,Total cognition,0.5248592197064958
+HCP-A_totalcogcomp_r_repeat2_fold5,r,totalcogcomp,Total cognition,0.6443097713081402
+HCP-A_totalcogcomp_r_repeat2_fold6,r,totalcogcomp,Total cognition,0.39436536128587757
+HCP-A_totalcogcomp_r_repeat2_fold7,r,totalcogcomp,Total cognition,0.5268830818396546
+HCP-A_totalcogcomp_r_repeat2_fold8,r,totalcogcomp,Total cognition,0.49138513262963085
+HCP-A_totalcogcomp_r_repeat2_fold9,r,totalcogcomp,Total cognition,0.5836726305806955
+HCP-A_totalcogcomp_r_repeat3_fold0,r,totalcogcomp,Total cognition,0.45788866677304085
+HCP-A_totalcogcomp_r_repeat3_fold1,r,totalcogcomp,Total cognition,0.4412651409811918
+HCP-A_totalcogcomp_r_repeat3_fold2,r,totalcogcomp,Total cognition,0.5687674617769558
+HCP-A_totalcogcomp_r_repeat3_fold3,r,totalcogcomp,Total cognition,0.46992722405549253
+HCP-A_totalcogcomp_r_repeat3_fold4,r,totalcogcomp,Total cognition,0.4604949421596254
+HCP-A_totalcogcomp_r_repeat3_fold5,r,totalcogcomp,Total cognition,0.5493248259742364
+HCP-A_totalcogcomp_r_repeat3_fold6,r,totalcogcomp,Total cognition,0.618166599373259
+HCP-A_totalcogcomp_r_repeat3_fold7,r,totalcogcomp,Total cognition,0.4835484273604131
+HCP-A_totalcogcomp_r_repeat3_fold8,r,totalcogcomp,Total cognition,0.6015196202259371
+HCP-A_totalcogcomp_r_repeat3_fold9,r,totalcogcomp,Total cognition,0.6681516399257234
+HCP-A_totalcogcomp_r_repeat4_fold0,r,totalcogcomp,Total cognition,0.6564153031547459
+HCP-A_totalcogcomp_r_repeat4_fold1,r,totalcogcomp,Total cognition,0.45913572904959693
+HCP-A_totalcogcomp_r_repeat4_fold2,r,totalcogcomp,Total cognition,0.5847363690408163
+HCP-A_totalcogcomp_r_repeat4_fold3,r,totalcogcomp,Total cognition,0.49673274588582506
+HCP-A_totalcogcomp_r_repeat4_fold4,r,totalcogcomp,Total cognition,0.5639171519547044
+HCP-A_totalcogcomp_r_repeat4_fold5,r,totalcogcomp,Total cognition,0.5664474308233759
+HCP-A_totalcogcomp_r_repeat4_fold6,r,totalcogcomp,Total cognition,0.4041530354697439
+HCP-A_totalcogcomp_r_repeat4_fold7,r,totalcogcomp,Total cognition,0.5497301782919373
+HCP-A_totalcogcomp_r_repeat4_fold8,r,totalcogcomp,Total cognition,0.47232580291654036
+HCP-A_totalcogcomp_r_repeat4_fold9,r,totalcogcomp,Total cognition,0.5967820402933136
+HCP-A_totalcogcomp_r_repeat5_fold0,r,totalcogcomp,Total cognition,0.6792223117960369
+HCP-A_totalcogcomp_r_repeat5_fold1,r,totalcogcomp,Total cognition,0.6030567253537553
+HCP-A_totalcogcomp_r_repeat5_fold2,r,totalcogcomp,Total cognition,0.35922651271909556
+HCP-A_totalcogcomp_r_repeat5_fold3,r,totalcogcomp,Total cognition,0.5805222700108895
+HCP-A_totalcogcomp_r_repeat5_fold4,r,totalcogcomp,Total cognition,0.47620944091713746
+HCP-A_totalcogcomp_r_repeat5_fold5,r,totalcogcomp,Total cognition,0.5355656293831488
+HCP-A_totalcogcomp_r_repeat5_fold6,r,totalcogcomp,Total cognition,0.6193605947362787
+HCP-A_totalcogcomp_r_repeat5_fold7,r,totalcogcomp,Total cognition,0.45018514073834526
+HCP-A_totalcogcomp_r_repeat5_fold8,r,totalcogcomp,Total cognition,0.6719901431178129
+HCP-A_totalcogcomp_r_repeat5_fold9,r,totalcogcomp,Total cognition,0.43202664976789884
+HCP-A_totalcogcomp_r_repeat6_fold0,r,totalcogcomp,Total cognition,0.5640692983017934
+HCP-A_totalcogcomp_r_repeat6_fold1,r,totalcogcomp,Total cognition,0.6105849298520324
+HCP-A_totalcogcomp_r_repeat6_fold2,r,totalcogcomp,Total cognition,0.35111541338339386
+HCP-A_totalcogcomp_r_repeat6_fold3,r,totalcogcomp,Total cognition,0.4851207750842072
+HCP-A_totalcogcomp_r_repeat6_fold4,r,totalcogcomp,Total cognition,0.42590193144729516
+HCP-A_totalcogcomp_r_repeat6_fold5,r,totalcogcomp,Total cognition,0.6435011148834978
+HCP-A_totalcogcomp_r_repeat6_fold6,r,totalcogcomp,Total cognition,0.5320275525418919
+HCP-A_totalcogcomp_r_repeat6_fold7,r,totalcogcomp,Total cognition,0.5271530744571679
+HCP-A_totalcogcomp_r_repeat6_fold8,r,totalcogcomp,Total cognition,0.4258919782190465
+HCP-A_totalcogcomp_r_repeat6_fold9,r,totalcogcomp,Total cognition,0.6144343875598157
+HCP-A_totalcogcomp_r_repeat7_fold0,r,totalcogcomp,Total cognition,0.5187866051851738
+HCP-A_totalcogcomp_r_repeat7_fold1,r,totalcogcomp,Total cognition,0.33113597119819677
+HCP-A_totalcogcomp_r_repeat7_fold2,r,totalcogcomp,Total cognition,0.5632772008666754
+HCP-A_totalcogcomp_r_repeat7_fold3,r,totalcogcomp,Total cognition,0.6057618007817511
+HCP-A_totalcogcomp_r_repeat7_fold4,r,totalcogcomp,Total cognition,0.5603947119531816
+HCP-A_totalcogcomp_r_repeat7_fold5,r,totalcogcomp,Total cognition,0.6691535654760301
+HCP-A_totalcogcomp_r_repeat7_fold6,r,totalcogcomp,Total cognition,0.34128793227371357
+HCP-A_totalcogcomp_r_repeat7_fold7,r,totalcogcomp,Total cognition,0.5923414454786494
+HCP-A_totalcogcomp_r_repeat7_fold8,r,totalcogcomp,Total cognition,0.4615363301628087
+HCP-A_totalcogcomp_r_repeat7_fold9,r,totalcogcomp,Total cognition,0.721251392428389
+HCP-A_totalcogcomp_r_repeat8_fold0,r,totalcogcomp,Total cognition,0.41773483189657556
+HCP-A_totalcogcomp_r_repeat8_fold1,r,totalcogcomp,Total cognition,0.4087175721246334
+HCP-A_totalcogcomp_r_repeat8_fold2,r,totalcogcomp,Total cognition,0.4412572995348287
+HCP-A_totalcogcomp_r_repeat8_fold3,r,totalcogcomp,Total cognition,0.42709868150413494
+HCP-A_totalcogcomp_r_repeat8_fold4,r,totalcogcomp,Total cognition,0.465557369625484
+HCP-A_totalcogcomp_r_repeat8_fold5,r,totalcogcomp,Total cognition,0.7672885856672017
+HCP-A_totalcogcomp_r_repeat8_fold6,r,totalcogcomp,Total cognition,0.581462781131532
+HCP-A_totalcogcomp_r_repeat8_fold7,r,totalcogcomp,Total cognition,0.5557161773957762
+HCP-A_totalcogcomp_r_repeat8_fold8,r,totalcogcomp,Total cognition,0.6358579141505266
+HCP-A_totalcogcomp_r_repeat8_fold9,r,totalcogcomp,Total cognition,0.6569676372767113
+HCP-A_totalcogcomp_r_repeat9_fold0,r,totalcogcomp,Total cognition,0.36386655157922054
+HCP-A_totalcogcomp_r_repeat9_fold1,r,totalcogcomp,Total cognition,0.5961617653499405
+HCP-A_totalcogcomp_r_repeat9_fold2,r,totalcogcomp,Total cognition,0.5154715921158043
+HCP-A_totalcogcomp_r_repeat9_fold3,r,totalcogcomp,Total cognition,0.5708882839551623
+HCP-A_totalcogcomp_r_repeat9_fold4,r,totalcogcomp,Total cognition,0.5524013255613097
+HCP-A_totalcogcomp_r_repeat9_fold5,r,totalcogcomp,Total cognition,0.6083167581262969
+HCP-A_totalcogcomp_r_repeat9_fold6,r,totalcogcomp,Total cognition,0.5573831456083481
+HCP-A_totalcogcomp_r_repeat9_fold7,r,totalcogcomp,Total cognition,0.6855281858496379
+HCP-A_totalcogcomp_r_repeat9_fold8,r,totalcogcomp,Total cognition,0.40232246670135685
+HCP-A_totalcogcomp_r_repeat9_fold9,r,totalcogcomp,Total cognition,0.5162500213925786
+HCP-A_crycogcomp_r_repeat0_fold0,r,crycogcomp,Crystallized cognition,0.47886829238078216
+HCP-A_crycogcomp_r_repeat0_fold1,r,crycogcomp,Crystallized cognition,0.36893827006734264
+HCP-A_crycogcomp_r_repeat0_fold2,r,crycogcomp,Crystallized cognition,0.5238041587338758
+HCP-A_crycogcomp_r_repeat0_fold3,r,crycogcomp,Crystallized cognition,0.4796617241554512
+HCP-A_crycogcomp_r_repeat0_fold4,r,crycogcomp,Crystallized cognition,0.4142580882141894
+HCP-A_crycogcomp_r_repeat0_fold5,r,crycogcomp,Crystallized cognition,0.5833598416755491
+HCP-A_crycogcomp_r_repeat0_fold6,r,crycogcomp,Crystallized cognition,0.5036764952776804
+HCP-A_crycogcomp_r_repeat0_fold7,r,crycogcomp,Crystallized cognition,0.4721718341205691
+HCP-A_crycogcomp_r_repeat0_fold8,r,crycogcomp,Crystallized cognition,0.3227862456408409
+HCP-A_crycogcomp_r_repeat0_fold9,r,crycogcomp,Crystallized cognition,0.3891221963311234
+HCP-A_crycogcomp_r_repeat1_fold0,r,crycogcomp,Crystallized cognition,0.4406635231126108
+HCP-A_crycogcomp_r_repeat1_fold1,r,crycogcomp,Crystallized cognition,0.4505523680007199
+HCP-A_crycogcomp_r_repeat1_fold2,r,crycogcomp,Crystallized cognition,0.37884557657162815
+HCP-A_crycogcomp_r_repeat1_fold3,r,crycogcomp,Crystallized cognition,0.5321049742095075
+HCP-A_crycogcomp_r_repeat1_fold4,r,crycogcomp,Crystallized cognition,0.5898243436164186
+HCP-A_crycogcomp_r_repeat1_fold5,r,crycogcomp,Crystallized cognition,0.5122268215210716
+HCP-A_crycogcomp_r_repeat1_fold6,r,crycogcomp,Crystallized cognition,0.37932072125651584
+HCP-A_crycogcomp_r_repeat1_fold7,r,crycogcomp,Crystallized cognition,0.1945400910971195
+HCP-A_crycogcomp_r_repeat1_fold8,r,crycogcomp,Crystallized cognition,0.467786571273562
+HCP-A_crycogcomp_r_repeat1_fold9,r,crycogcomp,Crystallized cognition,0.6159278400703025
+HCP-A_crycogcomp_r_repeat2_fold0,r,crycogcomp,Crystallized cognition,0.4831966611479751
+HCP-A_crycogcomp_r_repeat2_fold1,r,crycogcomp,Crystallized cognition,0.40870634328252164
+HCP-A_crycogcomp_r_repeat2_fold2,r,crycogcomp,Crystallized cognition,0.5537015148447035
+HCP-A_crycogcomp_r_repeat2_fold3,r,crycogcomp,Crystallized cognition,0.3307209677734046
+HCP-A_crycogcomp_r_repeat2_fold4,r,crycogcomp,Crystallized cognition,0.30786203412893476
+HCP-A_crycogcomp_r_repeat2_fold5,r,crycogcomp,Crystallized cognition,0.5996701259023631
+HCP-A_crycogcomp_r_repeat2_fold6,r,crycogcomp,Crystallized cognition,0.5016209686521809
+HCP-A_crycogcomp_r_repeat2_fold7,r,crycogcomp,Crystallized cognition,0.4728385866441501
+HCP-A_crycogcomp_r_repeat2_fold8,r,crycogcomp,Crystallized cognition,0.4706614047569284
+HCP-A_crycogcomp_r_repeat2_fold9,r,crycogcomp,Crystallized cognition,0.678064430059675
+HCP-A_crycogcomp_r_repeat3_fold0,r,crycogcomp,Crystallized cognition,0.5307712279949022
+HCP-A_crycogcomp_r_repeat3_fold1,r,crycogcomp,Crystallized cognition,0.4349427625126431
+HCP-A_crycogcomp_r_repeat3_fold2,r,crycogcomp,Crystallized cognition,0.34744565489234325
+HCP-A_crycogcomp_r_repeat3_fold3,r,crycogcomp,Crystallized cognition,0.4817696789443439
+HCP-A_crycogcomp_r_repeat3_fold4,r,crycogcomp,Crystallized cognition,0.44395342069605714
+HCP-A_crycogcomp_r_repeat3_fold5,r,crycogcomp,Crystallized cognition,0.45967374090399854
+HCP-A_crycogcomp_r_repeat3_fold6,r,crycogcomp,Crystallized cognition,0.6273676081760355
+HCP-A_crycogcomp_r_repeat3_fold7,r,crycogcomp,Crystallized cognition,0.36708976700377877
+HCP-A_crycogcomp_r_repeat3_fold8,r,crycogcomp,Crystallized cognition,0.591398780072138
+HCP-A_crycogcomp_r_repeat3_fold9,r,crycogcomp,Crystallized cognition,0.4609163822232968
+HCP-A_crycogcomp_r_repeat4_fold0,r,crycogcomp,Crystallized cognition,0.487336593946633
+HCP-A_crycogcomp_r_repeat4_fold1,r,crycogcomp,Crystallized cognition,0.30636212948144825
+HCP-A_crycogcomp_r_repeat4_fold2,r,crycogcomp,Crystallized cognition,0.4277340218742243
+HCP-A_crycogcomp_r_repeat4_fold3,r,crycogcomp,Crystallized cognition,0.541909671927437
+HCP-A_crycogcomp_r_repeat4_fold4,r,crycogcomp,Crystallized cognition,0.5934477902075531
+HCP-A_crycogcomp_r_repeat4_fold5,r,crycogcomp,Crystallized cognition,0.4146805375081007
+HCP-A_crycogcomp_r_repeat4_fold6,r,crycogcomp,Crystallized cognition,0.5638887593194525
+HCP-A_crycogcomp_r_repeat4_fold7,r,crycogcomp,Crystallized cognition,0.3803031205402769
+HCP-A_crycogcomp_r_repeat4_fold8,r,crycogcomp,Crystallized cognition,0.5407782260200515
+HCP-A_crycogcomp_r_repeat4_fold9,r,crycogcomp,Crystallized cognition,0.4870338157312421
+HCP-A_crycogcomp_r_repeat5_fold0,r,crycogcomp,Crystallized cognition,0.5784459633555743
+HCP-A_crycogcomp_r_repeat5_fold1,r,crycogcomp,Crystallized cognition,0.5124288559006053
+HCP-A_crycogcomp_r_repeat5_fold2,r,crycogcomp,Crystallized cognition,0.38969046719198575
+HCP-A_crycogcomp_r_repeat5_fold3,r,crycogcomp,Crystallized cognition,0.46537166328799057
+HCP-A_crycogcomp_r_repeat5_fold4,r,crycogcomp,Crystallized cognition,0.41280278940531234
+HCP-A_crycogcomp_r_repeat5_fold5,r,crycogcomp,Crystallized cognition,0.3600225133866482
+HCP-A_crycogcomp_r_repeat5_fold6,r,crycogcomp,Crystallized cognition,0.6241791991871025
+HCP-A_crycogcomp_r_repeat5_fold7,r,crycogcomp,Crystallized cognition,0.5600210699654733
+HCP-A_crycogcomp_r_repeat5_fold8,r,crycogcomp,Crystallized cognition,0.4595798403218009
+HCP-A_crycogcomp_r_repeat5_fold9,r,crycogcomp,Crystallized cognition,0.2443009940614529
+HCP-A_crycogcomp_r_repeat6_fold0,r,crycogcomp,Crystallized cognition,0.2932563929377404
+HCP-A_crycogcomp_r_repeat6_fold1,r,crycogcomp,Crystallized cognition,0.5186491926270129
+HCP-A_crycogcomp_r_repeat6_fold2,r,crycogcomp,Crystallized cognition,0.3736017707981955
+HCP-A_crycogcomp_r_repeat6_fold3,r,crycogcomp,Crystallized cognition,0.4013001812422514
+HCP-A_crycogcomp_r_repeat6_fold4,r,crycogcomp,Crystallized cognition,0.48200837960330095
+HCP-A_crycogcomp_r_repeat6_fold5,r,crycogcomp,Crystallized cognition,0.6468151092551101
+HCP-A_crycogcomp_r_repeat6_fold6,r,crycogcomp,Crystallized cognition,0.43945612525245753
+HCP-A_crycogcomp_r_repeat6_fold7,r,crycogcomp,Crystallized cognition,0.3697829316310216
+HCP-A_crycogcomp_r_repeat6_fold8,r,crycogcomp,Crystallized cognition,0.5088280315542879
+HCP-A_crycogcomp_r_repeat6_fold9,r,crycogcomp,Crystallized cognition,0.30014174911479063
+HCP-A_crycogcomp_r_repeat7_fold0,r,crycogcomp,Crystallized cognition,0.5852392648771255
+HCP-A_crycogcomp_r_repeat7_fold1,r,crycogcomp,Crystallized cognition,0.35597414975979086
+HCP-A_crycogcomp_r_repeat7_fold2,r,crycogcomp,Crystallized cognition,0.4113933892789779
+HCP-A_crycogcomp_r_repeat7_fold3,r,crycogcomp,Crystallized cognition,0.5698417303012654
+HCP-A_crycogcomp_r_repeat7_fold4,r,crycogcomp,Crystallized cognition,0.6070314146491423
+HCP-A_crycogcomp_r_repeat7_fold5,r,crycogcomp,Crystallized cognition,0.4150482525485016
+HCP-A_crycogcomp_r_repeat7_fold6,r,crycogcomp,Crystallized cognition,0.4963305803876129
+HCP-A_crycogcomp_r_repeat7_fold7,r,crycogcomp,Crystallized cognition,0.3387636487019179
+HCP-A_crycogcomp_r_repeat7_fold8,r,crycogcomp,Crystallized cognition,0.3505870268960112
+HCP-A_crycogcomp_r_repeat7_fold9,r,crycogcomp,Crystallized cognition,0.3088321374779619
+HCP-A_crycogcomp_r_repeat8_fold0,r,crycogcomp,Crystallized cognition,0.3943509062114047
+HCP-A_crycogcomp_r_repeat8_fold1,r,crycogcomp,Crystallized cognition,0.2740612457223005
+HCP-A_crycogcomp_r_repeat8_fold2,r,crycogcomp,Crystallized cognition,0.2991829576369594
+HCP-A_crycogcomp_r_repeat8_fold3,r,crycogcomp,Crystallized cognition,0.4531707347758576
+HCP-A_crycogcomp_r_repeat8_fold4,r,crycogcomp,Crystallized cognition,0.4368846614225615
+HCP-A_crycogcomp_r_repeat8_fold5,r,crycogcomp,Crystallized cognition,0.5701192412618808
+HCP-A_crycogcomp_r_repeat8_fold6,r,crycogcomp,Crystallized cognition,0.4548159985871834
+HCP-A_crycogcomp_r_repeat8_fold7,r,crycogcomp,Crystallized cognition,0.4657456717729849
+HCP-A_crycogcomp_r_repeat8_fold8,r,crycogcomp,Crystallized cognition,0.4764057707684254
+HCP-A_crycogcomp_r_repeat8_fold9,r,crycogcomp,Crystallized cognition,0.6205876254832327
+HCP-A_crycogcomp_r_repeat9_fold0,r,crycogcomp,Crystallized cognition,0.450419986044568
+HCP-A_crycogcomp_r_repeat9_fold1,r,crycogcomp,Crystallized cognition,0.5150191717652959
+HCP-A_crycogcomp_r_repeat9_fold2,r,crycogcomp,Crystallized cognition,0.46611366417633576
+HCP-A_crycogcomp_r_repeat9_fold3,r,crycogcomp,Crystallized cognition,0.261915836398394
+HCP-A_crycogcomp_r_repeat9_fold4,r,crycogcomp,Crystallized cognition,0.3935230779341469
+HCP-A_crycogcomp_r_repeat9_fold5,r,crycogcomp,Crystallized cognition,0.38094587847078154
+HCP-A_crycogcomp_r_repeat9_fold6,r,crycogcomp,Crystallized cognition,0.44598397386438576
+HCP-A_crycogcomp_r_repeat9_fold7,r,crycogcomp,Crystallized cognition,0.6351871042463894
+HCP-A_crycogcomp_r_repeat9_fold8,r,crycogcomp,Crystallized cognition,0.4344097621419476
+HCP-A_crycogcomp_r_repeat9_fold9,r,crycogcomp,Crystallized cognition,0.5004542327907051
+HCP-A_fluidcogcomp_r_repeat0_fold0,r,fluidcogcomp,Fluid cognition,0.4950952348392974
+HCP-A_fluidcogcomp_r_repeat0_fold1,r,fluidcogcomp,Fluid cognition,0.4538817785288296
+HCP-A_fluidcogcomp_r_repeat0_fold2,r,fluidcogcomp,Fluid cognition,0.41677655100533334
+HCP-A_fluidcogcomp_r_repeat0_fold3,r,fluidcogcomp,Fluid cognition,0.6324485651659832
+HCP-A_fluidcogcomp_r_repeat0_fold4,r,fluidcogcomp,Fluid cognition,0.5024626842193024
+HCP-A_fluidcogcomp_r_repeat0_fold5,r,fluidcogcomp,Fluid cognition,0.40785981251307785
+HCP-A_fluidcogcomp_r_repeat0_fold6,r,fluidcogcomp,Fluid cognition,0.4437465132796398
+HCP-A_fluidcogcomp_r_repeat0_fold7,r,fluidcogcomp,Fluid cognition,0.46315981986496546
+HCP-A_fluidcogcomp_r_repeat0_fold8,r,fluidcogcomp,Fluid cognition,0.3941351166121335
+HCP-A_fluidcogcomp_r_repeat0_fold9,r,fluidcogcomp,Fluid cognition,0.5794463183067817
+HCP-A_fluidcogcomp_r_repeat1_fold0,r,fluidcogcomp,Fluid cognition,0.39220747394807504
+HCP-A_fluidcogcomp_r_repeat1_fold1,r,fluidcogcomp,Fluid cognition,0.41976172689334323
+HCP-A_fluidcogcomp_r_repeat1_fold2,r,fluidcogcomp,Fluid cognition,0.37461161542717974
+HCP-A_fluidcogcomp_r_repeat1_fold3,r,fluidcogcomp,Fluid cognition,0.3301095454813657
+HCP-A_fluidcogcomp_r_repeat1_fold4,r,fluidcogcomp,Fluid cognition,0.4414254580261453
+HCP-A_fluidcogcomp_r_repeat1_fold5,r,fluidcogcomp,Fluid cognition,0.49492223770572824
+HCP-A_fluidcogcomp_r_repeat1_fold6,r,fluidcogcomp,Fluid cognition,0.5781488936284417
+HCP-A_fluidcogcomp_r_repeat1_fold7,r,fluidcogcomp,Fluid cognition,0.48727281233389824
+HCP-A_fluidcogcomp_r_repeat1_fold8,r,fluidcogcomp,Fluid cognition,0.5159672354996107
+HCP-A_fluidcogcomp_r_repeat1_fold9,r,fluidcogcomp,Fluid cognition,0.3802068773298662
+HCP-A_fluidcogcomp_r_repeat2_fold0,r,fluidcogcomp,Fluid cognition,0.5415723938638671
+HCP-A_fluidcogcomp_r_repeat2_fold1,r,fluidcogcomp,Fluid cognition,0.4678416889408964
+HCP-A_fluidcogcomp_r_repeat2_fold2,r,fluidcogcomp,Fluid cognition,0.4045533489973531
+HCP-A_fluidcogcomp_r_repeat2_fold3,r,fluidcogcomp,Fluid cognition,0.30784924663099084
+HCP-A_fluidcogcomp_r_repeat2_fold4,r,fluidcogcomp,Fluid cognition,0.4575970444850008
+HCP-A_fluidcogcomp_r_repeat2_fold5,r,fluidcogcomp,Fluid cognition,0.3743842555982038
+HCP-A_fluidcogcomp_r_repeat2_fold6,r,fluidcogcomp,Fluid cognition,0.40814374250471624
+HCP-A_fluidcogcomp_r_repeat2_fold7,r,fluidcogcomp,Fluid cognition,0.4902655559677133
+HCP-A_fluidcogcomp_r_repeat2_fold8,r,fluidcogcomp,Fluid cognition,0.4338580640873208
+HCP-A_fluidcogcomp_r_repeat2_fold9,r,fluidcogcomp,Fluid cognition,0.4362022649949109
+HCP-A_fluidcogcomp_r_repeat3_fold0,r,fluidcogcomp,Fluid cognition,0.36878244061354704
+HCP-A_fluidcogcomp_r_repeat3_fold1,r,fluidcogcomp,Fluid cognition,0.5979980020351053
+HCP-A_fluidcogcomp_r_repeat3_fold2,r,fluidcogcomp,Fluid cognition,0.2752371786997025
+HCP-A_fluidcogcomp_r_repeat3_fold3,r,fluidcogcomp,Fluid cognition,0.30121579105184404
+HCP-A_fluidcogcomp_r_repeat3_fold4,r,fluidcogcomp,Fluid cognition,0.4224186174415114
+HCP-A_fluidcogcomp_r_repeat3_fold5,r,fluidcogcomp,Fluid cognition,0.5316510904604363
+HCP-A_fluidcogcomp_r_repeat3_fold6,r,fluidcogcomp,Fluid cognition,0.5093593865485814
+HCP-A_fluidcogcomp_r_repeat3_fold7,r,fluidcogcomp,Fluid cognition,0.2719756306127797
+HCP-A_fluidcogcomp_r_repeat3_fold8,r,fluidcogcomp,Fluid cognition,0.49604662190166426
+HCP-A_fluidcogcomp_r_repeat3_fold9,r,fluidcogcomp,Fluid cognition,0.4326390241166034
+HCP-A_fluidcogcomp_r_repeat4_fold0,r,fluidcogcomp,Fluid cognition,0.6180704693886613
+HCP-A_fluidcogcomp_r_repeat4_fold1,r,fluidcogcomp,Fluid cognition,0.3698331271705553
+HCP-A_fluidcogcomp_r_repeat4_fold2,r,fluidcogcomp,Fluid cognition,0.5138450632786642
+HCP-A_fluidcogcomp_r_repeat4_fold3,r,fluidcogcomp,Fluid cognition,0.5005734792714044
+HCP-A_fluidcogcomp_r_repeat4_fold4,r,fluidcogcomp,Fluid cognition,0.43620944113758126
+HCP-A_fluidcogcomp_r_repeat4_fold5,r,fluidcogcomp,Fluid cognition,0.5456634134516039
+HCP-A_fluidcogcomp_r_repeat4_fold6,r,fluidcogcomp,Fluid cognition,0.40104318172211517
+HCP-A_fluidcogcomp_r_repeat4_fold7,r,fluidcogcomp,Fluid cognition,0.4754378345783143
+HCP-A_fluidcogcomp_r_repeat4_fold8,r,fluidcogcomp,Fluid cognition,0.4018276992938917
+HCP-A_fluidcogcomp_r_repeat4_fold9,r,fluidcogcomp,Fluid cognition,0.4532028958114301
+HCP-A_fluidcogcomp_r_repeat5_fold0,r,fluidcogcomp,Fluid cognition,0.4227364566352976
+HCP-A_fluidcogcomp_r_repeat5_fold1,r,fluidcogcomp,Fluid cognition,0.4082346991559485
+HCP-A_fluidcogcomp_r_repeat5_fold2,r,fluidcogcomp,Fluid cognition,0.5656440528345402
+HCP-A_fluidcogcomp_r_repeat5_fold3,r,fluidcogcomp,Fluid cognition,0.2990904287445985
+HCP-A_fluidcogcomp_r_repeat5_fold4,r,fluidcogcomp,Fluid cognition,0.42472703541233264
+HCP-A_fluidcogcomp_r_repeat5_fold5,r,fluidcogcomp,Fluid cognition,0.3170249979486682
+HCP-A_fluidcogcomp_r_repeat5_fold6,r,fluidcogcomp,Fluid cognition,0.4418158254037361
+HCP-A_fluidcogcomp_r_repeat5_fold7,r,fluidcogcomp,Fluid cognition,0.47656156233911634
+HCP-A_fluidcogcomp_r_repeat5_fold8,r,fluidcogcomp,Fluid cognition,0.35760358646393886
+HCP-A_fluidcogcomp_r_repeat5_fold9,r,fluidcogcomp,Fluid cognition,0.4875987788824335
+HCP-A_fluidcogcomp_r_repeat6_fold0,r,fluidcogcomp,Fluid cognition,0.4785341860712722
+HCP-A_fluidcogcomp_r_repeat6_fold1,r,fluidcogcomp,Fluid cognition,0.5100267498045571
+HCP-A_fluidcogcomp_r_repeat6_fold2,r,fluidcogcomp,Fluid cognition,0.41640488493128275
+HCP-A_fluidcogcomp_r_repeat6_fold3,r,fluidcogcomp,Fluid cognition,0.5145103121624944
+HCP-A_fluidcogcomp_r_repeat6_fold4,r,fluidcogcomp,Fluid cognition,0.3661576285000855
+HCP-A_fluidcogcomp_r_repeat6_fold5,r,fluidcogcomp,Fluid cognition,0.5237665268090468
+HCP-A_fluidcogcomp_r_repeat6_fold6,r,fluidcogcomp,Fluid cognition,0.3356229638702321
+HCP-A_fluidcogcomp_r_repeat6_fold7,r,fluidcogcomp,Fluid cognition,0.36178218289805764
+HCP-A_fluidcogcomp_r_repeat6_fold8,r,fluidcogcomp,Fluid cognition,0.4248260311419068
+HCP-A_fluidcogcomp_r_repeat6_fold9,r,fluidcogcomp,Fluid cognition,0.467931113010886
+HCP-A_fluidcogcomp_r_repeat7_fold0,r,fluidcogcomp,Fluid cognition,0.5575441018036092
+HCP-A_fluidcogcomp_r_repeat7_fold1,r,fluidcogcomp,Fluid cognition,0.48232679185110344
+HCP-A_fluidcogcomp_r_repeat7_fold2,r,fluidcogcomp,Fluid cognition,0.3800890605745899
+HCP-A_fluidcogcomp_r_repeat7_fold3,r,fluidcogcomp,Fluid cognition,0.42570359650454337
+HCP-A_fluidcogcomp_r_repeat7_fold4,r,fluidcogcomp,Fluid cognition,0.5320934056852606
+HCP-A_fluidcogcomp_r_repeat7_fold5,r,fluidcogcomp,Fluid cognition,0.2439188315869379
+HCP-A_fluidcogcomp_r_repeat7_fold6,r,fluidcogcomp,Fluid cognition,0.5171503639284847
+HCP-A_fluidcogcomp_r_repeat7_fold7,r,fluidcogcomp,Fluid cognition,0.5695769727976867
+HCP-A_fluidcogcomp_r_repeat7_fold8,r,fluidcogcomp,Fluid cognition,0.3445333118615254
+HCP-A_fluidcogcomp_r_repeat7_fold9,r,fluidcogcomp,Fluid cognition,0.5607969452239512
+HCP-A_fluidcogcomp_r_repeat8_fold0,r,fluidcogcomp,Fluid cognition,0.3800942054478898
+HCP-A_fluidcogcomp_r_repeat8_fold1,r,fluidcogcomp,Fluid cognition,0.5533154979006859
+HCP-A_fluidcogcomp_r_repeat8_fold2,r,fluidcogcomp,Fluid cognition,0.41608374286560657
+HCP-A_fluidcogcomp_r_repeat8_fold3,r,fluidcogcomp,Fluid cognition,0.32776946395089646
+HCP-A_fluidcogcomp_r_repeat8_fold4,r,fluidcogcomp,Fluid cognition,0.47673176931281513
+HCP-A_fluidcogcomp_r_repeat8_fold5,r,fluidcogcomp,Fluid cognition,0.22483366662268559
+HCP-A_fluidcogcomp_r_repeat8_fold6,r,fluidcogcomp,Fluid cognition,0.37974847446196586
+HCP-A_fluidcogcomp_r_repeat8_fold7,r,fluidcogcomp,Fluid cognition,0.4074806153039744
+HCP-A_fluidcogcomp_r_repeat8_fold8,r,fluidcogcomp,Fluid cognition,0.46470490835890915
+HCP-A_fluidcogcomp_r_repeat8_fold9,r,fluidcogcomp,Fluid cognition,0.6176724685790053
+HCP-A_fluidcogcomp_r_repeat9_fold0,r,fluidcogcomp,Fluid cognition,0.4527455609692423
+HCP-A_fluidcogcomp_r_repeat9_fold1,r,fluidcogcomp,Fluid cognition,0.5904509391977841
+HCP-A_fluidcogcomp_r_repeat9_fold2,r,fluidcogcomp,Fluid cognition,0.5707171809929119
+HCP-A_fluidcogcomp_r_repeat9_fold3,r,fluidcogcomp,Fluid cognition,0.44694010414688634
+HCP-A_fluidcogcomp_r_repeat9_fold4,r,fluidcogcomp,Fluid cognition,0.5004528919028797
+HCP-A_fluidcogcomp_r_repeat9_fold5,r,fluidcogcomp,Fluid cognition,0.4490648931854813
+HCP-A_fluidcogcomp_r_repeat9_fold6,r,fluidcogcomp,Fluid cognition,0.421888514200248
+HCP-A_fluidcogcomp_r_repeat9_fold7,r,fluidcogcomp,Fluid cognition,0.4987084408867319
+HCP-A_fluidcogcomp_r_repeat9_fold8,r,fluidcogcomp,Fluid cognition,0.3771889412700055
+HCP-A_fluidcogcomp_r_repeat9_fold9,r,fluidcogcomp,Fluid cognition,0.4585193763653247
+HCP-A_reading_r_repeat0_fold0,r,reading,Reading,0.3533796752922257
+HCP-A_reading_r_repeat0_fold1,r,reading,Reading,0.3236663625124098
+HCP-A_reading_r_repeat0_fold2,r,reading,Reading,0.34538323858784675
+HCP-A_reading_r_repeat0_fold3,r,reading,Reading,0.32611608014865945
+HCP-A_reading_r_repeat0_fold4,r,reading,Reading,0.19180654390150192
+HCP-A_reading_r_repeat0_fold5,r,reading,Reading,0.43937234918688145
+HCP-A_reading_r_repeat0_fold6,r,reading,Reading,0.35149421636926187
+HCP-A_reading_r_repeat0_fold7,r,reading,Reading,0.3361003045256537
+HCP-A_reading_r_repeat0_fold8,r,reading,Reading,0.2535483203692667
+HCP-A_reading_r_repeat0_fold9,r,reading,Reading,0.42575232348459885
+HCP-A_reading_r_repeat1_fold0,r,reading,Reading,0.38115075248301017
+HCP-A_reading_r_repeat1_fold1,r,reading,Reading,0.23111333621148156
+HCP-A_reading_r_repeat1_fold2,r,reading,Reading,0.5331626626703535
+HCP-A_reading_r_repeat1_fold3,r,reading,Reading,0.2168275248139842
+HCP-A_reading_r_repeat1_fold4,r,reading,Reading,0.4355032788083652
+HCP-A_reading_r_repeat1_fold5,r,reading,Reading,0.4996841422043468
+HCP-A_reading_r_repeat1_fold6,r,reading,Reading,0.3988295604681699
+HCP-A_reading_r_repeat1_fold7,r,reading,Reading,0.18675121227800326
+HCP-A_reading_r_repeat1_fold8,r,reading,Reading,0.1946283099271356
+HCP-A_reading_r_repeat1_fold9,r,reading,Reading,0.41576028930262054
+HCP-A_reading_r_repeat2_fold0,r,reading,Reading,0.4691037376782278
+HCP-A_reading_r_repeat2_fold1,r,reading,Reading,0.2821406587941657
+HCP-A_reading_r_repeat2_fold2,r,reading,Reading,0.38648713178383315
+HCP-A_reading_r_repeat2_fold3,r,reading,Reading,0.3313235811037451
+HCP-A_reading_r_repeat2_fold4,r,reading,Reading,0.4031248536111273
+HCP-A_reading_r_repeat2_fold5,r,reading,Reading,0.36862731925798575
+HCP-A_reading_r_repeat2_fold6,r,reading,Reading,0.25764741083651216
+HCP-A_reading_r_repeat2_fold7,r,reading,Reading,0.447709796910166
+HCP-A_reading_r_repeat2_fold8,r,reading,Reading,0.34755509337724233
+HCP-A_reading_r_repeat2_fold9,r,reading,Reading,0.5421280588133177
+HCP-A_reading_r_repeat3_fold0,r,reading,Reading,0.45728975389702964
+HCP-A_reading_r_repeat3_fold1,r,reading,Reading,0.4472904872840733
+HCP-A_reading_r_repeat3_fold2,r,reading,Reading,0.418085837701776
+HCP-A_reading_r_repeat3_fold3,r,reading,Reading,0.3702553295842995
+HCP-A_reading_r_repeat3_fold4,r,reading,Reading,0.25814813922061114
+HCP-A_reading_r_repeat3_fold5,r,reading,Reading,0.25339798670291924
+HCP-A_reading_r_repeat3_fold6,r,reading,Reading,0.4315954404735632
+HCP-A_reading_r_repeat3_fold7,r,reading,Reading,0.42827701003591606
+HCP-A_reading_r_repeat3_fold8,r,reading,Reading,0.38760477469809856
+HCP-A_reading_r_repeat3_fold9,r,reading,Reading,0.38585326854419655
+HCP-A_reading_r_repeat4_fold0,r,reading,Reading,0.25581938681272165
+HCP-A_reading_r_repeat4_fold1,r,reading,Reading,0.3204303059893592
+HCP-A_reading_r_repeat4_fold2,r,reading,Reading,0.3604116823264636
+HCP-A_reading_r_repeat4_fold3,r,reading,Reading,0.2158029380038356
+HCP-A_reading_r_repeat4_fold4,r,reading,Reading,0.42598085871488295
+HCP-A_reading_r_repeat4_fold5,r,reading,Reading,0.34463946539699597
+HCP-A_reading_r_repeat4_fold6,r,reading,Reading,0.284476101621923
+HCP-A_reading_r_repeat4_fold7,r,reading,Reading,0.5769847912716324
+HCP-A_reading_r_repeat4_fold8,r,reading,Reading,0.265185954434533
+HCP-A_reading_r_repeat4_fold9,r,reading,Reading,0.41640938029844565
+HCP-A_reading_r_repeat5_fold0,r,reading,Reading,0.3613763667870279
+HCP-A_reading_r_repeat5_fold1,r,reading,Reading,0.2177083883180843
+HCP-A_reading_r_repeat5_fold2,r,reading,Reading,0.36214908946169655
+HCP-A_reading_r_repeat5_fold3,r,reading,Reading,0.4137052626294746
+HCP-A_reading_r_repeat5_fold4,r,reading,Reading,0.3992615890664363
+HCP-A_reading_r_repeat5_fold5,r,reading,Reading,0.3870433541532458
+HCP-A_reading_r_repeat5_fold6,r,reading,Reading,0.5059397425298202
+HCP-A_reading_r_repeat5_fold7,r,reading,Reading,0.4893943379384619
+HCP-A_reading_r_repeat5_fold8,r,reading,Reading,0.3985951369782602
+HCP-A_reading_r_repeat5_fold9,r,reading,Reading,0.1933475309807273
+HCP-A_reading_r_repeat6_fold0,r,reading,Reading,0.5828218283981677
+HCP-A_reading_r_repeat6_fold1,r,reading,Reading,0.2466417567819708
+HCP-A_reading_r_repeat6_fold2,r,reading,Reading,0.34891756013722564
+HCP-A_reading_r_repeat6_fold3,r,reading,Reading,0.3612309018492919
+HCP-A_reading_r_repeat6_fold4,r,reading,Reading,0.39120856713352403
+HCP-A_reading_r_repeat6_fold5,r,reading,Reading,0.29674616427740724
+HCP-A_reading_r_repeat6_fold6,r,reading,Reading,0.45015907993190524
+HCP-A_reading_r_repeat6_fold7,r,reading,Reading,0.42847205510378344
+HCP-A_reading_r_repeat6_fold8,r,reading,Reading,0.5489751922739009
+HCP-A_reading_r_repeat6_fold9,r,reading,Reading,0.4190103947911526
+HCP-A_reading_r_repeat7_fold0,r,reading,Reading,0.27931750945406925
+HCP-A_reading_r_repeat7_fold1,r,reading,Reading,0.23950961921033206
+HCP-A_reading_r_repeat7_fold2,r,reading,Reading,0.4258763973700062
+HCP-A_reading_r_repeat7_fold3,r,reading,Reading,0.2443279559342976
+HCP-A_reading_r_repeat7_fold4,r,reading,Reading,0.504100343123945
+HCP-A_reading_r_repeat7_fold5,r,reading,Reading,0.3487914000254533
+HCP-A_reading_r_repeat7_fold6,r,reading,Reading,0.5037967156502529
+HCP-A_reading_r_repeat7_fold7,r,reading,Reading,0.2933388459768621
+HCP-A_reading_r_repeat7_fold8,r,reading,Reading,0.26319479995897926
+HCP-A_reading_r_repeat7_fold9,r,reading,Reading,0.4760501387439758
+HCP-A_reading_r_repeat8_fold0,r,reading,Reading,0.38617027002408644
+HCP-A_reading_r_repeat8_fold1,r,reading,Reading,0.5028353119012996
+HCP-A_reading_r_repeat8_fold2,r,reading,Reading,0.25756586105935275
+HCP-A_reading_r_repeat8_fold3,r,reading,Reading,0.37203368752203764
+HCP-A_reading_r_repeat8_fold4,r,reading,Reading,0.3545208229591254
+HCP-A_reading_r_repeat8_fold5,r,reading,Reading,0.4764361190791143
+HCP-A_reading_r_repeat8_fold6,r,reading,Reading,0.1413030472946768
+HCP-A_reading_r_repeat8_fold7,r,reading,Reading,0.37243238325739897
+HCP-A_reading_r_repeat8_fold8,r,reading,Reading,0.3509482951726648
+HCP-A_reading_r_repeat8_fold9,r,reading,Reading,0.2459559828850375
+HCP-A_reading_r_repeat9_fold0,r,reading,Reading,0.4182415874576325
+HCP-A_reading_r_repeat9_fold1,r,reading,Reading,0.350405619755177
+HCP-A_reading_r_repeat9_fold2,r,reading,Reading,0.37917514006344205
+HCP-A_reading_r_repeat9_fold3,r,reading,Reading,0.34343635063144395
+HCP-A_reading_r_repeat9_fold4,r,reading,Reading,0.48752594931385956
+HCP-A_reading_r_repeat9_fold5,r,reading,Reading,0.3636417639285197
+HCP-A_reading_r_repeat9_fold6,r,reading,Reading,0.21110416031623877
+HCP-A_reading_r_repeat9_fold7,r,reading,Reading,0.3551539779897141
+HCP-A_reading_r_repeat9_fold8,r,reading,Reading,0.42856200721253396
+HCP-A_reading_r_repeat9_fold9,r,reading,Reading,0.4267670734024401
+HCP-A_picvocab_r_repeat0_fold0,r,picvocab,Picture vocabulary,0.4538089186715998
+HCP-A_picvocab_r_repeat0_fold1,r,picvocab,Picture vocabulary,0.4242271042547331
+HCP-A_picvocab_r_repeat0_fold2,r,picvocab,Picture vocabulary,0.4742537998960111
+HCP-A_picvocab_r_repeat0_fold3,r,picvocab,Picture vocabulary,0.5266194800207339
+HCP-A_picvocab_r_repeat0_fold4,r,picvocab,Picture vocabulary,0.461122943456707
+HCP-A_picvocab_r_repeat0_fold5,r,picvocab,Picture vocabulary,0.5892446761573495
+HCP-A_picvocab_r_repeat0_fold6,r,picvocab,Picture vocabulary,0.5474729302238543
+HCP-A_picvocab_r_repeat0_fold7,r,picvocab,Picture vocabulary,0.37900790005814006
+HCP-A_picvocab_r_repeat0_fold8,r,picvocab,Picture vocabulary,0.23222348132283155
+HCP-A_picvocab_r_repeat0_fold9,r,picvocab,Picture vocabulary,0.5020114126080744
+HCP-A_picvocab_r_repeat1_fold0,r,picvocab,Picture vocabulary,0.4462792970435879
+HCP-A_picvocab_r_repeat1_fold1,r,picvocab,Picture vocabulary,0.35949569231774947
+HCP-A_picvocab_r_repeat1_fold2,r,picvocab,Picture vocabulary,0.3162839605892167
+HCP-A_picvocab_r_repeat1_fold3,r,picvocab,Picture vocabulary,0.48775304007749803
+HCP-A_picvocab_r_repeat1_fold4,r,picvocab,Picture vocabulary,0.4487818381514331
+HCP-A_picvocab_r_repeat1_fold5,r,picvocab,Picture vocabulary,0.5649179084681534
+HCP-A_picvocab_r_repeat1_fold6,r,picvocab,Picture vocabulary,0.3096114695300299
+HCP-A_picvocab_r_repeat1_fold7,r,picvocab,Picture vocabulary,0.4958174144939161
+HCP-A_picvocab_r_repeat1_fold8,r,picvocab,Picture vocabulary,0.43459912195825984
+HCP-A_picvocab_r_repeat1_fold9,r,picvocab,Picture vocabulary,0.44812873286273197
+HCP-A_picvocab_r_repeat2_fold0,r,picvocab,Picture vocabulary,0.37120425116309697
+HCP-A_picvocab_r_repeat2_fold1,r,picvocab,Picture vocabulary,0.2484342419122328
+HCP-A_picvocab_r_repeat2_fold2,r,picvocab,Picture vocabulary,0.552984122877688
+HCP-A_picvocab_r_repeat2_fold3,r,picvocab,Picture vocabulary,0.36678892699819926
+HCP-A_picvocab_r_repeat2_fold4,r,picvocab,Picture vocabulary,0.27907049637106274
+HCP-A_picvocab_r_repeat2_fold5,r,picvocab,Picture vocabulary,0.3805799085826352
+HCP-A_picvocab_r_repeat2_fold6,r,picvocab,Picture vocabulary,0.48763356591330465
+HCP-A_picvocab_r_repeat2_fold7,r,picvocab,Picture vocabulary,0.5213874698440468
+HCP-A_picvocab_r_repeat2_fold8,r,picvocab,Picture vocabulary,0.3511753658091511
+HCP-A_picvocab_r_repeat2_fold9,r,picvocab,Picture vocabulary,0.5533584381173712
+HCP-A_picvocab_r_repeat3_fold0,r,picvocab,Picture vocabulary,0.41740183167857464
+HCP-A_picvocab_r_repeat3_fold1,r,picvocab,Picture vocabulary,0.42313036845139795
+HCP-A_picvocab_r_repeat3_fold2,r,picvocab,Picture vocabulary,0.43485766804721
+HCP-A_picvocab_r_repeat3_fold3,r,picvocab,Picture vocabulary,0.43632155468674644
+HCP-A_picvocab_r_repeat3_fold4,r,picvocab,Picture vocabulary,0.2988319010843944
+HCP-A_picvocab_r_repeat3_fold5,r,picvocab,Picture vocabulary,0.4462508266155033
+HCP-A_picvocab_r_repeat3_fold6,r,picvocab,Picture vocabulary,0.4873300948382376
+HCP-A_picvocab_r_repeat3_fold7,r,picvocab,Picture vocabulary,0.4493219933753898
+HCP-A_picvocab_r_repeat3_fold8,r,picvocab,Picture vocabulary,0.4492019162793317
+HCP-A_picvocab_r_repeat3_fold9,r,picvocab,Picture vocabulary,0.519117566492477
+HCP-A_picvocab_r_repeat4_fold0,r,picvocab,Picture vocabulary,0.3988462576885454
+HCP-A_picvocab_r_repeat4_fold1,r,picvocab,Picture vocabulary,0.34105681719981573
+HCP-A_picvocab_r_repeat4_fold2,r,picvocab,Picture vocabulary,0.5060230869333299
+HCP-A_picvocab_r_repeat4_fold3,r,picvocab,Picture vocabulary,0.4081279166295953
+HCP-A_picvocab_r_repeat4_fold4,r,picvocab,Picture vocabulary,0.5773839484433517
+HCP-A_picvocab_r_repeat4_fold5,r,picvocab,Picture vocabulary,0.34748138365577425
+HCP-A_picvocab_r_repeat4_fold6,r,picvocab,Picture vocabulary,0.5797169751483258
+HCP-A_picvocab_r_repeat4_fold7,r,picvocab,Picture vocabulary,0.30843497199030534
+HCP-A_picvocab_r_repeat4_fold8,r,picvocab,Picture vocabulary,0.5825963742725779
+HCP-A_picvocab_r_repeat4_fold9,r,picvocab,Picture vocabulary,0.3178715925953171
+HCP-A_picvocab_r_repeat5_fold0,r,picvocab,Picture vocabulary,0.5604273873106028
+HCP-A_picvocab_r_repeat5_fold1,r,picvocab,Picture vocabulary,0.39559041914763865
+HCP-A_picvocab_r_repeat5_fold2,r,picvocab,Picture vocabulary,0.47109004624981904
+HCP-A_picvocab_r_repeat5_fold3,r,picvocab,Picture vocabulary,0.5341617857295442
+HCP-A_picvocab_r_repeat5_fold4,r,picvocab,Picture vocabulary,0.39072638438880164
+HCP-A_picvocab_r_repeat5_fold5,r,picvocab,Picture vocabulary,0.3785387869005299
+HCP-A_picvocab_r_repeat5_fold6,r,picvocab,Picture vocabulary,0.4876744820241217
+HCP-A_picvocab_r_repeat5_fold7,r,picvocab,Picture vocabulary,0.280363232374813
+HCP-A_picvocab_r_repeat5_fold8,r,picvocab,Picture vocabulary,0.27124317770624695
+HCP-A_picvocab_r_repeat5_fold9,r,picvocab,Picture vocabulary,0.5266116609846947
+HCP-A_picvocab_r_repeat6_fold0,r,picvocab,Picture vocabulary,0.2661184865805214
+HCP-A_picvocab_r_repeat6_fold1,r,picvocab,Picture vocabulary,0.5159245085432037
+HCP-A_picvocab_r_repeat6_fold2,r,picvocab,Picture vocabulary,0.5388681718266793
+HCP-A_picvocab_r_repeat6_fold3,r,picvocab,Picture vocabulary,0.29542538306217814
+HCP-A_picvocab_r_repeat6_fold4,r,picvocab,Picture vocabulary,0.3374308020046549
+HCP-A_picvocab_r_repeat6_fold5,r,picvocab,Picture vocabulary,0.4335794706110157
+HCP-A_picvocab_r_repeat6_fold6,r,picvocab,Picture vocabulary,0.4274908997476839
+HCP-A_picvocab_r_repeat6_fold7,r,picvocab,Picture vocabulary,0.5179607481440487
+HCP-A_picvocab_r_repeat6_fold8,r,picvocab,Picture vocabulary,0.44196545568395806
+HCP-A_picvocab_r_repeat6_fold9,r,picvocab,Picture vocabulary,0.21019942646775305
+HCP-A_picvocab_r_repeat7_fold0,r,picvocab,Picture vocabulary,0.4162619709561509
+HCP-A_picvocab_r_repeat7_fold1,r,picvocab,Picture vocabulary,0.4424576798320072
+HCP-A_picvocab_r_repeat7_fold2,r,picvocab,Picture vocabulary,0.523088753520467
+HCP-A_picvocab_r_repeat7_fold3,r,picvocab,Picture vocabulary,0.38258409485201017
+HCP-A_picvocab_r_repeat7_fold4,r,picvocab,Picture vocabulary,0.5057806882296382
+HCP-A_picvocab_r_repeat7_fold5,r,picvocab,Picture vocabulary,0.46269357914119563
+HCP-A_picvocab_r_repeat7_fold6,r,picvocab,Picture vocabulary,0.3063325744320068
+HCP-A_picvocab_r_repeat7_fold7,r,picvocab,Picture vocabulary,0.4147776456339207
+HCP-A_picvocab_r_repeat7_fold8,r,picvocab,Picture vocabulary,0.3007406394887338
+HCP-A_picvocab_r_repeat7_fold9,r,picvocab,Picture vocabulary,0.46917785981187027
+HCP-A_picvocab_r_repeat8_fold0,r,picvocab,Picture vocabulary,0.5813047622945523
+HCP-A_picvocab_r_repeat8_fold1,r,picvocab,Picture vocabulary,0.5518521411999868
+HCP-A_picvocab_r_repeat8_fold2,r,picvocab,Picture vocabulary,0.42028854735076504
+HCP-A_picvocab_r_repeat8_fold3,r,picvocab,Picture vocabulary,0.42185252399223727
+HCP-A_picvocab_r_repeat8_fold4,r,picvocab,Picture vocabulary,0.5404671812610838
+HCP-A_picvocab_r_repeat8_fold5,r,picvocab,Picture vocabulary,0.43306754311191015
+HCP-A_picvocab_r_repeat8_fold6,r,picvocab,Picture vocabulary,0.33789317617570624
+HCP-A_picvocab_r_repeat8_fold7,r,picvocab,Picture vocabulary,0.5023358825381855
+HCP-A_picvocab_r_repeat8_fold8,r,picvocab,Picture vocabulary,0.34007864730443366
+HCP-A_picvocab_r_repeat8_fold9,r,picvocab,Picture vocabulary,0.47312394878560543
+HCP-A_picvocab_r_repeat9_fold0,r,picvocab,Picture vocabulary,0.4536218031766056
+HCP-A_picvocab_r_repeat9_fold1,r,picvocab,Picture vocabulary,0.43677247950350284
+HCP-A_picvocab_r_repeat9_fold2,r,picvocab,Picture vocabulary,0.4610239897588489
+HCP-A_picvocab_r_repeat9_fold3,r,picvocab,Picture vocabulary,0.5317617525840843
+HCP-A_picvocab_r_repeat9_fold4,r,picvocab,Picture vocabulary,0.3270366247744497
+HCP-A_picvocab_r_repeat9_fold5,r,picvocab,Picture vocabulary,0.36729457201762
+HCP-A_picvocab_r_repeat9_fold6,r,picvocab,Picture vocabulary,0.32927470405047604
+HCP-A_picvocab_r_repeat9_fold7,r,picvocab,Picture vocabulary,0.558753313627866
+HCP-A_picvocab_r_repeat9_fold8,r,picvocab,Picture vocabulary,0.5613211197886663
+HCP-A_picvocab_r_repeat9_fold9,r,picvocab,Picture vocabulary,0.2767484934866302
+HCP-A_totalcogcomp_cod_repeat0_fold0,cod,totalcogcomp,Total cognition,0.2939348617509042
+HCP-A_totalcogcomp_cod_repeat0_fold1,cod,totalcogcomp,Total cognition,0.31847801219210436
+HCP-A_totalcogcomp_cod_repeat0_fold2,cod,totalcogcomp,Total cognition,0.17347597459971886
+HCP-A_totalcogcomp_cod_repeat0_fold3,cod,totalcogcomp,Total cognition,0.34777857007000723
+HCP-A_totalcogcomp_cod_repeat0_fold4,cod,totalcogcomp,Total cognition,0.25930354550787327
+HCP-A_totalcogcomp_cod_repeat0_fold5,cod,totalcogcomp,Total cognition,0.16864493969105854
+HCP-A_totalcogcomp_cod_repeat0_fold6,cod,totalcogcomp,Total cognition,0.06737194250030798
+HCP-A_totalcogcomp_cod_repeat0_fold7,cod,totalcogcomp,Total cognition,0.25598507933460113
+HCP-A_totalcogcomp_cod_repeat0_fold8,cod,totalcogcomp,Total cognition,0.28282721223985574
+HCP-A_totalcogcomp_cod_repeat0_fold9,cod,totalcogcomp,Total cognition,0.38493958592367405
+HCP-A_totalcogcomp_cod_repeat1_fold0,cod,totalcogcomp,Total cognition,0.3121764662679062
+HCP-A_totalcogcomp_cod_repeat1_fold1,cod,totalcogcomp,Total cognition,0.3493272374756703
+HCP-A_totalcogcomp_cod_repeat1_fold2,cod,totalcogcomp,Total cognition,0.14642948520673482
+HCP-A_totalcogcomp_cod_repeat1_fold3,cod,totalcogcomp,Total cognition,0.24744857198144132
+HCP-A_totalcogcomp_cod_repeat1_fold4,cod,totalcogcomp,Total cognition,0.3552855900519932
+HCP-A_totalcogcomp_cod_repeat1_fold5,cod,totalcogcomp,Total cognition,0.340602239748124
+HCP-A_totalcogcomp_cod_repeat1_fold6,cod,totalcogcomp,Total cognition,0.3077726995907071
+HCP-A_totalcogcomp_cod_repeat1_fold7,cod,totalcogcomp,Total cognition,0.05462511841487527
+HCP-A_totalcogcomp_cod_repeat1_fold8,cod,totalcogcomp,Total cognition,0.3361145864923353
+HCP-A_totalcogcomp_cod_repeat1_fold9,cod,totalcogcomp,Total cognition,0.40316678086709934
+HCP-A_totalcogcomp_cod_repeat2_fold0,cod,totalcogcomp,Total cognition,0.3204464571481751
+HCP-A_totalcogcomp_cod_repeat2_fold1,cod,totalcogcomp,Total cognition,0.21868445813301396
+HCP-A_totalcogcomp_cod_repeat2_fold2,cod,totalcogcomp,Total cognition,0.35476872265368653
+HCP-A_totalcogcomp_cod_repeat2_fold3,cod,totalcogcomp,Total cognition,0.2363182689411567
+HCP-A_totalcogcomp_cod_repeat2_fold4,cod,totalcogcomp,Total cognition,0.29273000180983066
+HCP-A_totalcogcomp_cod_repeat2_fold5,cod,totalcogcomp,Total cognition,0.3913470763037429
+HCP-A_totalcogcomp_cod_repeat2_fold6,cod,totalcogcomp,Total cognition,0.1145256663609473
+HCP-A_totalcogcomp_cod_repeat2_fold7,cod,totalcogcomp,Total cognition,0.27986067066926923
+HCP-A_totalcogcomp_cod_repeat2_fold8,cod,totalcogcomp,Total cognition,0.2590003755562911
+HCP-A_totalcogcomp_cod_repeat2_fold9,cod,totalcogcomp,Total cognition,0.3213277621842714
+HCP-A_totalcogcomp_cod_repeat3_fold0,cod,totalcogcomp,Total cognition,0.19412071993365854
+HCP-A_totalcogcomp_cod_repeat3_fold1,cod,totalcogcomp,Total cognition,0.1628216572128932
+HCP-A_totalcogcomp_cod_repeat3_fold2,cod,totalcogcomp,Total cognition,0.24769385888754647
+HCP-A_totalcogcomp_cod_repeat3_fold3,cod,totalcogcomp,Total cognition,0.1837188158165749
+HCP-A_totalcogcomp_cod_repeat3_fold4,cod,totalcogcomp,Total cognition,0.21399251632674643
+HCP-A_totalcogcomp_cod_repeat3_fold5,cod,totalcogcomp,Total cognition,0.2870765278792078
+HCP-A_totalcogcomp_cod_repeat3_fold6,cod,totalcogcomp,Total cognition,0.37935105762539023
+HCP-A_totalcogcomp_cod_repeat3_fold7,cod,totalcogcomp,Total cognition,0.2312383224998048
+HCP-A_totalcogcomp_cod_repeat3_fold8,cod,totalcogcomp,Total cognition,0.3397244997331197
+HCP-A_totalcogcomp_cod_repeat3_fold9,cod,totalcogcomp,Total cognition,0.33919035368056805
+HCP-A_totalcogcomp_cod_repeat4_fold0,cod,totalcogcomp,Total cognition,0.4254881950361572
+HCP-A_totalcogcomp_cod_repeat4_fold1,cod,totalcogcomp,Total cognition,0.21561969458171848
+HCP-A_totalcogcomp_cod_repeat4_fold2,cod,totalcogcomp,Total cognition,0.29502484851722
+HCP-A_totalcogcomp_cod_repeat4_fold3,cod,totalcogcomp,Total cognition,0.24405955001299395
+HCP-A_totalcogcomp_cod_repeat4_fold4,cod,totalcogcomp,Total cognition,0.283854249994021
+HCP-A_totalcogcomp_cod_repeat4_fold5,cod,totalcogcomp,Total cognition,0.2580673411756146
+HCP-A_totalcogcomp_cod_repeat4_fold6,cod,totalcogcomp,Total cognition,0.19044585988245577
+HCP-A_totalcogcomp_cod_repeat4_fold7,cod,totalcogcomp,Total cognition,0.2858024413597684
+HCP-A_totalcogcomp_cod_repeat4_fold8,cod,totalcogcomp,Total cognition,0.24097800312008033
+HCP-A_totalcogcomp_cod_repeat4_fold9,cod,totalcogcomp,Total cognition,0.3669574217763262
+HCP-A_totalcogcomp_cod_repeat5_fold0,cod,totalcogcomp,Total cognition,0.408998201617633
+HCP-A_totalcogcomp_cod_repeat5_fold1,cod,totalcogcomp,Total cognition,0.36237041118765556
+HCP-A_totalcogcomp_cod_repeat5_fold2,cod,totalcogcomp,Total cognition,0.23852260497115607
+HCP-A_totalcogcomp_cod_repeat5_fold3,cod,totalcogcomp,Total cognition,0.32644118139597644
+HCP-A_totalcogcomp_cod_repeat5_fold4,cod,totalcogcomp,Total cognition,0.17434148396949056
+HCP-A_totalcogcomp_cod_repeat5_fold5,cod,totalcogcomp,Total cognition,0.36096411457823996
+HCP-A_totalcogcomp_cod_repeat5_fold6,cod,totalcogcomp,Total cognition,0.39052924057133875
+HCP-A_totalcogcomp_cod_repeat5_fold7,cod,totalcogcomp,Total cognition,0.16428653329343945
+HCP-A_totalcogcomp_cod_repeat5_fold8,cod,totalcogcomp,Total cognition,0.4309206978845569
+HCP-A_totalcogcomp_cod_repeat5_fold9,cod,totalcogcomp,Total cognition,0.134831559164868
+HCP-A_totalcogcomp_cod_repeat6_fold0,cod,totalcogcomp,Total cognition,0.2962478223697331
+HCP-A_totalcogcomp_cod_repeat6_fold1,cod,totalcogcomp,Total cognition,0.32887373293418143
+HCP-A_totalcogcomp_cod_repeat6_fold2,cod,totalcogcomp,Total cognition,0.025000851806878943
+HCP-A_totalcogcomp_cod_repeat6_fold3,cod,totalcogcomp,Total cognition,0.21935503020216995
+HCP-A_totalcogcomp_cod_repeat6_fold4,cod,totalcogcomp,Total cognition,0.12682387465321432
+HCP-A_totalcogcomp_cod_repeat6_fold5,cod,totalcogcomp,Total cognition,0.41847272718675177
+HCP-A_totalcogcomp_cod_repeat6_fold6,cod,totalcogcomp,Total cognition,0.2856199023248629
+HCP-A_totalcogcomp_cod_repeat6_fold7,cod,totalcogcomp,Total cognition,0.3627982323028929
+HCP-A_totalcogcomp_cod_repeat6_fold8,cod,totalcogcomp,Total cognition,0.12842906354921002
+HCP-A_totalcogcomp_cod_repeat6_fold9,cod,totalcogcomp,Total cognition,0.34931968870804553
+HCP-A_totalcogcomp_cod_repeat7_fold0,cod,totalcogcomp,Total cognition,0.25689939319126676
+HCP-A_totalcogcomp_cod_repeat7_fold1,cod,totalcogcomp,Total cognition,-0.007901248820625373
+HCP-A_totalcogcomp_cod_repeat7_fold2,cod,totalcogcomp,Total cognition,0.33764482897807013
+HCP-A_totalcogcomp_cod_repeat7_fold3,cod,totalcogcomp,Total cognition,0.38390963476191775
+HCP-A_totalcogcomp_cod_repeat7_fold4,cod,totalcogcomp,Total cognition,0.26098410679336115
+HCP-A_totalcogcomp_cod_repeat7_fold5,cod,totalcogcomp,Total cognition,0.4296876998337914
+HCP-A_totalcogcomp_cod_repeat7_fold6,cod,totalcogcomp,Total cognition,0.008261799986169827
+HCP-A_totalcogcomp_cod_repeat7_fold7,cod,totalcogcomp,Total cognition,0.3270834342989165
+HCP-A_totalcogcomp_cod_repeat7_fold8,cod,totalcogcomp,Total cognition,0.20509156842084497
+HCP-A_totalcogcomp_cod_repeat7_fold9,cod,totalcogcomp,Total cognition,0.49794564571862376
+HCP-A_totalcogcomp_cod_repeat8_fold0,cod,totalcogcomp,Total cognition,-0.06514519126192586
+HCP-A_totalcogcomp_cod_repeat8_fold1,cod,totalcogcomp,Total cognition,0.1261561598134271
+HCP-A_totalcogcomp_cod_repeat8_fold2,cod,totalcogcomp,Total cognition,0.11229353026659128
+HCP-A_totalcogcomp_cod_repeat8_fold3,cod,totalcogcomp,Total cognition,0.23605851660699273
+HCP-A_totalcogcomp_cod_repeat8_fold4,cod,totalcogcomp,Total cognition,0.1765192313650561
+HCP-A_totalcogcomp_cod_repeat8_fold5,cod,totalcogcomp,Total cognition,0.47227634252466644
+HCP-A_totalcogcomp_cod_repeat8_fold6,cod,totalcogcomp,Total cognition,0.3267339864367883
+HCP-A_totalcogcomp_cod_repeat8_fold7,cod,totalcogcomp,Total cognition,0.27845088037679444
+HCP-A_totalcogcomp_cod_repeat8_fold8,cod,totalcogcomp,Total cognition,0.3604522834148095
+HCP-A_totalcogcomp_cod_repeat8_fold9,cod,totalcogcomp,Total cognition,0.41265032314020955
+HCP-A_totalcogcomp_cod_repeat9_fold0,cod,totalcogcomp,Total cognition,0.10537940082851571
+HCP-A_totalcogcomp_cod_repeat9_fold1,cod,totalcogcomp,Total cognition,0.34237636825585005
+HCP-A_totalcogcomp_cod_repeat9_fold2,cod,totalcogcomp,Total cognition,0.24324555210324383
+HCP-A_totalcogcomp_cod_repeat9_fold3,cod,totalcogcomp,Total cognition,0.2956023794216617
+HCP-A_totalcogcomp_cod_repeat9_fold4,cod,totalcogcomp,Total cognition,0.3033853827530577
+HCP-A_totalcogcomp_cod_repeat9_fold5,cod,totalcogcomp,Total cognition,0.3034578279817962
+HCP-A_totalcogcomp_cod_repeat9_fold6,cod,totalcogcomp,Total cognition,0.2948622537292077
+HCP-A_totalcogcomp_cod_repeat9_fold7,cod,totalcogcomp,Total cognition,0.4280538137069738
+HCP-A_totalcogcomp_cod_repeat9_fold8,cod,totalcogcomp,Total cognition,0.14731599019179764
+HCP-A_totalcogcomp_cod_repeat9_fold9,cod,totalcogcomp,Total cognition,0.21042155393007878
+HCP-A_crycogcomp_cod_repeat0_fold0,cod,crycogcomp,Crystallized cognition,0.10977576164176017
+HCP-A_crycogcomp_cod_repeat0_fold1,cod,crycogcomp,Crystallized cognition,0.1480692694898429
+HCP-A_crycogcomp_cod_repeat0_fold2,cod,crycogcomp,Crystallized cognition,0.21704287060894278
+HCP-A_crycogcomp_cod_repeat0_fold3,cod,crycogcomp,Crystallized cognition,0.16392198085505272
+HCP-A_crycogcomp_cod_repeat0_fold4,cod,crycogcomp,Crystallized cognition,0.1823130895185473
+HCP-A_crycogcomp_cod_repeat0_fold5,cod,crycogcomp,Crystallized cognition,0.29953240613933085
+HCP-A_crycogcomp_cod_repeat0_fold6,cod,crycogcomp,Crystallized cognition,0.22308858848505897
+HCP-A_crycogcomp_cod_repeat0_fold7,cod,crycogcomp,Crystallized cognition,0.18711163109026763
+HCP-A_crycogcomp_cod_repeat0_fold8,cod,crycogcomp,Crystallized cognition,0.0805895053551895
+HCP-A_crycogcomp_cod_repeat0_fold9,cod,crycogcomp,Crystallized cognition,0.25208277899623666
+HCP-A_crycogcomp_cod_repeat1_fold0,cod,crycogcomp,Crystallized cognition,0.20692465843468089
+HCP-A_crycogcomp_cod_repeat1_fold1,cod,crycogcomp,Crystallized cognition,0.21796746750425877
+HCP-A_crycogcomp_cod_repeat1_fold2,cod,crycogcomp,Crystallized cognition,0.09475495391238098
+HCP-A_crycogcomp_cod_repeat1_fold3,cod,crycogcomp,Crystallized cognition,0.23548122331018184
+HCP-A_crycogcomp_cod_repeat1_fold4,cod,crycogcomp,Crystallized cognition,0.3605166401130121
+HCP-A_crycogcomp_cod_repeat1_fold5,cod,crycogcomp,Crystallized cognition,0.2549823583904969
+HCP-A_crycogcomp_cod_repeat1_fold6,cod,crycogcomp,Crystallized cognition,0.13506522904876817
+HCP-A_crycogcomp_cod_repeat1_fold7,cod,crycogcomp,Crystallized cognition,-0.07189093527407486
+HCP-A_crycogcomp_cod_repeat1_fold8,cod,crycogcomp,Crystallized cognition,0.2146185790854559
+HCP-A_crycogcomp_cod_repeat1_fold9,cod,crycogcomp,Crystallized cognition,0.31397934164575914
+HCP-A_crycogcomp_cod_repeat2_fold0,cod,crycogcomp,Crystallized cognition,0.22649327611555525
+HCP-A_crycogcomp_cod_repeat2_fold1,cod,crycogcomp,Crystallized cognition,0.20113808688098
+HCP-A_crycogcomp_cod_repeat2_fold2,cod,crycogcomp,Crystallized cognition,0.2708002766437486
+HCP-A_crycogcomp_cod_repeat2_fold3,cod,crycogcomp,Crystallized cognition,0.09542448417523597
+HCP-A_crycogcomp_cod_repeat2_fold4,cod,crycogcomp,Crystallized cognition,0.13632586184896034
+HCP-A_crycogcomp_cod_repeat2_fold5,cod,crycogcomp,Crystallized cognition,0.3200548858208836
+HCP-A_crycogcomp_cod_repeat2_fold6,cod,crycogcomp,Crystallized cognition,0.23626527912036865
+HCP-A_crycogcomp_cod_repeat2_fold7,cod,crycogcomp,Crystallized cognition,0.1945375361409727
+HCP-A_crycogcomp_cod_repeat2_fold8,cod,crycogcomp,Crystallized cognition,0.16774035333842674
+HCP-A_crycogcomp_cod_repeat2_fold9,cod,crycogcomp,Crystallized cognition,0.25535937905316985
+HCP-A_crycogcomp_cod_repeat3_fold0,cod,crycogcomp,Crystallized cognition,0.26928198177186025
+HCP-A_crycogcomp_cod_repeat3_fold1,cod,crycogcomp,Crystallized cognition,0.1234519784241449
+HCP-A_crycogcomp_cod_repeat3_fold2,cod,crycogcomp,Crystallized cognition,0.07638783779881331
+HCP-A_crycogcomp_cod_repeat3_fold3,cod,crycogcomp,Crystallized cognition,0.18797279461602412
+HCP-A_crycogcomp_cod_repeat3_fold4,cod,crycogcomp,Crystallized cognition,0.18695414532335197
+HCP-A_crycogcomp_cod_repeat3_fold5,cod,crycogcomp,Crystallized cognition,0.1794139255684396
+HCP-A_crycogcomp_cod_repeat3_fold6,cod,crycogcomp,Crystallized cognition,0.3366588289593525
+HCP-A_crycogcomp_cod_repeat3_fold7,cod,crycogcomp,Crystallized cognition,0.14021206277347542
+HCP-A_crycogcomp_cod_repeat3_fold8,cod,crycogcomp,Crystallized cognition,0.28115230430582105
+HCP-A_crycogcomp_cod_repeat3_fold9,cod,crycogcomp,Crystallized cognition,0.2563527803103235
+HCP-A_crycogcomp_cod_repeat4_fold0,cod,crycogcomp,Crystallized cognition,0.23971706508182022
+HCP-A_crycogcomp_cod_repeat4_fold1,cod,crycogcomp,Crystallized cognition,0.14446835790335644
+HCP-A_crycogcomp_cod_repeat4_fold2,cod,crycogcomp,Crystallized cognition,0.1141394793651559
+HCP-A_crycogcomp_cod_repeat4_fold3,cod,crycogcomp,Crystallized cognition,0.17938594732649027
+HCP-A_crycogcomp_cod_repeat4_fold4,cod,crycogcomp,Crystallized cognition,0.27665123731064334
+HCP-A_crycogcomp_cod_repeat4_fold5,cod,crycogcomp,Crystallized cognition,0.22194534743780503
+HCP-A_crycogcomp_cod_repeat4_fold6,cod,crycogcomp,Crystallized cognition,0.2531442225180589
+HCP-A_crycogcomp_cod_repeat4_fold7,cod,crycogcomp,Crystallized cognition,0.17478122908124682
+HCP-A_crycogcomp_cod_repeat4_fold8,cod,crycogcomp,Crystallized cognition,0.24245509426005052
+HCP-A_crycogcomp_cod_repeat4_fold9,cod,crycogcomp,Crystallized cognition,0.24785733215604688
+HCP-A_crycogcomp_cod_repeat5_fold0,cod,crycogcomp,Crystallized cognition,0.283257483345536
+HCP-A_crycogcomp_cod_repeat5_fold1,cod,crycogcomp,Crystallized cognition,0.20723911404957085
+HCP-A_crycogcomp_cod_repeat5_fold2,cod,crycogcomp,Crystallized cognition,0.18293737626373563
+HCP-A_crycogcomp_cod_repeat5_fold3,cod,crycogcomp,Crystallized cognition,0.3148031105177558
+HCP-A_crycogcomp_cod_repeat5_fold4,cod,crycogcomp,Crystallized cognition,0.25568061702460254
+HCP-A_crycogcomp_cod_repeat5_fold5,cod,crycogcomp,Crystallized cognition,0.09338196845729196
+HCP-A_crycogcomp_cod_repeat5_fold6,cod,crycogcomp,Crystallized cognition,0.3320088834087559
+HCP-A_crycogcomp_cod_repeat5_fold7,cod,crycogcomp,Crystallized cognition,0.3003180339805105
+HCP-A_crycogcomp_cod_repeat5_fold8,cod,crycogcomp,Crystallized cognition,0.2767787076371334
+HCP-A_crycogcomp_cod_repeat5_fold9,cod,crycogcomp,Crystallized cognition,0.012776349931679754
+HCP-A_crycogcomp_cod_repeat6_fold0,cod,crycogcomp,Crystallized cognition,0.19412020040205213
+HCP-A_crycogcomp_cod_repeat6_fold1,cod,crycogcomp,Crystallized cognition,0.2453322858837096
+HCP-A_crycogcomp_cod_repeat6_fold2,cod,crycogcomp,Crystallized cognition,0.08947717273966449
+HCP-A_crycogcomp_cod_repeat6_fold3,cod,crycogcomp,Crystallized cognition,0.12384663691498532
+HCP-A_crycogcomp_cod_repeat6_fold4,cod,crycogcomp,Crystallized cognition,0.26071011792347965
+HCP-A_crycogcomp_cod_repeat6_fold5,cod,crycogcomp,Crystallized cognition,0.38384525983532936
+HCP-A_crycogcomp_cod_repeat6_fold6,cod,crycogcomp,Crystallized cognition,0.2472065690326073
+HCP-A_crycogcomp_cod_repeat6_fold7,cod,crycogcomp,Crystallized cognition,0.07858919817770083
+HCP-A_crycogcomp_cod_repeat6_fold8,cod,crycogcomp,Crystallized cognition,0.23460430937871468
+HCP-A_crycogcomp_cod_repeat6_fold9,cod,crycogcomp,Crystallized cognition,0.16249973496039272
+HCP-A_crycogcomp_cod_repeat7_fold0,cod,crycogcomp,Crystallized cognition,0.35163963711044754
+HCP-A_crycogcomp_cod_repeat7_fold1,cod,crycogcomp,Crystallized cognition,0.053526406876702626
+HCP-A_crycogcomp_cod_repeat7_fold2,cod,crycogcomp,Crystallized cognition,0.15698768860637768
+HCP-A_crycogcomp_cod_repeat7_fold3,cod,crycogcomp,Crystallized cognition,0.2721680638666606
+HCP-A_crycogcomp_cod_repeat7_fold4,cod,crycogcomp,Crystallized cognition,0.3420872283771528
+HCP-A_crycogcomp_cod_repeat7_fold5,cod,crycogcomp,Crystallized cognition,0.17829718068701572
+HCP-A_crycogcomp_cod_repeat7_fold6,cod,crycogcomp,Crystallized cognition,0.24080442534270474
+HCP-A_crycogcomp_cod_repeat7_fold7,cod,crycogcomp,Crystallized cognition,-0.04443024645405225
+HCP-A_crycogcomp_cod_repeat7_fold8,cod,crycogcomp,Crystallized cognition,0.03866513848334918
+HCP-A_crycogcomp_cod_repeat7_fold9,cod,crycogcomp,Crystallized cognition,0.141437561330516
+HCP-A_crycogcomp_cod_repeat8_fold0,cod,crycogcomp,Crystallized cognition,0.12511207317396444
+HCP-A_crycogcomp_cod_repeat8_fold1,cod,crycogcomp,Crystallized cognition,0.19775821688229567
+HCP-A_crycogcomp_cod_repeat8_fold2,cod,crycogcomp,Crystallized cognition,0.010105628087438201
+HCP-A_crycogcomp_cod_repeat8_fold3,cod,crycogcomp,Crystallized cognition,0.20533275177702837
+HCP-A_crycogcomp_cod_repeat8_fold4,cod,crycogcomp,Crystallized cognition,0.1657022368902239
+HCP-A_crycogcomp_cod_repeat8_fold5,cod,crycogcomp,Crystallized cognition,0.25719286437866695
+HCP-A_crycogcomp_cod_repeat8_fold6,cod,crycogcomp,Crystallized cognition,0.2016832709776476
+HCP-A_crycogcomp_cod_repeat8_fold7,cod,crycogcomp,Crystallized cognition,0.2325687906965357
+HCP-A_crycogcomp_cod_repeat8_fold8,cod,crycogcomp,Crystallized cognition,0.2246933412494725
+HCP-A_crycogcomp_cod_repeat8_fold9,cod,crycogcomp,Crystallized cognition,0.3560869779814283
+HCP-A_crycogcomp_cod_repeat9_fold0,cod,crycogcomp,Crystallized cognition,0.24396670881553884
+HCP-A_crycogcomp_cod_repeat9_fold1,cod,crycogcomp,Crystallized cognition,0.24482271908715336
+HCP-A_crycogcomp_cod_repeat9_fold2,cod,crycogcomp,Crystallized cognition,0.22769485346321228
+HCP-A_crycogcomp_cod_repeat9_fold3,cod,crycogcomp,Crystallized cognition,0.02893141993692916
+HCP-A_crycogcomp_cod_repeat9_fold4,cod,crycogcomp,Crystallized cognition,0.23944214214420767
+HCP-A_crycogcomp_cod_repeat9_fold5,cod,crycogcomp,Crystallized cognition,0.10320880651267461
+HCP-A_crycogcomp_cod_repeat9_fold6,cod,crycogcomp,Crystallized cognition,0.2565611887078981
+HCP-A_crycogcomp_cod_repeat9_fold7,cod,crycogcomp,Crystallized cognition,0.3225846829769985
+HCP-A_crycogcomp_cod_repeat9_fold8,cod,crycogcomp,Crystallized cognition,0.1984385406410708
+HCP-A_crycogcomp_cod_repeat9_fold9,cod,crycogcomp,Crystallized cognition,0.23796096358243202
+HCP-A_fluidcogcomp_cod_repeat0_fold0,cod,fluidcogcomp,Fluid cognition,0.2772888497121757
+HCP-A_fluidcogcomp_cod_repeat0_fold1,cod,fluidcogcomp,Fluid cognition,0.19338250461837403
+HCP-A_fluidcogcomp_cod_repeat0_fold2,cod,fluidcogcomp,Fluid cognition,0.18546721230282082
+HCP-A_fluidcogcomp_cod_repeat0_fold3,cod,fluidcogcomp,Fluid cognition,0.3116519217550495
+HCP-A_fluidcogcomp_cod_repeat0_fold4,cod,fluidcogcomp,Fluid cognition,0.23148267820912338
+HCP-A_fluidcogcomp_cod_repeat0_fold5,cod,fluidcogcomp,Fluid cognition,0.12431836541339603
+HCP-A_fluidcogcomp_cod_repeat0_fold6,cod,fluidcogcomp,Fluid cognition,0.13174497431134646
+HCP-A_fluidcogcomp_cod_repeat0_fold7,cod,fluidcogcomp,Fluid cognition,0.24206762744699084
+HCP-A_fluidcogcomp_cod_repeat0_fold8,cod,fluidcogcomp,Fluid cognition,0.1394321351899962
+HCP-A_fluidcogcomp_cod_repeat0_fold9,cod,fluidcogcomp,Fluid cognition,0.2940726326989169
+HCP-A_fluidcogcomp_cod_repeat1_fold0,cod,fluidcogcomp,Fluid cognition,0.17235263496952624
+HCP-A_fluidcogcomp_cod_repeat1_fold1,cod,fluidcogcomp,Fluid cognition,0.1584214366719997
+HCP-A_fluidcogcomp_cod_repeat1_fold2,cod,fluidcogcomp,Fluid cognition,0.12956769393856427
+HCP-A_fluidcogcomp_cod_repeat1_fold3,cod,fluidcogcomp,Fluid cognition,0.11192186331274168
+HCP-A_fluidcogcomp_cod_repeat1_fold4,cod,fluidcogcomp,Fluid cognition,0.18480149890458064
+HCP-A_fluidcogcomp_cod_repeat1_fold5,cod,fluidcogcomp,Fluid cognition,0.19817357484868725
+HCP-A_fluidcogcomp_cod_repeat1_fold6,cod,fluidcogcomp,Fluid cognition,0.291738857479785
+HCP-A_fluidcogcomp_cod_repeat1_fold7,cod,fluidcogcomp,Fluid cognition,0.19673295405670543
+HCP-A_fluidcogcomp_cod_repeat1_fold8,cod,fluidcogcomp,Fluid cognition,0.20486960441339708
+HCP-A_fluidcogcomp_cod_repeat1_fold9,cod,fluidcogcomp,Fluid cognition,0.15056620611181637
+HCP-A_fluidcogcomp_cod_repeat2_fold0,cod,fluidcogcomp,Fluid cognition,0.23935220634115972
+HCP-A_fluidcogcomp_cod_repeat2_fold1,cod,fluidcogcomp,Fluid cognition,0.22927808999580146
+HCP-A_fluidcogcomp_cod_repeat2_fold2,cod,fluidcogcomp,Fluid cognition,0.28754385700482377
+HCP-A_fluidcogcomp_cod_repeat2_fold3,cod,fluidcogcomp,Fluid cognition,0.06342109262541262
+HCP-A_fluidcogcomp_cod_repeat2_fold4,cod,fluidcogcomp,Fluid cognition,0.21378702880316247
+HCP-A_fluidcogcomp_cod_repeat2_fold5,cod,fluidcogcomp,Fluid cognition,0.13765517559019746
+HCP-A_fluidcogcomp_cod_repeat2_fold6,cod,fluidcogcomp,Fluid cognition,0.15110328430231068
+HCP-A_fluidcogcomp_cod_repeat2_fold7,cod,fluidcogcomp,Fluid cognition,0.3420529966991219
+HCP-A_fluidcogcomp_cod_repeat2_fold8,cod,fluidcogcomp,Fluid cognition,0.15813399662255445
+HCP-A_fluidcogcomp_cod_repeat2_fold9,cod,fluidcogcomp,Fluid cognition,0.16996305416198187
+HCP-A_fluidcogcomp_cod_repeat3_fold0,cod,fluidcogcomp,Fluid cognition,0.13543504456973288
+HCP-A_fluidcogcomp_cod_repeat3_fold1,cod,fluidcogcomp,Fluid cognition,0.30589577463317585
+HCP-A_fluidcogcomp_cod_repeat3_fold2,cod,fluidcogcomp,Fluid cognition,0.20447605518781364
+HCP-A_fluidcogcomp_cod_repeat3_fold3,cod,fluidcogcomp,Fluid cognition,0.07575379500907553
+HCP-A_fluidcogcomp_cod_repeat3_fold4,cod,fluidcogcomp,Fluid cognition,0.14711030009179504
+HCP-A_fluidcogcomp_cod_repeat3_fold5,cod,fluidcogcomp,Fluid cognition,0.18127174606231578
+HCP-A_fluidcogcomp_cod_repeat3_fold6,cod,fluidcogcomp,Fluid cognition,0.22121466448458849
+HCP-A_fluidcogcomp_cod_repeat3_fold7,cod,fluidcogcomp,Fluid cognition,-0.031924802289631904
+HCP-A_fluidcogcomp_cod_repeat3_fold8,cod,fluidcogcomp,Fluid cognition,0.23321032025678
+HCP-A_fluidcogcomp_cod_repeat3_fold9,cod,fluidcogcomp,Fluid cognition,0.3024872457122988
+HCP-A_fluidcogcomp_cod_repeat4_fold0,cod,fluidcogcomp,Fluid cognition,0.3121976594396144
+HCP-A_fluidcogcomp_cod_repeat4_fold1,cod,fluidcogcomp,Fluid cognition,0.08821467068129141
+HCP-A_fluidcogcomp_cod_repeat4_fold2,cod,fluidcogcomp,Fluid cognition,0.2581359509918295
+HCP-A_fluidcogcomp_cod_repeat4_fold3,cod,fluidcogcomp,Fluid cognition,0.20185245940303542
+HCP-A_fluidcogcomp_cod_repeat4_fold4,cod,fluidcogcomp,Fluid cognition,0.14144649312586466
+HCP-A_fluidcogcomp_cod_repeat4_fold5,cod,fluidcogcomp,Fluid cognition,0.3390365772604299
+HCP-A_fluidcogcomp_cod_repeat4_fold6,cod,fluidcogcomp,Fluid cognition,0.0958086162161127
+HCP-A_fluidcogcomp_cod_repeat4_fold7,cod,fluidcogcomp,Fluid cognition,0.22923425716071122
+HCP-A_fluidcogcomp_cod_repeat4_fold8,cod,fluidcogcomp,Fluid cognition,0.16343316917779194
+HCP-A_fluidcogcomp_cod_repeat4_fold9,cod,fluidcogcomp,Fluid cognition,0.21083276113577998
+HCP-A_fluidcogcomp_cod_repeat5_fold0,cod,fluidcogcomp,Fluid cognition,0.16839232616922994
+HCP-A_fluidcogcomp_cod_repeat5_fold1,cod,fluidcogcomp,Fluid cognition,0.1821203978088829
+HCP-A_fluidcogcomp_cod_repeat5_fold2,cod,fluidcogcomp,Fluid cognition,0.335866857109799
+HCP-A_fluidcogcomp_cod_repeat5_fold3,cod,fluidcogcomp,Fluid cognition,0.07866892755889376
+HCP-A_fluidcogcomp_cod_repeat5_fold4,cod,fluidcogcomp,Fluid cognition,0.16718471556947023
+HCP-A_fluidcogcomp_cod_repeat5_fold5,cod,fluidcogcomp,Fluid cognition,0.0675497552446398
+HCP-A_fluidcogcomp_cod_repeat5_fold6,cod,fluidcogcomp,Fluid cognition,0.15626838455849557
+HCP-A_fluidcogcomp_cod_repeat5_fold7,cod,fluidcogcomp,Fluid cognition,0.23746641791222745
+HCP-A_fluidcogcomp_cod_repeat5_fold8,cod,fluidcogcomp,Fluid cognition,0.09237013885970102
+HCP-A_fluidcogcomp_cod_repeat5_fold9,cod,fluidcogcomp,Fluid cognition,0.2555964177617418
+HCP-A_fluidcogcomp_cod_repeat6_fold0,cod,fluidcogcomp,Fluid cognition,0.1659625762317909
+HCP-A_fluidcogcomp_cod_repeat6_fold1,cod,fluidcogcomp,Fluid cognition,0.2621124724787183
+HCP-A_fluidcogcomp_cod_repeat6_fold2,cod,fluidcogcomp,Fluid cognition,0.17551941178432384
+HCP-A_fluidcogcomp_cod_repeat6_fold3,cod,fluidcogcomp,Fluid cognition,0.24802886993494
+HCP-A_fluidcogcomp_cod_repeat6_fold4,cod,fluidcogcomp,Fluid cognition,0.15518144360379893
+HCP-A_fluidcogcomp_cod_repeat6_fold5,cod,fluidcogcomp,Fluid cognition,0.28866740826228654
+HCP-A_fluidcogcomp_cod_repeat6_fold6,cod,fluidcogcomp,Fluid cognition,0.06432137317036568
+HCP-A_fluidcogcomp_cod_repeat6_fold7,cod,fluidcogcomp,Fluid cognition,0.19670673804561833
+HCP-A_fluidcogcomp_cod_repeat6_fold8,cod,fluidcogcomp,Fluid cognition,0.2592204734836332
+HCP-A_fluidcogcomp_cod_repeat6_fold9,cod,fluidcogcomp,Fluid cognition,0.3027039600862792
+HCP-A_fluidcogcomp_cod_repeat7_fold0,cod,fluidcogcomp,Fluid cognition,0.31283071753480307
+HCP-A_fluidcogcomp_cod_repeat7_fold1,cod,fluidcogcomp,Fluid cognition,0.17540018443882144
+HCP-A_fluidcogcomp_cod_repeat7_fold2,cod,fluidcogcomp,Fluid cognition,0.05534140884686223
+HCP-A_fluidcogcomp_cod_repeat7_fold3,cod,fluidcogcomp,Fluid cognition,0.24485096445062005
+HCP-A_fluidcogcomp_cod_repeat7_fold4,cod,fluidcogcomp,Fluid cognition,0.2472194401098704
+HCP-A_fluidcogcomp_cod_repeat7_fold5,cod,fluidcogcomp,Fluid cognition,-0.04155798811332945
+HCP-A_fluidcogcomp_cod_repeat7_fold6,cod,fluidcogcomp,Fluid cognition,0.2992572915031858
+HCP-A_fluidcogcomp_cod_repeat7_fold7,cod,fluidcogcomp,Fluid cognition,0.2805179984782241
+HCP-A_fluidcogcomp_cod_repeat7_fold8,cod,fluidcogcomp,Fluid cognition,0.1261467404317711
+HCP-A_fluidcogcomp_cod_repeat7_fold9,cod,fluidcogcomp,Fluid cognition,0.23462071307284693
+HCP-A_fluidcogcomp_cod_repeat8_fold0,cod,fluidcogcomp,Fluid cognition,0.15333804925838934
+HCP-A_fluidcogcomp_cod_repeat8_fold1,cod,fluidcogcomp,Fluid cognition,0.2448717495189574
+HCP-A_fluidcogcomp_cod_repeat8_fold2,cod,fluidcogcomp,Fluid cognition,0.06384572191893823
+HCP-A_fluidcogcomp_cod_repeat8_fold3,cod,fluidcogcomp,Fluid cognition,0.024976233575483398
+HCP-A_fluidcogcomp_cod_repeat8_fold4,cod,fluidcogcomp,Fluid cognition,0.2679671339334818
+HCP-A_fluidcogcomp_cod_repeat8_fold5,cod,fluidcogcomp,Fluid cognition,0.07185614263035855
+HCP-A_fluidcogcomp_cod_repeat8_fold6,cod,fluidcogcomp,Fluid cognition,0.13103377689012796
+HCP-A_fluidcogcomp_cod_repeat8_fold7,cod,fluidcogcomp,Fluid cognition,0.10816163128452183
+HCP-A_fluidcogcomp_cod_repeat8_fold8,cod,fluidcogcomp,Fluid cognition,0.23418580558162283
+HCP-A_fluidcogcomp_cod_repeat8_fold9,cod,fluidcogcomp,Fluid cognition,0.32895945488163647
+HCP-A_fluidcogcomp_cod_repeat9_fold0,cod,fluidcogcomp,Fluid cognition,0.19625070462255767
+HCP-A_fluidcogcomp_cod_repeat9_fold1,cod,fluidcogcomp,Fluid cognition,0.324452798085603
+HCP-A_fluidcogcomp_cod_repeat9_fold2,cod,fluidcogcomp,Fluid cognition,0.3496539143845515
+HCP-A_fluidcogcomp_cod_repeat9_fold3,cod,fluidcogcomp,Fluid cognition,0.1341758242042781
+HCP-A_fluidcogcomp_cod_repeat9_fold4,cod,fluidcogcomp,Fluid cognition,0.2513129675981387
+HCP-A_fluidcogcomp_cod_repeat9_fold5,cod,fluidcogcomp,Fluid cognition,0.1825167709558807
+HCP-A_fluidcogcomp_cod_repeat9_fold6,cod,fluidcogcomp,Fluid cognition,0.0847657828775299
+HCP-A_fluidcogcomp_cod_repeat9_fold7,cod,fluidcogcomp,Fluid cognition,0.22790257829708305
+HCP-A_fluidcogcomp_cod_repeat9_fold8,cod,fluidcogcomp,Fluid cognition,0.15214389606341971
+HCP-A_fluidcogcomp_cod_repeat9_fold9,cod,fluidcogcomp,Fluid cognition,0.19188425257223563
+HCP-A_reading_cod_repeat0_fold0,cod,reading,Reading,0.12067417968749317
+HCP-A_reading_cod_repeat0_fold1,cod,reading,Reading,0.09522038400198674
+HCP-A_reading_cod_repeat0_fold2,cod,reading,Reading,0.11827018469037132
+HCP-A_reading_cod_repeat0_fold3,cod,reading,Reading,0.09804274886079534
+HCP-A_reading_cod_repeat0_fold4,cod,reading,Reading,-0.016995800898034874
+HCP-A_reading_cod_repeat0_fold5,cod,reading,Reading,0.1686231568186085
+HCP-A_reading_cod_repeat0_fold6,cod,reading,Reading,0.1140460670873703
+HCP-A_reading_cod_repeat0_fold7,cod,reading,Reading,0.08511348285689457
+HCP-A_reading_cod_repeat0_fold8,cod,reading,Reading,0.05743245889405846
+HCP-A_reading_cod_repeat0_fold9,cod,reading,Reading,0.1059490263978865
+HCP-A_reading_cod_repeat1_fold0,cod,reading,Reading,-0.0014530348554362416
+HCP-A_reading_cod_repeat1_fold1,cod,reading,Reading,-0.016385013777573842
+HCP-A_reading_cod_repeat1_fold2,cod,reading,Reading,0.25585502550788386
+HCP-A_reading_cod_repeat1_fold3,cod,reading,Reading,-0.06487838277049751
+HCP-A_reading_cod_repeat1_fold4,cod,reading,Reading,0.17009221439640876
+HCP-A_reading_cod_repeat1_fold5,cod,reading,Reading,0.21875763839499396
+HCP-A_reading_cod_repeat1_fold6,cod,reading,Reading,0.15236443735278438
+HCP-A_reading_cod_repeat1_fold7,cod,reading,Reading,-0.02985774551568121
+HCP-A_reading_cod_repeat1_fold8,cod,reading,Reading,0.01006224797774502
+HCP-A_reading_cod_repeat1_fold9,cod,reading,Reading,0.07397477114068052
+HCP-A_reading_cod_repeat2_fold0,cod,reading,Reading,0.19978310846942082
+HCP-A_reading_cod_repeat2_fold1,cod,reading,Reading,0.06521677877200438
+HCP-A_reading_cod_repeat2_fold2,cod,reading,Reading,0.1479103910924442
+HCP-A_reading_cod_repeat2_fold3,cod,reading,Reading,0.10512874220707136
+HCP-A_reading_cod_repeat2_fold4,cod,reading,Reading,0.16172873306537505
+HCP-A_reading_cod_repeat2_fold5,cod,reading,Reading,0.10728241988456189
+HCP-A_reading_cod_repeat2_fold6,cod,reading,Reading,0.03686414404106886
+HCP-A_reading_cod_repeat2_fold7,cod,reading,Reading,0.14661837102202546
+HCP-A_reading_cod_repeat2_fold8,cod,reading,Reading,0.05397177320783819
+HCP-A_reading_cod_repeat2_fold9,cod,reading,Reading,0.20036137633532647
+HCP-A_reading_cod_repeat3_fold0,cod,reading,Reading,0.14801615836349313
+HCP-A_reading_cod_repeat3_fold1,cod,reading,Reading,0.19117113469978053
+HCP-A_reading_cod_repeat3_fold2,cod,reading,Reading,0.15410116675790742
+HCP-A_reading_cod_repeat3_fold3,cod,reading,Reading,0.08737954626058231
+HCP-A_reading_cod_repeat3_fold4,cod,reading,Reading,0.04625985928470777
+HCP-A_reading_cod_repeat3_fold5,cod,reading,Reading,0.02995416195126277
+HCP-A_reading_cod_repeat3_fold6,cod,reading,Reading,0.11539294349269436
+HCP-A_reading_cod_repeat3_fold7,cod,reading,Reading,0.17035740792778975
+HCP-A_reading_cod_repeat3_fold8,cod,reading,Reading,0.14103094632532576
+HCP-A_reading_cod_repeat3_fold9,cod,reading,Reading,0.1361295114556803
+HCP-A_reading_cod_repeat4_fold0,cod,reading,Reading,0.049554020336634585
+HCP-A_reading_cod_repeat4_fold1,cod,reading,Reading,0.08711535667405268
+HCP-A_reading_cod_repeat4_fold2,cod,reading,Reading,0.0676186398870382
+HCP-A_reading_cod_repeat4_fold3,cod,reading,Reading,0.029959443560602317
+HCP-A_reading_cod_repeat4_fold4,cod,reading,Reading,0.14065029011114705
+HCP-A_reading_cod_repeat4_fold5,cod,reading,Reading,0.10674640939759461
+HCP-A_reading_cod_repeat4_fold6,cod,reading,Reading,0.06214401837372163
+HCP-A_reading_cod_repeat4_fold7,cod,reading,Reading,0.23954720211204028
+HCP-A_reading_cod_repeat4_fold8,cod,reading,Reading,0.04882412807860592
+HCP-A_reading_cod_repeat4_fold9,cod,reading,Reading,0.14634176580119518
+HCP-A_reading_cod_repeat5_fold0,cod,reading,Reading,0.0646531763065632
+HCP-A_reading_cod_repeat5_fold1,cod,reading,Reading,0.038336260287846424
+HCP-A_reading_cod_repeat5_fold2,cod,reading,Reading,0.08702961990050706
+HCP-A_reading_cod_repeat5_fold3,cod,reading,Reading,0.16347632315792515
+HCP-A_reading_cod_repeat5_fold4,cod,reading,Reading,0.131801195872973
+HCP-A_reading_cod_repeat5_fold5,cod,reading,Reading,0.1420553945963976
+HCP-A_reading_cod_repeat5_fold6,cod,reading,Reading,0.18429753613339805
+HCP-A_reading_cod_repeat5_fold7,cod,reading,Reading,0.1957464786508668
+HCP-A_reading_cod_repeat5_fold8,cod,reading,Reading,0.12205845072540689
+HCP-A_reading_cod_repeat5_fold9,cod,reading,Reading,-0.024729707988839777
+HCP-A_reading_cod_repeat6_fold0,cod,reading,Reading,0.3126867920824734
+HCP-A_reading_cod_repeat6_fold1,cod,reading,Reading,0.029667480964398862
+HCP-A_reading_cod_repeat6_fold2,cod,reading,Reading,0.1143569481531862
+HCP-A_reading_cod_repeat6_fold3,cod,reading,Reading,0.11267235790780661
+HCP-A_reading_cod_repeat6_fold4,cod,reading,Reading,0.14909618154030335
+HCP-A_reading_cod_repeat6_fold5,cod,reading,Reading,0.07483887626330854
+HCP-A_reading_cod_repeat6_fold6,cod,reading,Reading,0.19055403093548995
+HCP-A_reading_cod_repeat6_fold7,cod,reading,Reading,0.16279569537988836
+HCP-A_reading_cod_repeat6_fold8,cod,reading,Reading,0.23560588892641676
+HCP-A_reading_cod_repeat6_fold9,cod,reading,Reading,0.15868213360394468
+HCP-A_reading_cod_repeat7_fold0,cod,reading,Reading,0.063370330912917
+HCP-A_reading_cod_repeat7_fold1,cod,reading,Reading,0.009518740168128925
+HCP-A_reading_cod_repeat7_fold2,cod,reading,Reading,0.17294206021797498
+HCP-A_reading_cod_repeat7_fold3,cod,reading,Reading,0.02322472064516734
+HCP-A_reading_cod_repeat7_fold4,cod,reading,Reading,0.22459314920345197
+HCP-A_reading_cod_repeat7_fold5,cod,reading,Reading,0.08232474590765315
+HCP-A_reading_cod_repeat7_fold6,cod,reading,Reading,0.2364041750701551
+HCP-A_reading_cod_repeat7_fold7,cod,reading,Reading,0.08470033514786768
+HCP-A_reading_cod_repeat7_fold8,cod,reading,Reading,0.037450244509520725
+HCP-A_reading_cod_repeat7_fold9,cod,reading,Reading,0.1921375230257969
+HCP-A_reading_cod_repeat8_fold0,cod,reading,Reading,0.14088449546330784
+HCP-A_reading_cod_repeat8_fold1,cod,reading,Reading,0.20338997018596194
+HCP-A_reading_cod_repeat8_fold2,cod,reading,Reading,0.02853807010903686
+HCP-A_reading_cod_repeat8_fold3,cod,reading,Reading,0.13353360694346517
+HCP-A_reading_cod_repeat8_fold4,cod,reading,Reading,0.09551040443746239
+HCP-A_reading_cod_repeat8_fold5,cod,reading,Reading,0.18393368875148786
+HCP-A_reading_cod_repeat8_fold6,cod,reading,Reading,-0.05084052194454847
+HCP-A_reading_cod_repeat8_fold7,cod,reading,Reading,0.12982566551730057
+HCP-A_reading_cod_repeat8_fold8,cod,reading,Reading,0.12186860957826717
+HCP-A_reading_cod_repeat8_fold9,cod,reading,Reading,-0.007156389137224384
+HCP-A_reading_cod_repeat9_fold0,cod,reading,Reading,0.07999215938880988
+HCP-A_reading_cod_repeat9_fold1,cod,reading,Reading,0.09724876634971213
+HCP-A_reading_cod_repeat9_fold2,cod,reading,Reading,0.13848856350912198
+HCP-A_reading_cod_repeat9_fold3,cod,reading,Reading,0.10110258565716512
+HCP-A_reading_cod_repeat9_fold4,cod,reading,Reading,0.21300840513134867
+HCP-A_reading_cod_repeat9_fold5,cod,reading,Reading,0.13023642147536485
+HCP-A_reading_cod_repeat9_fold6,cod,reading,Reading,-0.013642285709313917
+HCP-A_reading_cod_repeat9_fold7,cod,reading,Reading,0.12239825184412578
+HCP-A_reading_cod_repeat9_fold8,cod,reading,Reading,0.18278051434977105
+HCP-A_reading_cod_repeat9_fold9,cod,reading,Reading,0.1531215202999151
+HCP-A_picvocab_cod_repeat0_fold0,cod,picvocab,Picture vocabulary,0.22758106289331959
+HCP-A_picvocab_cod_repeat0_fold1,cod,picvocab,Picture vocabulary,0.1762176053005673
+HCP-A_picvocab_cod_repeat0_fold2,cod,picvocab,Picture vocabulary,0.271140634703664
+HCP-A_picvocab_cod_repeat0_fold3,cod,picvocab,Picture vocabulary,0.19846729533952967
+HCP-A_picvocab_cod_repeat0_fold4,cod,picvocab,Picture vocabulary,0.18268832050857575
+HCP-A_picvocab_cod_repeat0_fold5,cod,picvocab,Picture vocabulary,0.25175694952325256
+HCP-A_picvocab_cod_repeat0_fold6,cod,picvocab,Picture vocabulary,0.25001878230376595
+HCP-A_picvocab_cod_repeat0_fold7,cod,picvocab,Picture vocabulary,0.1010933550794405
+HCP-A_picvocab_cod_repeat0_fold8,cod,picvocab,Picture vocabulary,0.014181730103781098
+HCP-A_picvocab_cod_repeat0_fold9,cod,picvocab,Picture vocabulary,0.32490448090655044
+HCP-A_picvocab_cod_repeat1_fold0,cod,picvocab,Picture vocabulary,0.20305918592121375
+HCP-A_picvocab_cod_repeat1_fold1,cod,picvocab,Picture vocabulary,0.09047576155242265
+HCP-A_picvocab_cod_repeat1_fold2,cod,picvocab,Picture vocabulary,0.017480409829366605
+HCP-A_picvocab_cod_repeat1_fold3,cod,picvocab,Picture vocabulary,0.34331709807166577
+HCP-A_picvocab_cod_repeat1_fold4,cod,picvocab,Picture vocabulary,0.16069697940881622
+HCP-A_picvocab_cod_repeat1_fold5,cod,picvocab,Picture vocabulary,0.34837972887460944
+HCP-A_picvocab_cod_repeat1_fold6,cod,picvocab,Picture vocabulary,0.05265950863602342
+HCP-A_picvocab_cod_repeat1_fold7,cod,picvocab,Picture vocabulary,0.23267237593840595
+HCP-A_picvocab_cod_repeat1_fold8,cod,picvocab,Picture vocabulary,0.15818809614807172
+HCP-A_picvocab_cod_repeat1_fold9,cod,picvocab,Picture vocabulary,0.21867071356413614
+HCP-A_picvocab_cod_repeat2_fold0,cod,picvocab,Picture vocabulary,0.14671903796127794
+HCP-A_picvocab_cod_repeat2_fold1,cod,picvocab,Picture vocabulary,-0.017670078260945132
+HCP-A_picvocab_cod_repeat2_fold2,cod,picvocab,Picture vocabulary,0.29543082431299594
+HCP-A_picvocab_cod_repeat2_fold3,cod,picvocab,Picture vocabulary,0.18006905960028252
+HCP-A_picvocab_cod_repeat2_fold4,cod,picvocab,Picture vocabulary,0.031080712044665337
+HCP-A_picvocab_cod_repeat2_fold5,cod,picvocab,Picture vocabulary,0.18043855035989176
+HCP-A_picvocab_cod_repeat2_fold6,cod,picvocab,Picture vocabulary,0.27444954203246263
+HCP-A_picvocab_cod_repeat2_fold7,cod,picvocab,Picture vocabulary,0.26648664201453176
+HCP-A_picvocab_cod_repeat2_fold8,cod,picvocab,Picture vocabulary,0.2248292287520267
+HCP-A_picvocab_cod_repeat2_fold9,cod,picvocab,Picture vocabulary,0.25741242731143155
+HCP-A_picvocab_cod_repeat3_fold0,cod,picvocab,Picture vocabulary,0.15435509704704153
+HCP-A_picvocab_cod_repeat3_fold1,cod,picvocab,Picture vocabulary,0.1776642116651087
+HCP-A_picvocab_cod_repeat3_fold2,cod,picvocab,Picture vocabulary,0.22653171826302088
+HCP-A_picvocab_cod_repeat3_fold3,cod,picvocab,Picture vocabulary,0.13560267024596917
+HCP-A_picvocab_cod_repeat3_fold4,cod,picvocab,Picture vocabulary,0.021964951083397355
+HCP-A_picvocab_cod_repeat3_fold5,cod,picvocab,Picture vocabulary,0.1818300739906057
+HCP-A_picvocab_cod_repeat3_fold6,cod,picvocab,Picture vocabulary,0.28869983115873155
+HCP-A_picvocab_cod_repeat3_fold7,cod,picvocab,Picture vocabulary,0.23979599962113896
+HCP-A_picvocab_cod_repeat3_fold8,cod,picvocab,Picture vocabulary,0.24350833914677716
+HCP-A_picvocab_cod_repeat3_fold9,cod,picvocab,Picture vocabulary,0.35276339927236544
+HCP-A_picvocab_cod_repeat4_fold0,cod,picvocab,Picture vocabulary,0.12293772461775554
+HCP-A_picvocab_cod_repeat4_fold1,cod,picvocab,Picture vocabulary,0.1201947828006964
+HCP-A_picvocab_cod_repeat4_fold2,cod,picvocab,Picture vocabulary,0.21638194320616477
+HCP-A_picvocab_cod_repeat4_fold3,cod,picvocab,Picture vocabulary,0.1585022594681349
+HCP-A_picvocab_cod_repeat4_fold4,cod,picvocab,Picture vocabulary,0.37074065633631637
+HCP-A_picvocab_cod_repeat4_fold5,cod,picvocab,Picture vocabulary,0.1262472950008695
+HCP-A_picvocab_cod_repeat4_fold6,cod,picvocab,Picture vocabulary,0.3305819745128994
+HCP-A_picvocab_cod_repeat4_fold7,cod,picvocab,Picture vocabulary,0.09970546712027872
+HCP-A_picvocab_cod_repeat4_fold8,cod,picvocab,Picture vocabulary,0.31701990798455115
+HCP-A_picvocab_cod_repeat4_fold9,cod,picvocab,Picture vocabulary,0.0728872050554662
+HCP-A_picvocab_cod_repeat5_fold0,cod,picvocab,Picture vocabulary,0.2632563464868326
+HCP-A_picvocab_cod_repeat5_fold1,cod,picvocab,Picture vocabulary,0.1477383572536185
+HCP-A_picvocab_cod_repeat5_fold2,cod,picvocab,Picture vocabulary,0.2846241329241811
+HCP-A_picvocab_cod_repeat5_fold3,cod,picvocab,Picture vocabulary,0.29633118398146563
+HCP-A_picvocab_cod_repeat5_fold4,cod,picvocab,Picture vocabulary,0.1758949878776963
+HCP-A_picvocab_cod_repeat5_fold5,cod,picvocab,Picture vocabulary,0.12222880758498933
+HCP-A_picvocab_cod_repeat5_fold6,cod,picvocab,Picture vocabulary,0.2940032302234058
+HCP-A_picvocab_cod_repeat5_fold7,cod,picvocab,Picture vocabulary,-0.01254655966770235
+HCP-A_picvocab_cod_repeat5_fold8,cod,picvocab,Picture vocabulary,0.03078890524106237
+HCP-A_picvocab_cod_repeat5_fold9,cod,picvocab,Picture vocabulary,0.24974779911022071
+HCP-A_picvocab_cod_repeat6_fold0,cod,picvocab,Picture vocabulary,0.047451296768489915
+HCP-A_picvocab_cod_repeat6_fold1,cod,picvocab,Picture vocabulary,0.2788743361122329
+HCP-A_picvocab_cod_repeat6_fold2,cod,picvocab,Picture vocabulary,0.28395839488909946
+HCP-A_picvocab_cod_repeat6_fold3,cod,picvocab,Picture vocabulary,0.05896636711405867
+HCP-A_picvocab_cod_repeat6_fold4,cod,picvocab,Picture vocabulary,0.11963189561399401
+HCP-A_picvocab_cod_repeat6_fold5,cod,picvocab,Picture vocabulary,0.20307165683956796
+HCP-A_picvocab_cod_repeat6_fold6,cod,picvocab,Picture vocabulary,0.19460090900016558
+HCP-A_picvocab_cod_repeat6_fold7,cod,picvocab,Picture vocabulary,0.28364376302810634
+HCP-A_picvocab_cod_repeat6_fold8,cod,picvocab,Picture vocabulary,0.1762508859071611
+HCP-A_picvocab_cod_repeat6_fold9,cod,picvocab,Picture vocabulary,0.02367499732619338
+HCP-A_picvocab_cod_repeat7_fold0,cod,picvocab,Picture vocabulary,0.1647159328883795
+HCP-A_picvocab_cod_repeat7_fold1,cod,picvocab,Picture vocabulary,0.2407156348133056
+HCP-A_picvocab_cod_repeat7_fold2,cod,picvocab,Picture vocabulary,0.2798040321572375
+HCP-A_picvocab_cod_repeat7_fold3,cod,picvocab,Picture vocabulary,0.14408181749574311
+HCP-A_picvocab_cod_repeat7_fold4,cod,picvocab,Picture vocabulary,0.2716598209074763
+HCP-A_picvocab_cod_repeat7_fold5,cod,picvocab,Picture vocabulary,0.2473971430177797
+HCP-A_picvocab_cod_repeat7_fold6,cod,picvocab,Picture vocabulary,0.15039532864195582
+HCP-A_picvocab_cod_repeat7_fold7,cod,picvocab,Picture vocabulary,0.13739040836792937
+HCP-A_picvocab_cod_repeat7_fold8,cod,picvocab,Picture vocabulary,0.0920773681483189
+HCP-A_picvocab_cod_repeat7_fold9,cod,picvocab,Picture vocabulary,0.22074390805025557
+HCP-A_picvocab_cod_repeat8_fold0,cod,picvocab,Picture vocabulary,0.2609799542107524
+HCP-A_picvocab_cod_repeat8_fold1,cod,picvocab,Picture vocabulary,0.22711387635685953
+HCP-A_picvocab_cod_repeat8_fold2,cod,picvocab,Picture vocabulary,0.1622468048152339
+HCP-A_picvocab_cod_repeat8_fold3,cod,picvocab,Picture vocabulary,0.2172448298904155
+HCP-A_picvocab_cod_repeat8_fold4,cod,picvocab,Picture vocabulary,0.31418599521177426
+HCP-A_picvocab_cod_repeat8_fold5,cod,picvocab,Picture vocabulary,0.24267236700428707
+HCP-A_picvocab_cod_repeat8_fold6,cod,picvocab,Picture vocabulary,0.038601877072360735
+HCP-A_picvocab_cod_repeat8_fold7,cod,picvocab,Picture vocabulary,0.21957395793194667
+HCP-A_picvocab_cod_repeat8_fold8,cod,picvocab,Picture vocabulary,0.053188258621805984
+HCP-A_picvocab_cod_repeat8_fold9,cod,picvocab,Picture vocabulary,0.2813457448308858
+HCP-A_picvocab_cod_repeat9_fold0,cod,picvocab,Picture vocabulary,0.2102954069210563
+HCP-A_picvocab_cod_repeat9_fold1,cod,picvocab,Picture vocabulary,0.19361096398308353
+HCP-A_picvocab_cod_repeat9_fold2,cod,picvocab,Picture vocabulary,0.24397926462615183
+HCP-A_picvocab_cod_repeat9_fold3,cod,picvocab,Picture vocabulary,0.28829650114260796
+HCP-A_picvocab_cod_repeat9_fold4,cod,picvocab,Picture vocabulary,0.10962370907985008
+HCP-A_picvocab_cod_repeat9_fold5,cod,picvocab,Picture vocabulary,0.14578584629297464
+HCP-A_picvocab_cod_repeat9_fold6,cod,picvocab,Picture vocabulary,0.02653792475921668
+HCP-A_picvocab_cod_repeat9_fold7,cod,picvocab,Picture vocabulary,0.22671945569540308
+HCP-A_picvocab_cod_repeat9_fold8,cod,picvocab,Picture vocabulary,0.3295234490970803
+HCP-A_picvocab_cod_repeat9_fold9,cod,picvocab,Picture vocabulary,-0.014630542008192693

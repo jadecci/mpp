@@ -1,0 +1,41 @@
+,Target var,Target,Accuracy type,Type,Number of features
+best_top1_HCP-A_totalcogcomp_r,totalcogcomp,Total cognition,r,best,7
+best_top2_HCP-A_totalcogcomp_r,totalcogcomp,Total cognition,r,best,11
+best_top3_HCP-A_totalcogcomp_r,totalcogcomp,Total cognition,r,best,13
+nec_HCP-A_totalcogcomp_r,totalcogcomp,Total cognition,r,necessary,4
+best_top1_HCP-A_crycogcomp_r,crycogcomp,Crystallized cognition,r,best,21
+best_top2_HCP-A_crycogcomp_r,crycogcomp,Crystallized cognition,r,best,19
+best_top3_HCP-A_crycogcomp_r,crycogcomp,Crystallized cognition,r,best,20
+nec_HCP-A_crycogcomp_r,crycogcomp,Crystallized cognition,r,necessary,18
+best_top1_HCP-A_fluidcogcomp_r,fluidcogcomp,Fluid cognition,r,best,18
+best_top2_HCP-A_fluidcogcomp_r,fluidcogcomp,Fluid cognition,r,best,19
+best_top3_HCP-A_fluidcogcomp_r,fluidcogcomp,Fluid cognition,r,best,21
+nec_HCP-A_fluidcogcomp_r,fluidcogcomp,Fluid cognition,r,necessary,5
+best_top1_HCP-A_reading_r,reading,Reading,r,best,19
+best_top2_HCP-A_reading_r,reading,Reading,r,best,20
+best_top3_HCP-A_reading_r,reading,Reading,r,best,21
+nec_HCP-A_reading_r,reading,Reading,r,necessary,19
+best_top1_HCP-A_picvocab_r,picvocab,Picture vocabulary,r,best,19
+best_top2_HCP-A_picvocab_r,picvocab,Picture vocabulary,r,best,21
+best_top3_HCP-A_picvocab_r,picvocab,Picture vocabulary,r,best,20
+nec_HCP-A_picvocab_r,picvocab,Picture vocabulary,r,necessary,17
+best_top1_HCP-A_totalcogcomp_cod,totalcogcomp,Total cognition,cod,best,11
+best_top2_HCP-A_totalcogcomp_cod,totalcogcomp,Total cognition,cod,best,7
+best_top3_HCP-A_totalcogcomp_cod,totalcogcomp,Total cognition,cod,best,5
+nec_HCP-A_totalcogcomp_cod,totalcogcomp,Total cognition,cod,necessary,5
+best_top1_HCP-A_crycogcomp_cod,crycogcomp,Crystallized cognition,cod,best,21
+best_top2_HCP-A_crycogcomp_cod,crycogcomp,Crystallized cognition,cod,best,20
+best_top3_HCP-A_crycogcomp_cod,crycogcomp,Crystallized cognition,cod,best,19
+nec_HCP-A_crycogcomp_cod,crycogcomp,Crystallized cognition,cod,necessary,19
+best_top1_HCP-A_fluidcogcomp_cod,fluidcogcomp,Fluid cognition,cod,best,18
+best_top2_HCP-A_fluidcogcomp_cod,fluidcogcomp,Fluid cognition,cod,best,19
+best_top3_HCP-A_fluidcogcomp_cod,fluidcogcomp,Fluid cognition,cod,best,21
+nec_HCP-A_fluidcogcomp_cod,fluidcogcomp,Fluid cognition,cod,necessary,17
+best_top1_HCP-A_reading_cod,reading,Reading,cod,best,19
+best_top2_HCP-A_reading_cod,reading,Reading,cod,best,20
+best_top3_HCP-A_reading_cod,reading,Reading,cod,best,22
+nec_HCP-A_reading_cod,reading,Reading,cod,necessary,19
+best_top1_HCP-A_picvocab_cod,picvocab,Picture vocabulary,cod,best,19
+best_top2_HCP-A_picvocab_cod,picvocab,Picture vocabulary,cod,best,21
+best_top3_HCP-A_picvocab_cod,picvocab,Picture vocabulary,cod,best,20
+nec_HCP-A_picvocab_cod,picvocab,Picture vocabulary,cod,necessary,19
