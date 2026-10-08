@@ -1,8 +1,10 @@
 from pathlib import Path
 import argparse
 
+from statsmodels.stats.multitest import multipletests
 import datalad.api as dl
 import pandas as pd
+import numpy as np
 
 phenos = [
     "totalcogcomp", "crycogcomp", "fluidcogcomp", "cardsort", "flanker", "reading", "picvocab",
@@ -26,6 +28,23 @@ root_res_dir = Path(args.work_dir, "fusion_cca_data")
 dl.install(root_res_dir, source=res_url)
 res_dir = Path(root_res_dir, "fusion_cca_results")
 
+# Collect all P values for FDR correction
+pvals = []
+for dataset in ["HCP-D", "HCP-YA", "HCP-A"]:
+    for pheno in phenos:
+        for ftype in ["conn", "region", "dti"]:
+            for fold in range(100):
+                res_file = Path(res_dir, f"fusion_cca_{dataset}_{pheno}_fold{fold}_{ftype}.csv")
+                dl.get(res_file, dataset=root_res_dir)
+                res_curr = pd.read_csv(res_file, header=0, index_col=[0])
+                pvals.append(res_curr["P-value"])
+                dl.drop(res_file, dataset=root_res_dir)
+pvals = pd.concat(pvals, axis="index")
+reject, p_corrected, _, _ = multipletests(pvals, alpha=0.05)
+p_thr = p_corrected[np.where(reject)].max()
+print(f"Equivalent P-value threshold after FDR correction = {p_thr}")
+
+# Extract only significant resutls after correction
 for dataset in ["HCP-D", "HCP-YA", "HCP-A"]:
     for pheno in phenos:
         for ftype in ["conn", "region", "dti"]:
@@ -33,11 +52,10 @@ for dataset in ["HCP-D", "HCP-YA", "HCP-A"]:
             res_sig = []
             for fold in range(100):
                 res_file = Path(res_dir, f"fusion_cca_{dataset}_{pheno}_fold{fold}_{ftype}.csv")
-                if res_file.is_symlink():
-                    dl.get(res_file, dataset=root_res_dir)
-                    res_curr = pd.read_csv(res_file, header=0, index_col=[0])
-                    res_sig.append(res_curr.loc[res_curr["P-value"] < 0.05])
-                    dl.drop(res_file, dataset=root_res_dir)
+                dl.get(res_file, dataset=root_res_dir)
+                res_curr = pd.read_csv(res_file, header=0, index_col=[0])
+                res_sig.append(res_curr.loc[res_curr["P-value"] <= p_thr])
+                dl.drop(res_file, dataset=root_res_dir)
             pd.concat(res_sig, axis="index").reset_index(drop=True).to_csv(out_file)
             print(f"Collected results for {dataset} {pheno} {ftype}-features")
 
