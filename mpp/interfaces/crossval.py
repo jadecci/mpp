@@ -215,7 +215,7 @@ class FeaturewiseModel(SimpleInterface):
                 inner_train_sub, postfix=f"_inner{inner}")
             test_x, test_y, test_conf = self._extract_data(inner_test_sub, postfix=f"_inner{inner}")
             train_y, test_y = pheno_reg_conf(train_y, train_conf, test_y, test_conf)
-            if self.inputs.config["model"] == "default":
+            if self.inputs.config["model"] in ["default", "pca-en"]:
                 _, _, train_ypred[inner_test_i] = elastic_net(
                     train_x, train_y, test_x, test_y, n_alphas)
             elif self.inputs.config["model"] == "alternative":
