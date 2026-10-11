@@ -132,6 +132,13 @@ mpp --datasets HCP-A --targets totalcogcomp --features_dir ${project_dir}/mfe_ou
     --work_dir ${project_dir}/work --output_dir ${project_dir}/mpp_output/HCP-A --model pca-en
 ```
 
+The prediction outcomes are then analysed:
+
+```bash
+python3 ${analysis_dir}/revision_analysis/plot_pca_results.py --pred_dir ${project_dir}/mpp_output \
+    --out_dir ${analysis_dir}/analysis_results --img_dir ${analysis_dir}/figures_raw
+```
+
 ## 3. Supplementary analyses
 
 ### 3.1. Correlation between psychometric variables

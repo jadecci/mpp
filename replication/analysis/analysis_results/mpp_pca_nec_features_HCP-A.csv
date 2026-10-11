@@ -1,0 +1,1001 @@
+,Accuracy type,Target var,Target,Feature
+HCP-A_totalcogcomp_r_repeat0_fold0_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold0_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold0_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat0_fold0_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold1_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold1_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold1_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold1_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat0_fold2_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold2_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat0_fold2_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold2_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold3_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat0_fold3_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold3_level3_2,r,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_r_repeat0_fold3_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat0_fold4_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold4_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat0_fold4_level3_2,r,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_r_repeat0_fold4_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat0_fold5_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat0_fold5_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold5_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold5_level3_3,r,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_r_repeat0_fold6_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold6_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold6_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat0_fold6_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold7_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat0_fold7_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold7_level3_2,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat0_fold7_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat0_fold8_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold8_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold8_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat0_fold8_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold9_level3_0,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold9_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat0_fold9_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat0_fold9_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold0_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold0_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat1_fold0_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold0_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold1_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold1_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat1_fold1_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold1_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold2_level3_0,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold2_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold2_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat1_fold2_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold3_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold3_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold3_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat1_fold3_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold4_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold4_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold4_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat1_fold4_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold5_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat1_fold5_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold5_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold5_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat1_fold6_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold6_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat1_fold6_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold6_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat1_fold7_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold7_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold7_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat1_fold7_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat1_fold8_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold8_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat1_fold8_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold8_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat1_fold9_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat1_fold9_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat1_fold9_level3_2,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat1_fold9_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat2_fold0_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold0_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat2_fold0_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold0_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold1_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold1_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat2_fold1_level3_2,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat2_fold1_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat2_fold2_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold2_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat2_fold2_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold2_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold3_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold3_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat2_fold3_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold3_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold4_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold4_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat2_fold4_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold4_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold5_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold5_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat2_fold5_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold5_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat2_fold6_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold6_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold6_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat2_fold6_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat2_fold7_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat2_fold7_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold7_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold7_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold8_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold8_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold8_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat2_fold8_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold9_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat2_fold9_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold9_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat2_fold9_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold0_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat3_fold0_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold0_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold0_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat3_fold1_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold1_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat3_fold1_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold1_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold2_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold2_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat3_fold2_level3_2,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat3_fold2_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat3_fold3_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat3_fold3_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold3_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold3_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold4_level3_0,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold4_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold4_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold4_level3_3,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat3_fold5_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold5_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat3_fold5_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold5_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold6_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold6_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold6_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat3_fold6_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold7_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat3_fold7_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold7_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold7_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold8_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat3_fold8_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold8_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold8_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat3_fold9_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat3_fold9_level3_1,r,totalcogcomp,Total cognition,time-varying FC
+HCP-A_totalcogcomp_r_repeat3_fold9_level3_2,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat3_fold9_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold0_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold0_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat4_fold0_level3_2,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat4_fold0_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat4_fold1_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold1_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold1_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat4_fold1_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold2_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold2_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat4_fold2_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold2_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold3_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold3_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold3_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold3_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat4_fold4_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold4_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat4_fold4_level3_2,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat4_fold4_level3_3,r,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_r_repeat4_fold5_level3_0,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold5_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat4_fold5_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold5_level3_3,r,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_r_repeat4_fold6_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold6_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat4_fold6_level3_2,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat4_fold6_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat4_fold7_level3_0,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold7_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold7_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold7_level3_3,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat4_fold8_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold8_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold8_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat4_fold8_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold9_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold9_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat4_fold9_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat4_fold9_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold0_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold0_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold0_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold0_level3_3,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat5_fold1_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold1_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat5_fold1_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold1_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold2_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat5_fold2_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold2_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold2_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat5_fold3_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold3_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold3_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat5_fold3_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat5_fold4_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold4_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat5_fold4_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold4_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat5_fold5_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold5_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat5_fold5_level3_2,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat5_fold5_level3_3,r,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_r_repeat5_fold6_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat5_fold6_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold6_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold6_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat5_fold7_level3_0,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold7_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold7_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat5_fold7_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat5_fold8_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold8_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat5_fold8_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold8_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold9_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold9_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat5_fold9_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat5_fold9_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold0_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat6_fold0_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold0_level3_2,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat6_fold0_level3_3,r,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_r_repeat6_fold1_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold1_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold1_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat6_fold1_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat6_fold2_level3_0,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold2_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold2_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold2_level3_3,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat6_fold3_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold3_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat6_fold3_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold3_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold4_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold4_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat6_fold4_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold4_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold5_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold5_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat6_fold5_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold5_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold6_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold6_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold6_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat6_fold6_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold7_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold7_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat6_fold7_level3_2,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat6_fold7_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat6_fold8_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold8_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat6_fold8_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold8_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold9_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold9_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold9_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat6_fold9_level3_3,r,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_r_repeat7_fold0_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold0_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat7_fold0_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold0_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold1_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat7_fold1_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold1_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold1_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat7_fold2_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold2_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat7_fold2_level3_2,r,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_r_repeat7_fold2_level3_3,r,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_r_repeat7_fold3_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold3_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat7_fold3_level3_2,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat7_fold3_level3_3,r,totalcogcomp,Total cognition,time-varying FC
+HCP-A_totalcogcomp_r_repeat7_fold4_level3_0,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold4_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold4_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat7_fold4_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat7_fold5_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold5_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat7_fold5_level3_2,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat7_fold5_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat7_fold6_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold6_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat7_fold6_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold6_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold7_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold7_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat7_fold7_level3_2,r,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_r_repeat7_fold7_level3_3,r,totalcogcomp,Total cognition,myelin estimate
+HCP-A_totalcogcomp_r_repeat7_fold8_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold8_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat7_fold8_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold8_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold9_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat7_fold9_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat7_fold9_level3_2,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat7_fold9_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat8_fold0_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold0_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat8_fold0_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold0_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold1_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold1_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat8_fold1_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold1_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold2_level3_0,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat8_fold2_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold2_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold2_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat8_fold3_level3_0,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold3_level3_1,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold3_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold3_level3_3,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat8_fold4_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold4_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold4_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold4_level3_3,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat8_fold5_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold5_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat8_fold5_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold5_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold6_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold6_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat8_fold6_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold6_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold7_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold7_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat8_fold7_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold7_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold8_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold8_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold8_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat8_fold8_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold9_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold9_level3_1,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat8_fold9_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat8_fold9_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold0_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold0_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat9_fold0_level3_2,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat9_fold0_level3_3,r,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_r_repeat9_fold1_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold1_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat9_fold1_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold1_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold2_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold2_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat9_fold2_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold2_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold3_level3_0,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold3_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat9_fold3_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold3_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat9_fold4_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold4_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat9_fold4_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold4_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat9_fold5_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold5_level3_1,r,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_r_repeat9_fold5_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold5_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold6_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold6_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat9_fold6_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold6_level3_3,r,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_r_repeat9_fold7_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold7_level3_1,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold7_level3_2,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat9_fold7_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold8_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold8_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat9_fold8_level3_2,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold8_level3_3,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold9_level3_0,r,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold9_level3_1,r,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_r_repeat9_fold9_level3_2,r,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_r_repeat9_fold9_level3_3,r,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold0_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold0_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold0_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat0_fold0_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold0_level3_4,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat0_fold0_level3_5,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat0_fold1_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold1_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold1_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold1_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat0_fold1_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat0_fold1_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat0_fold2_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold2_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat0_fold2_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold2_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold2_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold2_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat0_fold3_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat0_fold3_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold3_level3_2,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat0_fold3_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat0_fold3_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat0_fold3_level3_5,cod,totalcogcomp,Total cognition,VISMOTOR EC
+HCP-A_totalcogcomp_cod_repeat0_fold4_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold4_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat0_fold4_level3_2,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat0_fold4_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat0_fold4_level3_4,cod,totalcogcomp,Total cognition,CT
+HCP-A_totalcogcomp_cod_repeat0_fold4_level3_5,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat0_fold5_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat0_fold5_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold5_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold5_level3_3,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat0_fold5_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat0_fold5_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat0_fold6_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold6_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold6_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat0_fold6_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold6_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat0_fold6_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat0_fold7_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat0_fold7_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold7_level3_2,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat0_fold7_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat0_fold7_level3_4,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold7_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat0_fold8_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold8_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold8_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat0_fold8_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold8_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat0_fold8_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat0_fold9_level3_0,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold9_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold9_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat0_fold9_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat0_fold9_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat0_fold9_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat1_fold0_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold0_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat1_fold0_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold0_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold0_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat1_fold0_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat1_fold1_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold1_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat1_fold1_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold1_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold1_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold1_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat1_fold2_level3_0,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold2_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold2_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat1_fold2_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold2_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat1_fold2_level3_5,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat1_fold3_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold3_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold3_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat1_fold3_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold3_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat1_fold3_level3_5,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat1_fold4_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold4_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold4_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat1_fold4_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold4_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat1_fold4_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat1_fold5_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat1_fold5_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold5_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold5_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat1_fold5_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat1_fold5_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat1_fold6_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold6_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat1_fold6_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold6_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat1_fold6_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat1_fold6_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat1_fold7_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold7_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold7_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat1_fold7_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat1_fold7_level3_4,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat1_fold7_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat1_fold8_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold8_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat1_fold8_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold8_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat1_fold8_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat1_fold8_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat1_fold9_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat1_fold9_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat1_fold9_level3_2,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat1_fold9_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat1_fold9_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat1_fold9_level3_5,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat2_fold0_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold0_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat2_fold0_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold0_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold0_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat2_fold0_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat2_fold1_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold1_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat2_fold1_level3_2,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat2_fold1_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat2_fold1_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat2_fold1_level3_5,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat2_fold2_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold2_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat2_fold2_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold2_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold2_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold2_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat2_fold3_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold3_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat2_fold3_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold3_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold3_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat2_fold3_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat2_fold4_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold4_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat2_fold4_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold4_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold4_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold4_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat2_fold5_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold5_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat2_fold5_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold5_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat2_fold5_level3_4,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold5_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat2_fold6_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold6_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold6_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat2_fold6_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat2_fold6_level3_4,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat2_fold6_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat2_fold7_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat2_fold7_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold7_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold7_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold7_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat2_fold7_level3_5,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat2_fold8_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold8_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold8_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat2_fold8_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold8_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat2_fold8_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat2_fold9_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat2_fold9_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold9_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold9_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat2_fold9_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat2_fold9_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat3_fold0_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat3_fold0_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold0_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold0_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat3_fold0_level3_4,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat3_fold0_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat3_fold1_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold1_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat3_fold1_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold1_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold1_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold1_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat3_fold2_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold2_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat3_fold2_level3_2,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat3_fold2_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat3_fold2_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat3_fold2_level3_5,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat3_fold3_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat3_fold3_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold3_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold3_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold3_level3_4,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat3_fold3_level3_5,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat3_fold4_level3_0,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold4_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold4_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold4_level3_3,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat3_fold4_level3_4,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat3_fold4_level3_5,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat3_fold5_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold5_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat3_fold5_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold5_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold5_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold5_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat3_fold6_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold6_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold6_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat3_fold6_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold6_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat3_fold6_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat3_fold7_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat3_fold7_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold7_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold7_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold7_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat3_fold7_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat3_fold8_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat3_fold8_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold8_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold8_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat3_fold8_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat3_fold8_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat3_fold9_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold9_level3_1,cod,totalcogcomp,Total cognition,time-varying FC
+HCP-A_totalcogcomp_cod_repeat3_fold9_level3_2,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat3_fold9_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold9_level3_4,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat3_fold9_level3_5,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold0_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold0_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat4_fold0_level3_2,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat4_fold0_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat4_fold0_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat4_fold0_level3_5,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat4_fold1_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold1_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold1_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat4_fold1_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold1_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat4_fold1_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat4_fold2_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold2_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat4_fold2_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold2_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold2_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold2_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat4_fold3_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold3_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold3_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold3_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat4_fold3_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat4_fold3_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat4_fold4_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold4_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat4_fold4_level3_2,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat4_fold4_level3_3,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat4_fold4_level3_4,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat4_fold4_level3_5,cod,totalcogcomp,Total cognition,CT
+HCP-A_totalcogcomp_cod_repeat4_fold5_level3_0,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold5_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat4_fold5_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold5_level3_3,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat4_fold5_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat4_fold5_level3_5,cod,totalcogcomp,Total cognition,VISMOTOR EC
+HCP-A_totalcogcomp_cod_repeat4_fold6_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold6_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat4_fold6_level3_2,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat4_fold6_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat4_fold6_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat4_fold6_level3_5,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat4_fold7_level3_0,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold7_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold7_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold7_level3_3,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat4_fold7_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat4_fold7_level3_5,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat4_fold8_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold8_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold8_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat4_fold8_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold8_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat4_fold8_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat4_fold9_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold9_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold9_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat4_fold9_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat4_fold9_level3_4,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat4_fold9_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat5_fold0_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold0_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold0_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold0_level3_3,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat5_fold0_level3_4,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat5_fold0_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat5_fold1_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold1_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat5_fold1_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold1_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold1_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold1_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat5_fold2_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat5_fold2_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold2_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold2_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat5_fold2_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat5_fold2_level3_5,cod,totalcogcomp,Total cognition,CT
+HCP-A_totalcogcomp_cod_repeat5_fold3_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold3_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold3_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat5_fold3_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat5_fold3_level3_4,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat5_fold3_level3_5,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat5_fold4_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold4_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat5_fold4_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold4_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat5_fold4_level3_4,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold4_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat5_fold5_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold5_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat5_fold5_level3_2,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat5_fold5_level3_3,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat5_fold5_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat5_fold5_level3_5,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat5_fold6_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat5_fold6_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold6_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold6_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat5_fold6_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat5_fold6_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat5_fold7_level3_0,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold7_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold7_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat5_fold7_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat5_fold7_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat5_fold7_level3_5,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold8_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold8_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat5_fold8_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold8_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold8_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat5_fold8_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat5_fold9_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold9_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat5_fold9_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold9_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat5_fold9_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat5_fold9_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat6_fold0_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat6_fold0_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold0_level3_2,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat6_fold0_level3_3,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat6_fold0_level3_4,cod,totalcogcomp,Total cognition,GMV
+HCP-A_totalcogcomp_cod_repeat6_fold0_level3_5,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat6_fold1_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold1_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold1_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat6_fold1_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat6_fold1_level3_4,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold1_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat6_fold2_level3_0,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold2_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold2_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold2_level3_3,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat6_fold2_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat6_fold2_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat6_fold3_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold3_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat6_fold3_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold3_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold3_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat6_fold3_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat6_fold4_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold4_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat6_fold4_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold4_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold4_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat6_fold4_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat6_fold5_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold5_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat6_fold5_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold5_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold5_level3_4,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat6_fold5_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat6_fold6_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold6_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold6_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat6_fold6_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold6_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat6_fold6_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat6_fold7_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold7_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat6_fold7_level3_2,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat6_fold7_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat6_fold7_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat6_fold7_level3_5,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat6_fold8_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold8_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat6_fold8_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold8_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold8_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold8_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat6_fold9_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold9_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold9_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat6_fold9_level3_3,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat6_fold9_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat6_fold9_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat7_fold0_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold0_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat7_fold0_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold0_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold0_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat7_fold0_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat7_fold1_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat7_fold1_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold1_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold1_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat7_fold1_level3_4,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat7_fold1_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat7_fold2_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold2_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat7_fold2_level3_2,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat7_fold2_level3_3,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat7_fold2_level3_4,cod,totalcogcomp,Total cognition,CT
+HCP-A_totalcogcomp_cod_repeat7_fold2_level3_5,cod,totalcogcomp,Total cognition,myelin estimate
+HCP-A_totalcogcomp_cod_repeat7_fold3_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold3_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat7_fold3_level3_2,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat7_fold3_level3_3,cod,totalcogcomp,Total cognition,time-varying FC
+HCP-A_totalcogcomp_cod_repeat7_fold3_level3_4,cod,totalcogcomp,Total cognition,GMV
+HCP-A_totalcogcomp_cod_repeat7_fold3_level3_5,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat7_fold4_level3_0,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold4_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold4_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat7_fold4_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat7_fold4_level3_4,cod,totalcogcomp,Total cognition,VISMOTOR EC
+HCP-A_totalcogcomp_cod_repeat7_fold4_level3_5,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold5_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold5_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat7_fold5_level3_2,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat7_fold5_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat7_fold5_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat7_fold5_level3_5,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat7_fold6_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold6_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat7_fold6_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold6_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold6_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat7_fold6_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat7_fold7_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold7_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat7_fold7_level3_2,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat7_fold7_level3_3,cod,totalcogcomp,Total cognition,myelin estimate
+HCP-A_totalcogcomp_cod_repeat7_fold7_level3_4,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat7_fold7_level3_5,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold8_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold8_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat7_fold8_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold8_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold8_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold8_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat7_fold9_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat7_fold9_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat7_fold9_level3_2,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat7_fold9_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat7_fold9_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat7_fold9_level3_5,cod,totalcogcomp,Total cognition,CT
+HCP-A_totalcogcomp_cod_repeat8_fold0_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold0_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat8_fold0_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold0_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold0_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat8_fold0_level3_5,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat8_fold1_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold1_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat8_fold1_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold1_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold1_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold1_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat8_fold2_level3_0,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat8_fold2_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold2_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold2_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat8_fold2_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat8_fold2_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat8_fold3_level3_0,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold3_level3_1,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold3_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold3_level3_3,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat8_fold3_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat8_fold3_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat8_fold4_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold4_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold4_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold4_level3_3,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat8_fold4_level3_4,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat8_fold4_level3_5,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat8_fold5_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold5_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat8_fold5_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold5_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold5_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat8_fold5_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat8_fold6_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold6_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat8_fold6_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold6_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold6_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold6_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat8_fold7_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold7_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat8_fold7_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold7_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold7_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat8_fold7_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat8_fold8_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold8_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold8_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat8_fold8_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold8_level3_4,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat8_fold8_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat8_fold9_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold9_level3_1,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold9_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat8_fold9_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat8_fold9_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat8_fold9_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat9_fold0_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold0_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat9_fold0_level3_2,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat9_fold0_level3_3,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat9_fold0_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat9_fold0_level3_5,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat9_fold1_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold1_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat9_fold1_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold1_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold1_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold1_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat9_fold2_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold2_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat9_fold2_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold2_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold2_level3_4,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat9_fold2_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat9_fold3_level3_0,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold3_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat9_fold3_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold3_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat9_fold3_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat9_fold3_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat9_fold4_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold4_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat9_fold4_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold4_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat9_fold4_level3_4,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat9_fold4_level3_5,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat9_fold5_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold5_level3_1,cod,totalcogcomp,Total cognition,CARIT EC
+HCP-A_totalcogcomp_cod_repeat9_fold5_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold5_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold5_level3_4,cod,totalcogcomp,Total cognition,CARIT model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold5_level3_5,cod,totalcogcomp,Total cognition,RD
+HCP-A_totalcogcomp_cod_repeat9_fold6_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold6_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat9_fold6_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold6_level3_3,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat9_fold6_level3_4,cod,totalcogcomp,Total cognition,SA Connectivity
+HCP-A_totalcogcomp_cod_repeat9_fold6_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC
+HCP-A_totalcogcomp_cod_repeat9_fold7_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold7_level3_1,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold7_level3_2,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat9_fold7_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold7_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat9_fold7_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat9_fold8_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold8_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat9_fold8_level3_2,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold8_level3_3,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold8_level3_4,cod,totalcogcomp,Total cognition,SC (count)
+HCP-A_totalcogcomp_cod_repeat9_fold8_level3_5,cod,totalcogcomp,Total cognition,SA
+HCP-A_totalcogcomp_cod_repeat9_fold9_level3_0,cod,totalcogcomp,Total cognition,rest model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold9_level3_1,cod,totalcogcomp,Total cognition,rest EC
+HCP-A_totalcogcomp_cod_repeat9_fold9_level3_2,cod,totalcogcomp,Total cognition,FACENAME model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold9_level3_3,cod,totalcogcomp,Total cognition,VISMOTOR model-free FC
+HCP-A_totalcogcomp_cod_repeat9_fold9_level3_4,cod,totalcogcomp,Total cognition,rest gradients
+HCP-A_totalcogcomp_cod_repeat9_fold9_level3_5,cod,totalcogcomp,Total cognition,FACENAME EC

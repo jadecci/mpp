@@ -1,0 +1,25 @@
+,totalcogcomp
+AD,0.0
+CARIT EC,0.032
+CARIT model-free FC,0.017
+CT,0.005
+CT Connectivity,0.0
+FA,0.0
+FACENAME EC,0.034
+FACENAME model-free FC,0.153
+GMV,0.002
+GMV Connectivity,0.0
+MD,0.0
+RD,0.014
+SA,0.08
+SA Connectivity,0.036
+SC (count),0.094
+SC (length),0.0
+VISMOTOR EC,0.003
+VISMOTOR model-free FC,0.157
+myelin estimate,0.003
+rest EC,0.164
+rest gradients,0.024
+rest model-free FC,0.178
+rest network statisics,0.0
+time-varying FC,0.004
