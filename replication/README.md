@@ -1,3 +1,7 @@
+Instructions for replication of the prediction are listed below. 
+For usage instructions and descriptions of analysis scripts beyond the prediction pipeline can be 
+found in `analysis/README.md` in the subfolder.
+
 ## 1. Preparation
 
 ### 1.1. Install dataset
@@ -103,19 +107,15 @@ done
 
 ## 3. Multimodal Prediction
 
-### 3.1. Run predictions
-
 ```bash
 mpp --datasets HCP-YA \
     --targets totalcogcomp crycogcomp fluidcogcomp cardsort flanker reading picvocab procspeed \
         listsort anger fear sadness posaffect emotsupp friendship loneliness neoffi_n neoffi_e \
         neoffi_o neoffi_a neoffi_c \
     --features_dir ${project_dir}/mfe_output \
-    --sublists ${project_dir}/sublist/HCP-YA_allRun.csv \
-    --level 3 \
+    --sublists ${project_dir}/sublist/HCP-YA_allRun.csv --level 3 \
     --hcpya_res ${project_dir}/mpp/replication/phenotype/restricted_hcpya.csv \
-    --work_dir ${project_dir}/work \
-    --output_dir ${project_dir}/mpp_output/${dataset}
+    --work_dir ${project_dir}/work --output_dir ${project_dir}/mpp_output/${dataset}
 
 for dataset in HCP-A HCP-D; do
     mpp --datasets $dataset \
@@ -123,35 +123,14 @@ for dataset in HCP-A HCP-D; do
             listsort anger fear sadness posaffect emotsupp friendship loneliness neoffi_n neoffi_e \
             neoffi_o neoffi_a neoffi_c \
         --features_dir ${project_dir}/mfe_output \
-        --sublists ${project_dir}/sublist/${dataset}_allRun.csv \
-        --level 3 \
-        --work_dir ${project_dir}/work \
-        --output_dir ${project_dir}/mpp_output/${dataset}
+        --sublists ${project_dir}/sublist/${dataset}_allRun.csv --level 3 \
+        --work_dir ${project_dir}/work --output_dir ${project_dir}/mpp_output/${dataset}
 done
-```
-
-### 3.2. Plot results
-
-Collect prediction results into tables for plotting:
-
-```bash
-python3 ${project_dir}/mpp/replication/figures/collect_results.py \
-    --datasets HCP-A HCP-YA HCP-D \
-    --pred_dir ${project_dir}/mpp_output \
-    --out_dir ${project_dir}/figures
-```
-
-Plot all figures:
-
-```bash
-python3 ${project_dir}/mpp/replication/figures/plot_figures.py \
-    --res_dir ${project_dir}/figures \
-    --out_dir ${project_dir}/figures
 ```
 
 ## Additional information
 
-### 1. Creation of singularity containers
+### Creation of singularity containers
 
 To create a singularity container for diffusion processing (done in macOS Ventura):
 
